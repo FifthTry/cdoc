@@ -1,3 +1,7 @@
 django
 requests
 pygithub
+colorlog
+django-extensions
+pyjwt
+cryptography

@@ -247,7 +247,7 @@ cython_debug/
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/*.code-snippets
-
+playground
 # Local History for Visual Studio Code
 .history/
 
@@ -258,7 +258,7 @@ cython_debug/
 # Ignore all local history of files
 .history
 .ionide
-
+.vscode
 # Support for Project snippet scope
 
 # End of https://www.toptal.com/developers/gitignore/api/django,python,visualstudiocode

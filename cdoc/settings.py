@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    "django_extensions",
     'app',
 ]
 
@@ -110,7 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -127,5 +128,72 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'color': {
+            '()': 'colorlog.ColoredFormatter',
+            'format': '%(log_color)s[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s][%(name)s:%(lineno)d] %(message)s',
+            'log_colors': {
+                'DEBUG':    'white',
+                'INFO':     'cyan',
+                'WARNING':  'yellow',
+                'ERROR':    'red',
+                'CRITICAL': 'bold_red',
+            },
+        },
+        'verbose': {
+            'format': '[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S'
+        },
+        'simple': {
+            'format': '[%(asctime)s] %(levelname)s %(message)s',
+            'datefmt': '%Y-%m-%d %H:%M:%S'
+        },
+    },
+    'filters': {
+        "require_debug_false": {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'handlers': {
+        'console': {  # writes to the console
+            'class': 'logging.StreamHandler',
+            'level': 'INFO',
+            'filters': ['require_debug_true'],
+            'formatter': 'color'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'propagate': True,
+        },
+        'py.warnings': {
+            'handlers': ['console'],
+            'propagate': True,
+        },
+        'app': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+        'lib': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    }
+}
 
-from .local_settings import *  # noqa
+APP_AUTH_PEM_FILE = BASE_DIR.joinpath("PRIVATE_KEY.pem")
+
+try:
+    from .local_settings import *  # noqa
+except ModuleNotFoundError:
+    pass
+APP_AUTH_KEY = None
+with open(APP_AUTH_PEM_FILE, "r") as pem_file:
+    APP_AUTH_KEY = pem_file.read().encode()
