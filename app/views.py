@@ -147,6 +147,7 @@ class WebhookCallback(View):
         if headers.get("X-Github-Event", None) == "check_run":
             print(payload)
         elif headers.get("X-Github-Event", None) == "check_suite":
+            print(payload)
             if payload.get("action") == "requested":
                 installation_id = payload.get(
                     "installation", {}).get("id", None)
