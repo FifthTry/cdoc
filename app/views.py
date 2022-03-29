@@ -132,11 +132,7 @@ class AuthCallback(View):
                 logger.info(response)
         else:
             logger.error(resp.text)
-
-        # # Authenticate t
         return JsonResponse({"status": True})
-        # return
-        # return render(request, 'app/callback.html')
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -146,9 +142,46 @@ class WebhookCallback(View):
         headers = request.headers
         print(headers)
         payload = json.loads(request.body)
-        print(payload)
-        # if headers.get("X-Github-Event", None) == "check_run":
-        #     print
+        # print(payload)
+        # header is "installation_repositories" -> Updated the repositories installed for the installation
+        if headers.get("X-Github-Event", None) == "check_run":
+            print(payload)
+        elif headers.get("X-Github-Event", None) == "check_suite":
+            if payload.get("action") == "requested":
+                installation_id = payload.get(
+                    "installation", {}).get("id", None)
+                installation_instance = app_models.GithubAppInstallation.objects.get(
+                    installation_id=installation_id
+                )
+                prs = payload.get("check_suite", {}).get("pull_requests", [])
+                repository_data = payload.get("repository", {})
+                (github_repo, _) = app_models.GithubRepository.objects.get_or_create(
+                    repo_id=repository_data["id"],
+                    repo_name=repository_data["name"],
+                    repo_full_name=repository_data["full_name"],
+                    owner=installation_instance
+                )
+                is_code_repo = github_repo.code_repos.exists()
+                is_documentation_repo = github_repo.documentation_repos.exists()
+                for pr in prs:
+                    pr_id = pr.get("id")
+                    pr_number = pr.get("number")
+                    if is_code_repo:
+                        app_models.CodeRepoPullRequest.objects.get_or_create(
+                            pr_id=pr_id,
+                            pr_number=pr_number,
+                            repository=github_repo,
+                            defaults={
+                                "documentation_pr": None,
+                            }
+                        )
+                    if is_documentation_repo:
+                        app_models.DocumentationRepoPullRequest.objects.get_or_create(
+                            pr_id=pr_id,
+                            pr_number=pr_number,
+                            repository=github_repo,
+                        )
+
         return JsonResponse({"status": True})
         # assert False, request.__dict__
 

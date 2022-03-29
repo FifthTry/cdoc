@@ -99,7 +99,7 @@ class GithubAppInstallation(models.Model):
         INSTALLED = "INSTALLED", "Installed"
         UNINSTALLED = "UNINSTALLED", "Uninstalled"
 
-    installation_id = models.BigIntegerField(unique=True)
+    installation_id = models.BigIntegerField(unique=True, db_index=True)
     creator = models.ForeignKey(GithubUser, on_delete=models.PROTECT)
     state = models.CharField(
         max_length=20, choices=InstallationState.choices)

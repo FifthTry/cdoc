@@ -96,16 +96,16 @@ class GithubInstallationManager:
                 f"Unable to communicate with github {response.content.decode()}", )
 
     # a function to take the installation id and githubToken and return the repositories for the installation
-    def get_repositories(self, count: Optional[int] = None):
-        per_page = 1
-        if count is not None:
-            per_page = min(count, per_page)
+    def get_repositories(self, max_count: Optional[int] = math.inf):
+        per_page = 30
+        if max_count is not None:
+            per_page = min(max_count, per_page)
         current_page = 1
         response = self._get_repository_page(
             current_page, per_page)
         for repo in response["repositories"]:
             yield repo
-        for page_no in range(2, math.ceil(response["total_count"]/per_page) + 1):
+        for page_no in range(2, math.ceil(min(response["total_count"], max_count)/per_page) + 1):
             response = self._get_repository_page(
                 page_no, per_page)
             for repo in response["repositories"]:
