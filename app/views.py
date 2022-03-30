@@ -173,42 +173,41 @@ class WebhookCallback(View):
 
                 head_commit_details = payload["check_suite"]["head_commit"]
                 head_commit_data = {
-                    "head_commit_sha": head_commit_details["id"],
-                    "head_tree_sha": head_commit_details["tree_id"],
-                    "head_commit_message": head_commit_details["message"],
-                    "head_modified_on": datetime.datetime.strptime(head_commit_details["timestamp"], "%Y-%m-%dT%H:%M:%S%z"),
+                    "pr_head_commit_sha": head_commit_details["id"],
+                    "pr_head_tree_sha": head_commit_details["tree_id"],
+                    "pr_head_commit_message": head_commit_details["message"],
+                    "pr_head_modified_on": datetime.datetime.strptime(head_commit_details["timestamp"], "%Y-%m-%dT%H:%M:%S%z"),
                 }
 
                 logger.info(f"Found PRs for commit ID: {head_commit_details['id']}", extra={
                             "data": {"pull_requests": prs}})
-                is_code_repo = github_repo.code_repos.exists()
-                is_documentation_repo = github_repo.documentation_repos.exists()
-
-                for pr in prs:
-                    pr_id = pr.get("id")
-                    pr_number = pr.get("number")
-                    if is_code_repo:
-                        (cr_pr_instance, is_new) = app_models.CodeRepoPullRequest.objects.get_or_create(
-                            pr_id=pr_id,
-                            pr_number=pr_number,
-                            repository=github_repo,
-                            defaults={
-                                "documentation_pr": None,
-                                **head_commit_data
-                            }
-                        )
-                        if is_new is False:
-                            for key, value in head_commit_data.items():
-                                setattr(cr_pr_instance, key, value)
-                            cr_pr_instance.save()
-                            # The PR already existed, the commit needs to be updated
-                        cr_pr_instance.evaluate_check()
-                    if is_documentation_repo:
-                        app_models.DocumentationRepoPullRequest.objects.get_or_create(
-                            pr_id=pr_id,
-                            pr_number=pr_number,
-                            repository=github_repo,
-                        )
+                should_save = github_repo.code_repos.exists(
+                ) or github_repo.documentation_repos.exists()
+                # is_documentation_repo =
+                if should_save:
+                    for pr in prs:
+                        pr_id = pr.get("id")
+                        pr_number = pr.get("number")
+                        with transaction.atomic():
+                            (pr_instance, is_new) = app_models.GithubPullRequest.objects.get_or_create(
+                                pr_id=pr_id,
+                                pr_number=pr_number,
+                                repository=github_repo,
+                                defaults={
+                                    **head_commit_data
+                                }
+                            )
+                            if is_new is False:
+                                for key, value in head_commit_data.items():
+                                    setattr(pr_instance, key, value)
+                                pr_instance.save()
+                                # The PR already existed, the commit needs to be updated
+                            # pr_instance.evaluate_check()
+                            if github_repo.code_repos.exists():
+                                (monitored_pr_instance, _) = app_models.MonitoredPullRequest.objects.get_or_create(
+                                    code_pull_request=pr_instance,
+                                )
+                                # monitored_pr_instance.evaluate_check()
 
         return JsonResponse({"status": True})
 

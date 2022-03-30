@@ -172,26 +172,14 @@ class GithubRepoMap(models.Model):
         max_length=20, choices=IntegrationType.choices)
 
 
-class GithubPullRequestBase(models.Model):
+class GithubPullRequest(models.Model):
     pr_id = models.BigIntegerField()
     pr_number = models.BigIntegerField()
-    head_commit_sha = models.CharField(max_length=40)
-    head_tree_sha = models.CharField(max_length=40)
-    head_modified_on = models.DateTimeField()
-    head_commit_message = models.CharField(max_length=200)
-
-    class Meta:
-        abstract = True
-
-
-class DocumentationRepoPullRequest(GithubPullRequestBase):
-    repository = models.ForeignKey(
-        GithubRepository, on_delete=models.CASCADE, related_name="doc_repo_prs")
-    # To be set programatically when the PR is approved
-    is_approved = models.BooleanField(default=False)
-
-    def __str__(self) -> str:
-        return f"{self.repository.full_name}[{self.pr_number}] {self.is_approved}"
+    pr_head_commit_sha = models.CharField(max_length=40)
+    pr_head_tree_sha = models.CharField(max_length=40)
+    pr_head_modified_on = models.DateTimeField()
+    pr_head_commit_message = models.CharField(max_length=200)
+    updated_on = models.DateTimeField(auto_now=True)
 
 
 class GithubCheckRun(models.Model):
@@ -200,57 +188,71 @@ class GithubCheckRun(models.Model):
     # Head of the request when it was run
     head_sha = models.CharField(max_length=40)
     pull_request = models.ForeignKey(
-        "CodeRepoPullRequest", on_delete=models.PROTECT, related_name="checks")
+        "MonitoredPullRequest", on_delete=models.PROTECT, related_name="checks")
     # This flag will be set to true if:
     # 1. The documentation_pr exists and pr has been approved(i.e. webhook for approval received)
     # 2. The documentation_pr does not exist and the user sets it manually
     force_approve = models.BooleanField(null=True, blank=True, default=None)
 
     class Meta:
-        unique_together = ('head_sha', "pull_request", )
+        unique_together = ('head_sha', 'pull_request', )
 
     def save(self, *args, **kwargs):
         if not self.pk:
             # PK doesn't exist, new instance being saved to the DB. Create a new check
             # requests.post()
             # Get the token of the creator from the tree
-            # token = self.pull_request.repository.owner.creator.access_token
-            # headers = {
-            #     "Accept": "application/vnd.github.v3+json",
-            #     "Authorization": f"Token {token}"
-            # }
-            # data = {
-            #     "name": "continuous documentation",
-            #     "head_sha": self.head_sha,
-            #     "external_id": self.unique_id,
-            #     "status": "in_progress",
-            # }
-            # response = requests.post(
-            #     f"https://api.github.com/repos/{self.pull_request.repository.repo_full_name}/check-runs", headers=headers, json=data)
+            token = self.pull_request.code_pull_request.repository.owner.creator.access_token
+            headers = {
+                "Accept": "application/vnd.github.v3+json",
+                "Authorization": f"Token {token}"
+            }
+            data = {
+                "name": "continuous documentation",
+                "head_sha": self.head_sha,
+                "external_id": self.unique_id,
+                "status": "in_progress",
+            }
+            response = requests.post(
+                f"https://api.github.com/repos/{self.pull_request.repository.repo_full_name}/check-runs", headers=headers, json=data)
             pass
         super().save(*args, **kwargs)
 
 
-# class GithubCheckLog(models.Model):
-#     check = models.ForeignKey(GithubCheckRun, on_delete=models.CASCADE)
-#     pass
+class MonitoredPullRequest(models.Model):
 
+    class PullRequestStatus(models.TextChoices):
+        """
+            PENDING: The PR is not yet approved
+            APPROVED: The PR is approved
+            REJECTED: The PR is rejected
+        """
+        NOT_CONNECTED = "NOT_CONNECTED", "Not Connected"
+        CONNECTED = "CONNECTED", "Connected"
+        APPROVED = "APPROVED", "Approved"
 
-class CodeRepoPullRequest(GithubPullRequestBase):
-    repository = models.ForeignKey(
-        GithubRepository, on_delete=models.CASCADE, related_name="code_repo_prs")
-    documentation_pr = models.ForeignKey(
-        DocumentationRepoPullRequest, on_delete=models.CASCADE, blank=True, null=True)
+    code_pull_request = models.ForeignKey(
+        GithubPullRequest, on_delete=models.CASCADE, related_name="monitored_code")
+    documentation_pull_request = models.ForeignKey(
+        GithubPullRequest, on_delete=models.CASCADE, blank=True, null=True, related_name="monitored_documentation")
+    pull_request_status = models.CharField(
+        max_length=20, choices=PullRequestStatus.choices, default=PullRequestStatus.NOT_CONNECTED)
 
     def __str__(self) -> str:
         return f"{self.repository.repo_full_name}[{self.pr_number}]"
 
-    def evaluate_check(self):
+    def save(self, *args, **kwargs):
+        # if not self.pk:
+        #     pass
+        super().save(*args, **kwargs)
         try:
-            latest_check = self.checks.get(head_sha=self.head_commit_sha)
+            latest_check = self.checks.get(
+                head_sha=self.code_pull_request.head_commit_sha)
         except GithubCheckRun.DoesNotExist:
             # Check doesn't exist, create a new check
             GithubCheckRun.objects.create(
                 repository=self,
                 head_sha=self.head_commit_sha,
             )
+#
+    # def evaluate_check(self):
