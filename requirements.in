@@ -5,3 +5,4 @@ colorlog
 django-extensions
 pyjwt
 cryptography
+python-json-logger
