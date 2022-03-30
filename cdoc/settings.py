@@ -28,7 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "localhost",
     "0.0.0.0",
-    "a105-122-179-227-60.ngrok.io",
+    "0849-122-179-227-60.ngrok.io",
 ]
 
 CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in [ALLOWED_HOSTS[-1]]]

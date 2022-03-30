@@ -203,10 +203,11 @@ class WebhookCallback(View):
                                 # The PR already existed, the commit needs to be updated
                             # pr_instance.evaluate_check()
                             if github_repo.code_repos.exists():
-                                (monitored_pr_instance, _) = app_models.MonitoredPullRequest.objects.get_or_create(
+                                (monitored_pr_instance, is_new) = app_models.MonitoredPullRequest.objects.get_or_create(
                                     code_pull_request=pr_instance,
                                 )
-                                # monitored_pr_instance.evaluate_check()
+                                if is_new is False:
+                                    monitored_pr_instance.save()
 
         return JsonResponse({"status": True})
 
