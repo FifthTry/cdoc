@@ -10,12 +10,13 @@ import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
 from django.db import transaction
-from django.http import JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import models as auth_models
 
 from . import models as app_models
 
@@ -73,9 +74,10 @@ class AuthCallback(View):
                         response["refresh_token_expires_in"][0]))
                 github_instance = github.Github(access_token)
                 user_instance = github_instance.get_user()
-                github_installation_manager = lib.GithubInstallationManager()
+                github_installation_manager = lib.GithubInstallationManager(
+                    installation_id=installation_id, user_token=access_token)
                 installation_details = github_installation_manager.get_installation_details(
-                    installation_id=installation_id)
+                )
                 account_details = installation_details["account"]
                 account_name = account_details["login"]
                 account_id = account_details["id"]
@@ -89,15 +91,18 @@ class AuthCallback(View):
                     account_type=account_type,
                     avatar_url=avatar_url,
                 )
+                access_group = auth_models.Group.objects.get(
+                    name="github_user")
                 with transaction.atomic():
-                    auth_user_instance = get_user_model().objects.get_or_create(
+                    (auth_user_instance, _) = get_user_model().objects.get_or_create(
                         username=user_instance.login,
                         defaults={
                             "is_active": True,
                             "is_staff": True,
                         }
-                    )[0]
-                    github_user = app_models.GithubUser.objects.get_or_create(
+                    )
+                    auth_user_instance.groups.add(access_group)
+                    (github_user, _) = app_models.GithubUser.objects.get_or_create(
                         account_id=user_instance.id,
                         account_name=user_instance.login,
                         account_type=user_instance.type,
@@ -105,7 +110,7 @@ class AuthCallback(View):
                         defaults={
                             "avatar_url": user_instance.avatar_url,
                         }
-                    )[0]
+                    )
                     installation_instance.creator = github_user
                     login(request, auth_user_instance)
                     app_models.GithubUserAccessToken.objects.create(
@@ -121,8 +126,7 @@ class AuthCallback(View):
                     installation_instance.save()
                     installation_instance.update_token()
                 # Get all repositories for the account and update it in the DB
-                repo_generator = github_installation_manager.get_repositories(
-                    installation_id, request.user.github_user.access_token)
+                repo_generator = github_installation_manager.get_repositories()
                 for repo in repo_generator:
                     app_models.GithubRepository.objects.get_or_create(
                         repo_id=repo["id"],
@@ -132,7 +136,7 @@ class AuthCallback(View):
                 logger.info(response)
         else:
             logger.error(resp.text)
-        return JsonResponse({"status": True})
+        return HttpResponseRedirect("/admin/")
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -140,20 +144,24 @@ class WebhookCallback(View):
 
     def post(self, request, *args, **kwargs):
         headers = request.headers
-        print(headers)
         payload = json.loads(request.body)
+        logger.info(
+            "Recieved Github webhook",  extra={"data": {"headers": headers, "payload": payload}}
+        )
+        # logger.info(f"")
         # print(payload)
         # header is "installation_repositories" -> Updated the repositories installed for the installation
-        if headers.get("X-Github-Event", None) == "check_run":
-            print(payload)
+        if headers.get("X-Github-Event", None) == "pull_request":
+            # print(payload)
+            pass
         elif headers.get("X-Github-Event", None) == "check_suite":
+            # print(payload)
             if payload.get("action") == "requested":
                 installation_id = payload.get(
                     "installation", {}).get("id", None)
                 installation_instance = app_models.GithubAppInstallation.objects.get(
                     installation_id=installation_id
                 )
-                prs = payload.get("check_suite", {}).get("pull_requests", [])
                 repository_data = payload.get("repository", {})
                 (github_repo, _) = app_models.GithubRepository.objects.get_or_create(
                     repo_id=repository_data["id"],
@@ -161,20 +169,40 @@ class WebhookCallback(View):
                     repo_full_name=repository_data["full_name"],
                     owner=installation_instance
                 )
+                prs = payload.get("check_suite", {}).get("pull_requests", [])
+
+                head_commit_details = payload["check_suite"]["head_commit"]
+                head_commit_data = {
+                    "head_commit_sha": head_commit_details["id"],
+                    "head_tree_sha": head_commit_details["tree_id"],
+                    "head_commit_message": head_commit_details["message"],
+                    "head_modified_on": datetime.datetime.strptime(head_commit_details["timestamp"], "%Y-%m-%dT%H:%M:%S%z"),
+                }
+
+                logger.info(f"Found PRs for commit ID: {head_commit_details['id']}", extra={
+                            "data": {"pull_requests": prs}})
                 is_code_repo = github_repo.code_repos.exists()
                 is_documentation_repo = github_repo.documentation_repos.exists()
+
                 for pr in prs:
                     pr_id = pr.get("id")
                     pr_number = pr.get("number")
                     if is_code_repo:
-                        app_models.CodeRepoPullRequest.objects.get_or_create(
+                        (cr_pr_instance, is_new) = app_models.CodeRepoPullRequest.objects.get_or_create(
                             pr_id=pr_id,
                             pr_number=pr_number,
                             repository=github_repo,
                             defaults={
                                 "documentation_pr": None,
+                                **head_commit_data
                             }
                         )
+                        if is_new is False:
+                            for key, value in head_commit_data.items():
+                                setattr(cr_pr_instance, key, value)
+                            cr_pr_instance.save()
+                            # The PR already existed, the commit needs to be updated
+                        cr_pr_instance.evaluate_check()
                     if is_documentation_repo:
                         app_models.DocumentationRepoPullRequest.objects.get_or_create(
                             pr_id=pr_id,
@@ -183,7 +211,6 @@ class WebhookCallback(View):
                         )
 
         return JsonResponse({"status": True})
-        # assert False, request.__dict__
 
 
 @method_decorator(csrf_exempt, name='dispatch')

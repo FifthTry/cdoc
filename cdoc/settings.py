@@ -28,8 +28,10 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "localhost",
     "0.0.0.0",
-    "a105-122-179-227-60.ngrok.io"
+    "a105-122-179-227-60.ngrok.io",
 ]
+
+CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in [ALLOWED_HOSTS[-1]]]
 
 
 # Application definition
@@ -132,9 +134,19 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'color': {
+        'color_with_extra': {
+            '()': 'cdoc.formatter.ExtraFormatter',
+            'format': '%(log_color)s[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s][%(name)s:%(lineno)d] %(message)s ',
+            'log_colors': {
+                'DEBUG':    'white',
+                'INFO':     'cyan',
+                'WARNING':  'yellow',
+                'ERROR':    'red',
+                'CRITICAL': 'bold_red',
+            },
+        }, 'color': {
             '()': 'colorlog.ColoredFormatter',
-            'format': '%(log_color)s[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s][%(name)s:%(lineno)d] %(message)s',
+            'format': '%(log_color)s[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s][%(name)s:%(lineno)d] %(message)s ',
             'log_colors': {
                 'DEBUG':    'white',
                 'INFO':     'cyan',
@@ -167,6 +179,12 @@ LOGGING = {
             'filters': ['require_debug_true'],
             'formatter': 'color'
         },
+        'console_with_extra': {  # writes to the console
+            'class': 'logging.StreamHandler',
+            'level': 'INFO',
+            'filters': ['require_debug_true'],
+            'formatter': 'color_with_extra'
+        },
     },
     'loggers': {
         'django': {
@@ -178,11 +196,11 @@ LOGGING = {
             'propagate': True,
         },
         'app': {
-            'handlers': ['console'],
+            'handlers': ['console_with_extra'],
             'level': 'DEBUG',
         },
         'lib': {
-            'handlers': ['console'],
+            'handlers': ['console_with_extra'],
             'level': 'DEBUG',
         },
     }

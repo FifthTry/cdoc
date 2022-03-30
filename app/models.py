@@ -125,9 +125,10 @@ class GithubAppInstallation(models.Model):
         Fetches the latest access token for the installation. Returns true/false depending on whether 
         the requested token has been updated
         """
-        github_installation_manager = lib.GithubInstallationManager()
-        token, expires_at = github_installation_manager.get_installation_access_token(
-            installation_id=self.installation_id)
+        # User token not required for this step
+        github_installation_manager = lib.GithubInstallationManager(
+            installation_id=self.installation_id, user_token="")
+        token, expires_at = github_installation_manager.get_installation_access_token()
         return GithubInstallationToken.objects.get_or_create(
             token=token,
             expires_at=expires_at,
@@ -174,6 +175,10 @@ class GithubRepoMap(models.Model):
 class GithubPullRequestBase(models.Model):
     pr_id = models.BigIntegerField()
     pr_number = models.BigIntegerField()
+    head_commit_sha = models.CharField(max_length=40)
+    head_tree_sha = models.CharField(max_length=40)
+    head_modified_on = models.DateTimeField()
+    head_commit_message = models.CharField(max_length=200)
 
     class Meta:
         abstract = True
@@ -189,25 +194,63 @@ class DocumentationRepoPullRequest(GithubPullRequestBase):
         return f"{self.repository.full_name}[{self.pr_number}] {self.is_approved}"
 
 
-class CodeRepoPullRequest(GithubPullRequestBase):
-    repository = models.ForeignKey(
-        GithubRepository, on_delete=models.CASCADE, related_name="code_repo_prs")
-    documentation_pr = models.ForeignKey(
-        DocumentationRepoPullRequest, on_delete=models.CASCADE, blank=True, null=True)
-    # This flag will be set to true if:
-    # 1. The documentation_pr exists and pr has been approved(i.e. webhook for approval received)
-    # 2. The documentation_pr does not exist and the user sets it manually
-    check_approved = models.BooleanField(null=True, blank=True, default=None)
-
-    def __str__(self) -> str:
-        return f"{self.repository.full_name}[{self.pr_number}] {self.check_approved}"
-
-
 class GithubCheckRun(models.Model):
     run_id = models.BigIntegerField(blank=True, null=True)
     unique_id = models.UUIDField(default=uuid.uuid4)
     # Head of the request when it was run
     head_sha = models.CharField(max_length=40)
+    pull_request = models.ForeignKey(
+        "CodeRepoPullRequest", on_delete=models.PROTECT, related_name="checks")
+    # This flag will be set to true if:
+    # 1. The documentation_pr exists and pr has been approved(i.e. webhook for approval received)
+    # 2. The documentation_pr does not exist and the user sets it manually
+    force_approve = models.BooleanField(null=True, blank=True, default=None)
+
+    class Meta:
+        unique_together = ('head_sha', "pull_request", )
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            # PK doesn't exist, new instance being saved to the DB. Create a new check
+            # requests.post()
+            # Get the token of the creator from the tree
+            # token = self.pull_request.repository.owner.creator.access_token
+            # headers = {
+            #     "Accept": "application/vnd.github.v3+json",
+            #     "Authorization": f"Token {token}"
+            # }
+            # data = {
+            #     "name": "continuous documentation",
+            #     "head_sha": self.head_sha,
+            #     "external_id": self.unique_id,
+            #     "status": "in_progress",
+            # }
+            # response = requests.post(
+            #     f"https://api.github.com/repos/{self.pull_request.repository.repo_full_name}/check-runs", headers=headers, json=data)
+            pass
+        super().save(*args, **kwargs)
+
+
+# class GithubCheckLog(models.Model):
+#     check = models.ForeignKey(GithubCheckRun, on_delete=models.CASCADE)
+#     pass
+
+
+class CodeRepoPullRequest(GithubPullRequestBase):
     repository = models.ForeignKey(
-        CodeRepoPullRequest, on_delete=models.PROTECT, related_name="checks")
-    # status = models.CharField()
+        GithubRepository, on_delete=models.CASCADE, related_name="code_repo_prs")
+    documentation_pr = models.ForeignKey(
+        DocumentationRepoPullRequest, on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self) -> str:
+        return f"{self.repository.repo_full_name}[{self.pr_number}]"
+
+    def evaluate_check(self):
+        try:
+            latest_check = self.checks.get(head_sha=self.head_commit_sha)
+        except GithubCheckRun.DoesNotExist:
+            # Check doesn't exist, create a new check
+            GithubCheckRun.objects.create(
+                repository=self,
+                head_sha=self.head_commit_sha,
+            )
