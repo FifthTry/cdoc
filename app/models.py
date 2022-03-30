@@ -4,11 +4,14 @@ import logging
 import uuid
 from urllib.parse import parse_qs
 
+import github
 import lib
 import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
@@ -29,7 +32,8 @@ class Token(models.Model):
 
 class GithubUser(models.Model):
     user = models.OneToOneField(
-        get_user_model(), on_delete=models.CASCADE, related_name="github_user")
+        get_user_model(), on_delete=models.CASCADE, related_name="github_user"
+    )
     account_name = models.CharField(max_length=200)
     account_id = models.BigIntegerField()
     account_type = models.CharField(max_length=20)
@@ -39,14 +43,22 @@ class GithubUser(models.Model):
     @property
     def access_token(self):
         try:
-            return self.access_tokens.exclude(expires_at__lt=timezone.now()).latest("expires_at").token
+            return (
+                self.access_tokens.exclude(expires_at__lt=timezone.now())
+                .latest("expires_at")
+                .token
+            )
         except:
             return None
 
     @property
     def refresh_token(self):
         try:
-            return self.refresh_tokens.exclude(expires_at__lt=timezone.now()).latest("expires_at").token
+            return (
+                self.refresh_tokens.exclude(expires_at__lt=timezone.now())
+                .latest("expires_at")
+                .token
+            )
         except:
             return None
 
@@ -57,37 +69,41 @@ class GithubUser(models.Model):
         GithubUserAccessToken.objects.create(
             token=data["access_token"][0],
             github_user=self,
-            expires_at=now +
-            datetime.timedelta(seconds=int(data["expires_in"][0]))
+            expires_at=now + datetime.timedelta(seconds=int(data["expires_in"][0])),
         )
         GithubUserRefreshToken.objects.create(
             token=data["refresh_token"][0],
             github_user=self,
-            expires_at=now +
-            datetime.timedelta(
-                seconds=int(data["refresh_token_expires_in"][0]))
+            expires_at=now
+            + datetime.timedelta(seconds=int(data["refresh_token_expires_in"][0])),
         )
 
     def get_new_tokens(self):
         refresh_token = self.refresh_tokens.exclude(
-            expires_at__lt=timezone.now()).latest("expires_at")
-        response = requests.post("https://github.com/login/oauth/access_token", data={
-            "refresh_token": refresh_token.token,
-            "grant_type": "refresh_token",
-            "client_id": settings.GITHUB_CREDS['client_id'],
-            "client_secret": settings.GITHUB_CREDS['client_secret'],
-        })
+            expires_at__lt=timezone.now()
+        ).latest("expires_at")
+        response = requests.post(
+            "https://github.com/login/oauth/access_token",
+            data={
+                "refresh_token": refresh_token.token,
+                "grant_type": "refresh_token",
+                "client_id": settings.GITHUB_CREDS["client_id"],
+                "client_secret": settings.GITHUB_CREDS["client_secret"],
+            },
+        )
         self.process_token_response(response.content.decode())
 
 
 class GithubUserAccessToken(Token):
     github_user = models.ForeignKey(
-        GithubUser, on_delete=models.CASCADE, related_name="access_tokens")
+        GithubUser, on_delete=models.CASCADE, related_name="access_tokens"
+    )
 
 
 class GithubUserRefreshToken(Token):
     github_user = models.ForeignKey(
-        GithubUser, on_delete=models.CASCADE, related_name="refresh_tokens")
+        GithubUser, on_delete=models.CASCADE, related_name="refresh_tokens"
+    )
 
 
 class GithubAppInstallation(models.Model):
@@ -101,8 +117,7 @@ class GithubAppInstallation(models.Model):
 
     installation_id = models.BigIntegerField(unique=True, db_index=True)
     creator = models.ForeignKey(GithubUser, on_delete=models.PROTECT)
-    state = models.CharField(
-        max_length=20, choices=InstallationState.choices)
+    state = models.CharField(max_length=20, choices=InstallationState.choices)
     account_name = models.CharField(max_length=200)
     account_id = models.BigIntegerField()
     account_type = models.CharField(max_length=20)
@@ -115,19 +130,24 @@ class GithubAppInstallation(models.Model):
     @property
     def access_token(self):
         try:
-            return self.tokens.exclude(expires_at__lte=timezone.now()).latest('created_at').token
+            return (
+                self.tokens.exclude(expires_at__lte=timezone.now())
+                .latest("created_at")
+                .token
+            )
         except GithubInstallationToken.DoesNotExist:
             self.update_token()
             return self.get_latest_active_token()
 
     def update_token(self):
         """
-        Fetches the latest access token for the installation. Returns true/false depending on whether 
+        Fetches the latest access token for the installation. Returns true/false depending on whether
         the requested token has been updated
         """
         # User token not required for this step
         github_installation_manager = lib.GithubInstallationManager(
-            installation_id=self.installation_id, user_token="")
+            installation_id=self.installation_id, user_token=""
+        )
         token, expires_at = github_installation_manager.get_installation_access_token()
         return GithubInstallationToken.objects.get_or_create(
             token=token,
@@ -153,23 +173,23 @@ class GithubRepository(models.Model):
 
 
 class GithubRepoMap(models.Model):
-
     class IntegrationType(models.TextChoices):
         """
-            FULL integration restricts the PRs to process only after the related PR is merged
-            PARTIAL check is not restrictive
+        FULL integration restricts the PRs to process only after the related PR is merged
+        PARTIAL check is not restrictive
         """
+
         FULL = "FULL", "Full"
         PARTIAL = "PARTIAL", "Partial"
-    integration = models.ForeignKey(
-        GithubAppInstallation, on_delete=models.PROTECT
-    )
+
+    integration = models.ForeignKey(GithubAppInstallation, on_delete=models.PROTECT)
     code_repo = models.ForeignKey(
-        GithubRepository, on_delete=models.PROTECT, related_name="code_repos")
+        GithubRepository, on_delete=models.PROTECT, related_name="code_repos"
+    )
     documentation_repo = models.ForeignKey(
-        GithubRepository, on_delete=models.PROTECT, related_name="documentation_repos")
-    integration_type = models.CharField(
-        max_length=20, choices=IntegrationType.choices)
+        GithubRepository, on_delete=models.PROTECT, related_name="documentation_repos"
+    )
+    integration_type = models.CharField(max_length=20, choices=IntegrationType.choices)
 
 
 class GithubPullRequest(models.Model):
@@ -180,79 +200,157 @@ class GithubPullRequest(models.Model):
     pr_head_modified_on = models.DateTimeField()
     pr_head_commit_message = models.CharField(max_length=200)
     updated_on = models.DateTimeField(auto_now=True)
+    repository = models.ForeignKey(GithubRepository, on_delete=models.PROTECT)
+
+    def __str__(self) -> str:
+        return f"{self.repository.repo_full_name}/{self.pr_number} @ {self.pr_head_commit_sha[:7]}"
+
+
+class MonitoredPullRequest(models.Model):
+    class PullRequestStatus(models.TextChoices):
+        """
+        PENDING: The PR is not yet approved
+        APPROVED: The PR is approved
+        REJECTED: The PR is rejected
+        """
+
+        NOT_CONNECTED = "NOT_CONNECTED", "Not Connected"
+        CONNECTED = "CONNECTED", "Connected"
+        APPROVED = "APPROVED", "Approved"
+
+    code_pull_request = models.ForeignKey(
+        GithubPullRequest, on_delete=models.CASCADE, related_name="monitored_code"
+    )
+    documentation_pull_request = models.ForeignKey(
+        GithubPullRequest,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="monitored_documentation",
+    )
+    pull_request_status = models.CharField(
+        max_length=20,
+        choices=PullRequestStatus.choices,
+        default=PullRequestStatus.NOT_CONNECTED,
+    )
+
+    def __str__(self) -> str:
+        return f"{self.code_pull_request.repository.repo_full_name}[{self.code_pull_request.pr_number}]"
+
+    def save(self, *args, **kwargs):
+        if (
+            self.documentation_pull_request is not None
+            and self.pull_request_status
+            == MonitoredPullRequest.PullRequestStatus.NOT_CONNECTED
+        ):
+            self.pull_request_status = MonitoredPullRequest.PullRequestStatus.CONNECTED
+        super().save(*args, **kwargs)
+
+
+@receiver(
+    post_save, sender=MonitoredPullRequest, dispatch_uid="invoke_github_check_for_pr"
+)
+def update_check_run(sender, instance, **kwargs):
+    (instance, is_new) = GithubCheckRun.objects.get_or_create(
+        ref_pull_request=instance, run_sha=instance.code_pull_request.pr_head_commit_sha
+    )
+    if not is_new:
+        instance.save()
 
 
 class GithubCheckRun(models.Model):
     run_id = models.BigIntegerField(blank=True, null=True)
     unique_id = models.UUIDField(default=uuid.uuid4)
     # Head of the request when it was run
-    head_sha = models.CharField(max_length=40)
-    pull_request = models.ForeignKey(
-        "MonitoredPullRequest", on_delete=models.PROTECT, related_name="checks")
+    run_sha = models.CharField(max_length=40)
+    ref_pull_request = models.ForeignKey(
+        MonitoredPullRequest, on_delete=models.PROTECT, related_name="checks"
+    )
     # This flag will be set to true if:
     # 1. The documentation_pr exists and pr has been approved(i.e. webhook for approval received)
     # 2. The documentation_pr does not exist and the user sets it manually
     force_approve = models.BooleanField(null=True, blank=True, default=None)
 
     class Meta:
-        unique_together = ('head_sha', 'pull_request', )
+        unique_together = (
+            "run_sha",
+            "ref_pull_request",
+        )
 
     def save(self, *args, **kwargs):
+
         if not self.pk:
             # PK doesn't exist, new instance being saved to the DB. Create a new check
-            # requests.post()
-            # Get the token of the creator from the tree
-            token = self.pull_request.code_pull_request.repository.owner.creator.access_token
-            headers = {
-                "Accept": "application/vnd.github.v3+json",
-                "Authorization": f"Token {token}"
-            }
-            data = {
-                "name": "continuous documentation",
-                "head_sha": self.head_sha,
-                "external_id": self.unique_id,
-                "status": "in_progress",
-            }
-            response = requests.post(
-                f"https://api.github.com/repos/{self.pull_request.repository.repo_full_name}/check-runs", headers=headers, json=data)
-            pass
-        super().save(*args, **kwargs)
-
-
-class MonitoredPullRequest(models.Model):
-
-    class PullRequestStatus(models.TextChoices):
-        """
-            PENDING: The PR is not yet approved
-            APPROVED: The PR is approved
-            REJECTED: The PR is rejected
-        """
-        NOT_CONNECTED = "NOT_CONNECTED", "Not Connected"
-        CONNECTED = "CONNECTED", "Connected"
-        APPROVED = "APPROVED", "Approved"
-
-    code_pull_request = models.ForeignKey(
-        GithubPullRequest, on_delete=models.CASCADE, related_name="monitored_code")
-    documentation_pull_request = models.ForeignKey(
-        GithubPullRequest, on_delete=models.CASCADE, blank=True, null=True, related_name="monitored_documentation")
-    pull_request_status = models.CharField(
-        max_length=20, choices=PullRequestStatus.choices, default=PullRequestStatus.NOT_CONNECTED)
-
-    def __str__(self) -> str:
-        return f"{self.repository.repo_full_name}[{self.pr_number}]"
-
-    def save(self, *args, **kwargs):
-        # if not self.pk:
-        #     pass
-        super().save(*args, **kwargs)
-        try:
-            latest_check = self.checks.get(
-                head_sha=self.code_pull_request.head_commit_sha)
-        except GithubCheckRun.DoesNotExist:
-            # Check doesn't exist, create a new check
-            GithubCheckRun.objects.create(
-                repository=self,
-                head_sha=self.head_commit_sha,
+            token = (
+                self.ref_pull_request.code_pull_request.repository.owner.creator.access_token
             )
-#
-    # def evaluate_check(self):
+            github_app_instance = github.Github(token)
+            github_repo = github_app_instance.get_repo(
+                self.ref_pull_request.code_pull_request.repository.repo_id
+            )
+            check_run_instance = github_repo.create_check_run(
+                name="Continuous Documentation",
+                head_sha=self.run_sha,
+                external_id=self.unique_id.__str__(),
+                status="in_progress",
+            )
+            logger.info(
+                "Created new check run for PR", extra={"response": check_run_instance}
+            )
+            self.run_id = check_run_instance.id
+        super().save(*args, **kwargs)
+
+
+@receiver(post_save, sender=GithubCheckRun, dispatch_uid="update_github_check")
+def synchronize_github_check(sender, instance, **kwargs):
+    token = (
+        instance.ref_pull_request.code_pull_request.repository.owner.creator.access_token
+    )
+    github_app_instance = github.Github(token)
+    github_repo = github_app_instance.get_repo(
+        instance.ref_pull_request.code_pull_request.repository.repo_id
+    )
+    check_run = github_repo.get_check_run(instance.run_id)
+
+    data = {
+        "name": "continuous documentation",
+        "head_sha": instance.run_sha,
+        "external_id": instance.unique_id.__str__(),
+        "status": "completed",
+    }
+    if instance.ref_pull_request.documentation_pull_request is None:
+        # Update the action with the PR connection action
+        data.update(
+            {
+                "conclusion": "action_required",
+                "output": {
+                    "title": "Documentation PR is not connected",
+                    "summary": "Please connect the documentation PR",
+                    "text": "You can connect the documentation PR by clicking on the button below.",
+                },
+            }
+        )
+    elif instance.ref_pull_request.documentation_pull_request is not None:
+        if (
+            instance.ref_pull_request.pull_request_status
+            == MonitoredPullRequest.PullRequestStatus.APPROVED
+        ):
+            data.update({"conclusion": "success"})
+        elif (
+            instance.ref_pull_request.pull_request_status
+            == MonitoredPullRequest.PullRequestStatus.CONNECTED
+        ):
+            # Update the action with the PR approval action
+            data.update(
+                {
+                    "conclusion": "action_required",
+                    "output": {
+                        "title": "Approve the PR on CDOC",
+                        "summary": "Please approve the PR on CDOC",
+                        "text": "You can connect the documentation PR by clicking on the button below.",
+                    },
+                }
+            )
+    logger.info("Updating github check with data", extra={"payload": data})
+    check_run_instance = check_run.edit(**data)
+    logger.info("Updated the check run", extra={"response": check_run_instance})

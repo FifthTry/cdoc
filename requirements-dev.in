@@ -1,4 +1,4 @@
 pip-tools
-autopep8
 ipython
 ipykernel
+black

@@ -14,8 +14,12 @@ autopep8==1.6.0
     # via -r requirements-dev.in
 backcall==0.2.0
     # via ipython
+black==22.3.0
+    # via -r requirements-dev.in
 click==8.0.4
-    # via pip-tools
+    # via
+    #   black
+    #   pip-tools
 debugpy==1.6.0
     # via ipykernel
 decorator==5.1.1
@@ -40,12 +44,16 @@ matplotlib-inline==0.1.3
     # via
     #   ipykernel
     #   ipython
+mypy-extensions==0.4.3
+    # via black
 nest-asyncio==1.5.4
     # via
     #   ipykernel
     #   jupyter-client
 parso==0.8.3
     # via jedi
+pathspec==0.9.0
+    # via black
 pep517==0.12.0
     # via pip-tools
 pexpect==4.8.0
@@ -54,6 +62,8 @@ pickleshare==0.7.5
     # via ipython
 pip-tools==6.5.1
     # via -r requirements-dev.in
+platformdirs==2.5.1
+    # via black
 prompt-toolkit==3.0.28
     # via ipython
 psutil==5.9.0
@@ -79,7 +89,9 @@ stack-data==0.2.0
 toml==0.10.2
     # via autopep8
 tomli==2.0.1
-    # via pep517
+    # via
+    #   black
+    #   pep517
 tornado==6.1
     # via
     #   ipykernel
@@ -91,6 +103,8 @@ traitlets==5.1.1
     #   jupyter-client
     #   jupyter-core
     #   matplotlib-inline
+typing-extensions==4.1.1
+    # via black
 wcwidth==0.2.5
     # via prompt-toolkit
 wheel==0.37.1
