@@ -26,15 +26,18 @@ SECRET_KEY = "django-insecure-uucy+@+8zv&)v&#r&l7)=@3&s%#wn4luos0i&x4@$o7d2*t@3t
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+DEPLOYMENT_HOST_NAME = os.environ.get("DEPLOYMENT_HOST_NAME", "localhost")
+
 ALLOWED_HOSTS = [
     "localhost",
     "0.0.0.0",
-    "0849-122-179-227-60.ngrok.io",
+    DEPLOYMENT_HOST_NAME,
 ]
 
-CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in [ALLOWED_HOSTS[-1]]]
+WEBSITE_HOST = f"https://{DEPLOYMENT_HOST_NAME}"
 
-WEBSITE_HOST = CSRF_TRUSTED_ORIGINS[-1]
+CSRF_TRUSTED_ORIGINS = [WEBSITE_HOST]
+
 # Application definition
 
 INSTALLED_APPS = [
