@@ -6,3 +6,4 @@ django-extensions
 pyjwt
 cryptography
 python-json-logger
+gunicorn
