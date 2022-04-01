@@ -53,7 +53,7 @@ class AuthCallback(View):
             "client_id": settings.GITHUB_CREDS["client_id"],
             "client_secret": settings.GITHUB_CREDS["client_secret"],
             "code": code,
-            "redirect_uri": "http://a105-122-179-227-60.ngrok.io/app/callback/",
+            "redirect_uri": request.build_absolute_uri(),
             "state": uuid.uuid4().__str__(),
         }
         resp = requests.post(

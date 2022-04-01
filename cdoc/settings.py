@@ -207,7 +207,7 @@ DATABASES = dict()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL:
-    DATABASES["default"] = dj_database_url.config(DATABASE_URL)
+    DATABASES["default"] = dj_database_url.config()
 else:
     DATABASES["default"] = {
         "ENGINE": "django.db.backends.sqlite3",
