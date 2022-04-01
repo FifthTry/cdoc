@@ -2,3 +2,5 @@ pip-tools
 ipython
 ipykernel
 black
+mock
+requests-mock

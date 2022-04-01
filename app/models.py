@@ -258,11 +258,10 @@ class MonitoredPullRequest(models.Model):
         STALE_APPROVAL = "STALE_APPROVAL", "Stale Approval"
         APPROVED = "APPROVED", "Approved"
 
-    code_pull_request = models.ForeignKey(
+    code_pull_request = models.OneToOneField(
         GithubPullRequest,
         on_delete=models.CASCADE,
         related_name="monitored_code",
-        unique=True,
     )
     documentation_pull_request = models.ForeignKey(
         GithubPullRequest,

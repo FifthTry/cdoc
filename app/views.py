@@ -60,6 +60,7 @@ class AuthCallback(View):
             "https://github.com/login/oauth/access_token", json=payload
         )
         if resp.ok:
+            print(resp.text)
             response = parse_qs(resp.text)
             if "error" in response:
                 logger.error(response)
