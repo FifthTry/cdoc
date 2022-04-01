@@ -214,7 +214,7 @@ else:
         "NAME": BASE_DIR / "db.sqlite3",
     }
 
-APP_AUTH_KEY = os.getenv("APP_AUTH_KEY")
+APP_AUTH_KEY = os.environ.get("APP_AUTH_KEY")
 try:
     from .local_settings import *  # noqa
 except ModuleNotFoundError:
