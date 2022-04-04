@@ -203,6 +203,7 @@ LOGGING = {
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+
 DATABASES = dict()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -218,4 +219,10 @@ APP_AUTH_KEY = os.environ.get("APP_AUTH_KEY")
 try:
     from .local_settings import *  # noqa
 except ModuleNotFoundError:
-    pass
+    # Local settings not found. Expect the default settings to be set by env variables
+    GITHUB_CREDS = {
+        # GITHUB APP
+        "client_id": os.environ["GITHUB_CLIENT_ID"],
+        "client_secret": os.environ["GITHUB_CLIENT_SECRET"],
+        "app_id": os.environ["GITHUB_APP_ID"],
+    }
