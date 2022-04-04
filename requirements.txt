@@ -56,6 +56,8 @@ sqlparse==0.4.2
     # via django
 urllib3==1.26.9
     # via requests
+whitenoise==6.0.0
+    # via -r requirements.in
 wrapt==1.14.0
     # via deprecated
 

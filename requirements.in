@@ -9,3 +9,4 @@ python-json-logger
 gunicorn
 dj-database-url
 psycopg2
+whitenoise
