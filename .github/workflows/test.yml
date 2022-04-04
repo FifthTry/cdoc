@@ -20,3 +20,7 @@ jobs:
       - name: Test with pytest
         run: |
           python manage.py test
+        env:
+          CDOC_GITHUB_CLIENT_ID: CDOC_GITHUB_CLIENT_ID
+          CDOC_GITHUB_CLIENT_SECRET: CDOC_GITHUB_CLIENT_SECRET
+          CDOC_GITHUB_APP_ID: CDOC_GITHUB_APP_ID
