@@ -60,7 +60,6 @@ class AuthCallback(View):
             "https://github.com/login/oauth/access_token", json=payload
         )
         if resp.ok:
-            print(resp.text)
             response = parse_qs(resp.text)
             if "error" in response:
                 logger.error(response)
@@ -154,13 +153,11 @@ class WebhookCallback(View):
             extra={"data": {"headers": headers, "payload": payload}},
         )
         # logger.info(f"")
-        # print(payload)
         # header is "installation_repositories" -> Updated the repositories installed for the installation
         if headers.get("X-Github-Event", None) == "pull_request":
-            # print(payload)
+            # (payload)
             pass
         elif headers.get("X-Github-Event", None) == "check_suite":
-            # print(payload)
             if payload.get("action") == "requested":
                 installation_id = payload.get("installation", {}).get("id", None)
                 installation_instance = app_models.GithubAppInstallation.objects.get(
@@ -230,7 +227,6 @@ class WebhookCallback(View):
 @method_decorator(csrf_exempt, name="dispatch")
 class OauthCallback(View):
     def get(self, request):
-        print(request)
         assert False, request
 
 
@@ -253,7 +249,6 @@ class PRView(FormView):
     def get_form(self, form_class=None):
         if form_class is None:
             form_class = self.get_form_class()
-        # print(self.get_instance())
         return form_class(instance=self.get_instance(), **self.get_form_kwargs())
 
     def form_valid(self, form):
