@@ -49,11 +49,12 @@ class AuthCallback(View):
         # Example, User A can be a part of 2 installations. So, the user will see them as two different projects
         # in the UI.
         # The user's account using the `code` recieved in the step above
+        # logger.info(request.get_host())
         payload = {
             "client_id": settings.GITHUB_CREDS["client_id"],
             "client_secret": settings.GITHUB_CREDS["client_secret"],
             "code": code,
-            "redirect_uri": request.build_absolute_uri(),
+            "redirect_uri": f"https://{request.get_host()}/app/callback/",
             "state": uuid.uuid4().__str__(),
         }
         resp = requests.post(
