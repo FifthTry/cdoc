@@ -222,7 +222,7 @@ except ModuleNotFoundError:
     # Local settings not found. Expect the default settings to be set by env variables
     GITHUB_CREDS = {
         # GITHUB APP
-        "client_id": os.environ["GITHUB_CLIENT_ID"],
-        "client_secret": os.environ["GITHUB_CLIENT_SECRET"],
-        "app_id": os.environ["GITHUB_APP_ID"],
+        "client_id": os.environ["CDOC_GITHUB_CLIENT_ID"],
+        "client_secret": os.environ["CDOC_GITHUB_CLIENT_SECRET"],
+        "app_id": os.environ["CDOC_GITHUB_APP_ID"],
     }
