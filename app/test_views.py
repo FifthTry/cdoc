@@ -6,6 +6,14 @@ from . import views as app_views
 from . import models as app_models
 import mock
 import requests_mock
+import lib
+
+
+def mocked_f2(**kargs):
+    return {
+        "Authorization": "token 1234567890",
+        "Accept": "application/vnd.github.machine-",
+    }
 
 
 class AuthCallbackTest(TestCase):
@@ -27,6 +35,10 @@ class AuthCallbackTest(TestCase):
 
     # @mock.patch("requests.post", side_effect=mocked_requests_post)
 
+    @mock.patch(
+        "lib.GithubInstallationManager.get_jwt_headers",
+        mocked_f2,
+    )
     @requests_mock.Mocker()
     def test_get_future_assignments_with_multi_assignments(self, mocker):
         """
@@ -131,4 +143,3 @@ class AuthCallbackTest(TestCase):
         self.assertEqual(app_models.GithubUser.objects.count(), 1)
         self.assertEqual(app_models.GithubRepository.objects.count(), 0)
         self.assertEqual(app_models.GithubAppInstallation.objects.count(), 1)
-
