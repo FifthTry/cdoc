@@ -26,9 +26,7 @@ SECRET_KEY = "django-insecure-uucy+@+8zv&)v&#r&l7)=@3&s%#wn4luos0i&x4@$o7d2*t@3t
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-DEPLOYMENT_HOST_NAME = os.environ.get(
-    "DEPLOYMENT_HOST_NAME", "455c-122-179-227-60.ngrok.io"
-)
+DEPLOYMENT_HOST_NAME = os.environ.get("DEPLOYMENT_HOST_NAME", "localhost")
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -233,3 +231,19 @@ except ModuleNotFoundError:
         "client_secret": os.environ["CDOC_GITHUB_CLIENT_SECRET"],
         "app_id": os.environ["CDOC_GITHUB_APP_ID"],
     }
+
+    if "CDOC_SENTRY_DSN" in os.environ:
+        import sentry_sdk  # noqa
+        from sentry_sdk.integrations.django import DjangoIntegration  # noqa
+
+        sentry_sdk.init(
+            dsn=os.environ["CDOC_SENTRY_DSN"],
+            integrations=[DjangoIntegration()],
+            # Set traces_sample_rate to 1.0 to capture 100%
+            # of transactions for performance monitoring.
+            # We recommend adjusting this value in production.
+            traces_sample_rate=1.0,
+            # If you wish to associate users to errors (assuming you are using
+            # django.contrib.auth) you may enable sending PII data.
+            send_default_pii=True,
+        )

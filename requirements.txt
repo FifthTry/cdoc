@@ -9,7 +9,9 @@ asgiref==3.5.0
 backports-zoneinfo==0.2.1
     # via django
 certifi==2021.10.8
-    # via requests
+    # via
+    #   requests
+    #   sentry-sdk
 cffi==1.15.0
     # via
     #   cryptography
@@ -52,10 +54,14 @@ requests==2.27.1
     # via
     #   -r requirements.in
     #   pygithub
+sentry-sdk==1.5.8
+    # via -r requirements.in
 sqlparse==0.4.2
     # via django
 urllib3==1.26.9
-    # via requests
+    # via
+    #   requests
+    #   sentry-sdk
 whitenoise==6.0.0
     # via -r requirements.in
 wrapt==1.14.0

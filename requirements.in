@@ -10,3 +10,4 @@ gunicorn
 dj-database-url
 psycopg2
 whitenoise
+sentry-sdk
