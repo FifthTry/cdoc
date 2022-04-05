@@ -167,11 +167,11 @@ class WebhookCallback(View):
             app_models.GithubPullRequest.objects.update_or_create(
                 pr_id=pull_request_data["id"],
                 pr_number=pull_request_data["number"],
-                pr_head_commit_sha=pull_request_data["head"]["sha"],
                 repository=app_models.GithubRepository.objects.get(
                     repo_full_name=payload["repository"]["full_name"]
                 ),
                 defaults={
+                    "pr_head_commit_sha": pull_request_data["head"]["sha"],
                     "pr_title": pull_request_data["title"],
                     "pr_body": pull_request_data["body"],
                     "pr_state": pull_request_data["state"],
@@ -201,7 +201,7 @@ class WebhookCallback(View):
                 head_commit_details = payload["check_suite"]["head_commit"]
                 head_commit_data = {
                     "pr_head_commit_sha": head_commit_details["id"],
-                    "pr_head_tree_sha": head_commit_details["tree_id"],
+                    # "pr_head_tree_sha": head_commit_details["tree_id"],
                     "pr_head_commit_message": head_commit_details["message"],
                     "pr_head_modified_on": datetime.datetime.strptime(
                         head_commit_details["timestamp"], "%Y-%m-%dT%H:%M:%S%z"
