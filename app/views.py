@@ -89,14 +89,7 @@ class AuthCallback(View):
                 account_id = account_details["id"]
                 account_type = account_details["type"]
                 avatar_url = account_details["avatar_url"]
-                installation_instance = app_models.GithubAppInstallation(
-                    installation_id=installation_id,
-                    state=app_models.GithubAppInstallation.InstallationState.INSTALLED,
-                    account_name=account_name,
-                    account_id=account_id,
-                    account_type=account_type,
-                    avatar_url=avatar_url,
-                )
+
                 access_group = auth_models.Group.objects.get(name="github_user")
                 with transaction.atomic():
                     (auth_user_instance, _) = get_user_model().objects.get_or_create(
@@ -116,7 +109,20 @@ class AuthCallback(View):
                             "avatar_url": user_instance.avatar_url,
                         },
                     )
-                    installation_instance.creator = github_user
+                    (
+                        installation_instance,
+                        _,
+                    ) = app_models.GithubAppInstallation.objects.update_or_create(
+                        installation_id=installation_id,
+                        account_name=account_name,
+                        account_id=account_id,
+                        defaults={
+                            "state": app_models.GithubAppInstallation.InstallationState.INSTALLED,
+                            "account_type": account_type,
+                            "avatar_url": avatar_url,
+                            "creator": github_user,
+                        },
+                    )
                     app_models.GithubUserAccessToken.objects.create(
                         token=access_token,
                         expires_at=access_token_expires_at,
@@ -128,7 +134,7 @@ class AuthCallback(View):
                         github_user=github_user,
                     )
                     login(request, auth_user_instance)
-                    installation_instance.save()
+                    # installation_instance.save()
                     installation_instance.update_token()
         else:
             logger.error(resp.text)
