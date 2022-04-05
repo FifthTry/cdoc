@@ -128,7 +128,16 @@ def synchronize_github_check(sender, instance, **kwargs):
         instance.ref_pull_request.pull_request_status
         == app_models.MonitoredPullRequest.PullRequestStatus.APPROVED
     ):
-        data.update({"conclusion": "success"})
+        data.update(
+            {
+                "conclusion": "success",
+                "output": {
+                    "title": "",
+                    "summary": "",
+                    "text": "",
+                },
+            }
+        )
     elif instance.ref_pull_request.pull_request_status in [
         app_models.MonitoredPullRequest.PullRequestStatus.APPROVAL_PENDING,
         app_models.MonitoredPullRequest.PullRequestStatus.STALE_APPROVAL,
