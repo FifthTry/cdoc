@@ -153,12 +153,12 @@ class WebhookCallback(View):
             "Recieved Github webhook",
             extra={"data": {"headers": headers, "payload": payload}},
         )
-        # logger.info(f"")
+        EVENT_TYPE = headers.get("X-Github-Event", None)
         # header is "installation_repositories" -> Updated the repositories installed for the installation
-        if headers.get("X-Github-Event", None) == "pull_request":
+        if EVENT_TYPE == "pull_request":
             # (payload)
             pass
-        elif headers.get("X-Github-Event", None) == "check_suite":
+        elif EVENT_TYPE == "check_suite":
             if payload.get("action") == "requested":
                 installation_id = payload.get("installation", {}).get("id", None)
                 installation_instance = app_models.GithubAppInstallation.objects.get(
