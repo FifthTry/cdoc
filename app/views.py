@@ -130,8 +130,6 @@ class AuthCallback(View):
                     login(request, auth_user_instance)
                     installation_instance.save()
                     installation_instance.update_token()
-                # Get all repositories for the account and update it in the DB
-                logger.info(response)
         else:
             logger.error(resp.text)
         return HttpResponseRedirect("/admin/")
