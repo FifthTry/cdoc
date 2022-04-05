@@ -7,6 +7,7 @@ from urllib.parse import parse_qs
 
 import github
 import lib
+from . import lib as app_lib
 import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
@@ -154,17 +155,34 @@ class WebhookCallback(View):
             )
         )
         installation_instance = get_installation_instance(payload)
-        github_installation_mgr_instance = lib.GithubInstallationManager(
+        github_data_manager_instance = app_lib.GithubDataManager(
             installation_id=installation_instance.installation_id,
             user_token=installation_instance.creator.get_active_access_token(),
         )
         if EVENT_TYPE == "pull_request":
-            if payload["action"] in ["requested", "opened", "edited", "synchronize"]:
-                pass
-            pass
+            pull_request_data = payload["pull_request"]
+            app_models.GithubPullRequest.objects.update_or_create(
+                pr_id=pull_request_data["id"],
+                pr_number=pull_request_data["number"],
+                pr_head_commit_sha=pull_request_data["head"]["sha"],
+                repository=app_models.GithubRepository.objects.get(
+                    repo_full_name=payload["repository"]["full_name"]
+                ),
+                defaults={
+                    "pr_title": pull_request_data["title"],
+                    "pr_body": pull_request_data["body"],
+                    "pr_state": pull_request_data["state"],
+                    "pr_created_at": pull_request_data["created_at"],
+                    "pr_updated_at": pull_request_data["updated_at"],
+                    "pr_merged_at": pull_request_data["merged_at"],
+                    "pr_closed_at": pull_request_data["closed_at"],
+                    "pr_merged": pull_request_data["merged"],
+                    "pr_owner_username": pull_request_data["user"]["login"],
+                },
+            )
         elif EVENT_TYPE == "installation_repositories":
             # Repositories changed. Sync again.
-            pass
+            github_data_manager_instance.sync_repositories()
         elif EVENT_TYPE == "check_suite":
             if payload.get("action") == "requested":
 
@@ -204,18 +222,12 @@ class WebhookCallback(View):
                             (
                                 pr_instance,
                                 is_new,
-                            ) = app_models.GithubPullRequest.objects.get_or_create(
+                            ) = app_models.GithubPullRequest.objects.update_or_create(
                                 pr_id=pr_id,
                                 pr_number=pr_number,
                                 repository=github_repo,
                                 defaults={**head_commit_data},
                             )
-                            if is_new is False:
-                                for key, value in head_commit_data.items():
-                                    setattr(pr_instance, key, value)
-                                pr_instance.save()
-                                # The PR already existed, the commit needs to be updated
-                            # pr_instance.evaluate_check()
                             if github_repo.code_repos.exists():
                                 (
                                     monitored_pr_instance,

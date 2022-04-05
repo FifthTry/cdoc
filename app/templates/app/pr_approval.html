@@ -1,22 +1,17 @@
+{% extends 'app/pr_approval_base.html' %}
+
+{% block title %} Home {% endblock %}
+
+{% block form_data %}
+
 <form method="POST">
     {% csrf_token %}
     {% if form.instance.pull_request_status == "NOT_CONNECTED" %}
     {{form.as_p}}
     <input type="submit" value="Attach PR" />
     {% else %}
-    {% if form.instance.pull_request_status == "APPROVED" %}
-    APPROVED
-    {% else %}
-    {% if form.instance.pull_request_status == "APPROVAL_PENDING" %}
-    APPROVAL_PENDING
-    {% elif form.instance.pull_request_status == "STALE_CODE" %}
-    STALE_CODE
-    {% elif form.instance.pull_request_status == "STALE_APPROVAL" %}
-    STALE_APPROVAL
-    APPROVED
-    {% endif %}
     <input type="hidden" value="APPROVED" name="approve_pull_request" />
     <input type="submit" value="Approve" />
     {% endif %}
-    {% endif %}
 </form>
+{% endblock %}
