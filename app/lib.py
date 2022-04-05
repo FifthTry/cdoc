@@ -19,14 +19,13 @@ class GithubDataManager:
         )
 
     def sync_repositories(self):
-
         repo_generator = self.github_manager_instance.get_repositories()
         for repo in repo_generator:
             app_models.GithubRepository.objects.get_or_create(
                 repo_id=repo["id"],
                 repo_name=repo["name"],
                 repo_full_name=repo["full_name"],
-                owner=installation_instance,
+                owner=self.installation_instance,
             )
 
     # a function called sync_open_prs which takes input the GithubRepository and syncs its open pull requests
@@ -44,18 +43,19 @@ class GithubDataManager:
                 "pr_merged_at": pr.merged_at,
                 "pr_closed_at": pr.closed_at,
                 "pr_merged": pr.merged,
+                "pr_owner_username": pr.user.login,
             }
             print(extra_data)
-            (instance, is_new) = app_models.GithubPullRequest.objects.get_or_create(
+            (instance, is_new) = app_models.GithubPullRequest.objects.update_or_create(
                 pr_id=pr.id,
                 pr_number=pr.number,
                 repository=repo,
                 defaults={**extra_data},
             )
-            if is_new is False:
-                for key, value in extra_data.items():
-                    setattr(instance, key, value)
-                instance.save()
+            # if is_new is False:
+            #     for key, value in extra_data.items():
+            #         setattr(instance, key, value)
+            #     instance.save()
         # headers = lib.GithubInstallationManager.get_jwt_headers()
         # headers = {
         #     "Accept": "application/vnd.github.v3+json",

@@ -211,12 +211,17 @@ class GithubPullRequest(models.Model):
     pr_merged_at = models.DateTimeField(null=True)
     pr_closed_at = models.DateTimeField(null=True)
     pr_merged = models.BooleanField(default=False)
-
+    pr_owner_username = models.CharField(max_length=100)
     updated_on = models.DateTimeField(auto_now=True)
     repository = models.ForeignKey(GithubRepository, on_delete=models.PROTECT)
 
     def __str__(self) -> str:
         return f"{self.repository.repo_full_name}/{self.pr_number} @ {self.pr_head_commit_sha[:7]}"
+
+    def get_url(self):
+        return (
+            f"https://github.com/{self.repository.repo_full_name}/pull/{self.pr_number}"
+        )
 
 
 class MonitoredPullRequest(models.Model):
@@ -270,6 +275,10 @@ class MonitoredPullRequest(models.Model):
                 MonitoredPullRequest.PullRequestStatus.NOT_CONNECTED
             )
         super().save(*args, **kwargs)
+
+    def get_display_name(self):
+        return f"{self.code_pull_request.repository.repo_full_name}/#{self.code_pull_request.pr_number}: {self.code_pull_request.pr_title}"
+        pass
 
 
 class GithubCheckRun(models.Model):
