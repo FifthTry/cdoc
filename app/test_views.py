@@ -127,20 +127,20 @@ class AuthCallbackTest(TestCase):
         self.assertEqual(app_models.GithubAppInstallation.objects.count(), 1)
 
 
-class TestGithubWebhook(TestCase):
-    @requests_mock.Mocker()
-    def test_repo_sync(self, mocker):
-        request = RequestFactory().post(
-            "/app/webhook-callback/",
-            data={"asd": 123},
-            content_type="application/json",
-            **{"HTTP_X-Github-Event": "pull_request"},
-        )
-        middleware = SessionMiddleware(request)
-        middleware.process_request(request)
-        request.session.save()
+# class TestGithubWebhook(TestCase):
+#     @requests_mock.Mocker()
+#     def test_repo_sync(self, mocker):
+#         request = RequestFactory().post(
+#             "/app/webhook-callback/",
+#             data={"asd": 123},
+#             content_type="application/json",
+#             **{"HTTP_X-Github-Event": "pull_request"},
+#         )
+#         middleware = SessionMiddleware(request)
+#         middleware.process_request(request)
+#         request.session.save()
 
-        view = app_views.WebhookCallback()
-        view.setup(request)
-        context = view.post(request)
-        # print(context.body.decode("utf-8"))
+#         view = app_views.WebhookCallback()
+#         view.setup(request)
+#         context = view.post(request)
+# print(context.body.decode("utf-8"))
