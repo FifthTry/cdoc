@@ -26,7 +26,9 @@ SECRET_KEY = "django-insecure-uucy+@+8zv&)v&#r&l7)=@3&s%#wn4luos0i&x4@$o7d2*t@3t
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-DEPLOYMENT_HOST_NAME = os.environ.get("DEPLOYMENT_HOST_NAME", "localhost")
+DEPLOYMENT_HOST_NAME = os.environ.get(
+    "DEPLOYMENT_HOST_NAME", "455c-122-179-227-60.ngrok.io"
+)
 
 ALLOWED_HOSTS = [
     "localhost",

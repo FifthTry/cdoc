@@ -153,13 +153,13 @@ class WebhookCallback(View):
                 installation_id=data["installation"]["id"]
             )
         )
+        installation_instance = get_installation_instance(payload)
+        github_installation_mgr_instance = lib.GithubInstallationManager(
+            installation_id=installation_instance.installation_id,
+            user_token=installation_instance.creator.get_active_access_token(),
+        )
         if EVENT_TYPE == "pull_request":
             if payload["action"] in ["requested", "opened", "edited", "synchronize"]:
-                installation_instance = get_installation_instance(payload)
-                github_installation_mgr_instance = lib.GithubInstallationManager(
-                    installation_id=installation_instance.installation_id,
-                    user_token=installation_instance.creator.get_active_access_token(),
-                )
                 
             pass
         elif EVENT_TYPE == "installation_repositories":

@@ -89,7 +89,7 @@ def synchronize_github_check(sender, instance, **kwargs):
     check_run = github_repo.get_check_run(instance.run_id)
 
     data = {
-        "name": "continuous documentation",
+        "name": "continuous documentation test",
         "head_sha": instance.run_sha,
         "external_id": instance.unique_id.__str__(),
         "status": "completed",
