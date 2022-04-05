@@ -197,10 +197,12 @@ LOGGING = {
         "app": {
             "handlers": ["console_with_extra"],
             "level": "DEBUG",
+            "propagate": True,
         },
         "lib": {
             "handlers": ["console_with_extra"],
             "level": "DEBUG",
+            "propagate": True,
         },
     },
 }
@@ -230,6 +232,7 @@ except ModuleNotFoundError:
         "client_id": os.environ["CDOC_GITHUB_CLIENT_ID"],
         "client_secret": os.environ["CDOC_GITHUB_CLIENT_SECRET"],
         "app_id": os.environ["CDOC_GITHUB_APP_ID"],
+        "app_name": "Continuous Documentation(dev)"
     }
 
     if "CDOC_SENTRY_DSN" in os.environ:

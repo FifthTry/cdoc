@@ -201,15 +201,15 @@ class GithubPullRequest(models.Model):
     pr_id = models.BigIntegerField()
     pr_number = models.BigIntegerField()
     pr_head_commit_sha = models.CharField(max_length=40)
-    pr_head_modified_on = models.DateTimeField(null=True)
+    pr_head_modified_on = models.DateTimeField(null=True, blank=True)
     pr_head_commit_message = models.CharField(max_length=200)
     pr_title = models.CharField(max_length=200)
     pr_body = models.TextField(default="", blank=True, null=True)
     pr_state = models.CharField(max_length=20)
     pr_created_at = models.DateTimeField()
     pr_updated_at = models.DateTimeField()
-    pr_merged_at = models.DateTimeField(null=True)
-    pr_closed_at = models.DateTimeField(null=True)
+    pr_merged_at = models.DateTimeField(null=True, blank=True)
+    pr_closed_at = models.DateTimeField(null=True, blank=True)
     pr_merged = models.BooleanField(default=False)
     pr_owner_username = models.CharField(max_length=100)
     updated_on = models.DateTimeField(auto_now=True)
@@ -299,6 +299,9 @@ class GithubCheckRun(models.Model):
             "run_sha",
             "ref_pull_request",
         )
+
+    def __str__(self):
+        return f"{self.ref_pull_request.code_pull_request.repository.repo_full_name}/{self.ref_pull_request.code_pull_request.pr_number} @ {self.run_sha[:7]} [{self.force_approve}]"
 
     def save(self, *args, **kwargs):
 
