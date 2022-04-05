@@ -116,7 +116,6 @@ class AuthCallback(View):
                         },
                     )
                     installation_instance.creator = github_user
-                    login(request, auth_user_instance)
                     app_models.GithubUserAccessToken.objects.create(
                         token=access_token,
                         expires_at=access_token_expires_at,
@@ -127,17 +126,11 @@ class AuthCallback(View):
                         expires_at=refresh_token_expires_at,
                         github_user=github_user,
                     )
+                    login(request, auth_user_instance)
                     installation_instance.save()
                     installation_instance.update_token()
                 # Get all repositories for the account and update it in the DB
-                repo_generator = github_installation_manager.get_repositories()
-                for repo in repo_generator:
-                    app_models.GithubRepository.objects.get_or_create(
-                        repo_id=repo["id"],
-                        repo_name=repo["name"],
-                        repo_full_name=repo["full_name"],
-                        owner=installation_instance,
-                    )
+                github_installation_manager.sync_repositories()
                 logger.info(response)
         else:
             logger.error(resp.text)
@@ -155,15 +148,26 @@ class WebhookCallback(View):
         )
         EVENT_TYPE = headers.get("X-Github-Event", None)
         # header is "installation_repositories" -> Updated the repositories installed for the installation
+        get_installation_instance = (
+            lambda data: app_models.GithubAppInstallation.objects.get(
+                installation_id=data["installation"]["id"]
+            )
+        )
         if EVENT_TYPE == "pull_request":
-            # (payload)
+            if payload["action"] in ["requested", "opened", "edited", "synchronize"]:
+                installation_instance = get_installation_instance(payload)
+                github_installation_mgr_instance = lib.GithubInstallationManager(
+                    installation_id=installation_instance.installation_id,
+                    user_token=installation_instance.creator.get_active_access_token(),
+                )
+                
+            pass
+        elif EVENT_TYPE == "installation_repositories":
+            # Repositories changed. Sync again.
             pass
         elif EVENT_TYPE == "check_suite":
             if payload.get("action") == "requested":
-                installation_id = payload.get("installation", {}).get("id", None)
-                installation_instance = app_models.GithubAppInstallation.objects.get(
-                    installation_id=installation_id
-                )
+
                 repository_data = payload.get("repository", {})
                 (github_repo, _) = app_models.GithubRepository.objects.get_or_create(
                     repo_id=repository_data["id"],

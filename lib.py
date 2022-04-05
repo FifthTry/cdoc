@@ -11,11 +11,17 @@ import jwt
 import requests
 from cryptography.hazmat.backends import default_backend
 from django.conf import settings
+from app import models as app_models
 
 logger = logging.getLogger(__name__)
 
 
 class GithubInstallationManager:
+    """
+    This library contains the helper methods required while accessing github data.
+    pyGithub is available but the installation access seems to be broken. So this
+    util is a workaround"""
+
     def __init__(self, installation_id: int, user_token: str):
         self.installation_id = installation_id
         self.github_token = user_token

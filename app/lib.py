@@ -1,6 +1,87 @@
+from . import models as app_models
+import lib
+import github
 
 
-class GithubManager:
+class GithubDataManager:
+    def __init__(self, installation_id: int, user_token: str):
+        self.installation_id = installation_id
+        self.github_token = user_token
+        self.installation_instance = app_models.GithubAppInstallation.objects.get(
+            installation_id=self.installation_id
+        )
 
-    def __init__(self) -> None:
-        pass
+        self.github_instance = github.Github(
+            self.github_token,
+        )
+        self.github_manager_instance = lib.GithubInstallationManager(
+            self.installation_id, self.github_token
+        )
+
+    def sync_repositories(self):
+
+        repo_generator = self.github_manager_instance.get_repositories()
+        for repo in repo_generator:
+            app_models.GithubRepository.objects.get_or_create(
+                repo_id=repo["id"],
+                repo_name=repo["name"],
+                repo_full_name=repo["full_name"],
+                owner=installation_instance,
+            )
+
+    # a function called sync_open_prs which takes input the GithubRepository and syncs its open pull requests
+    def sync_open_prs(self, repo: app_models.GithubRepository):
+        for pr in self.github_instance.get_repo(repo.repo_full_name).get_pulls("open"):
+            extra_data = {
+                "pr_head_commit_sha": pr.head.sha,
+                "pr_head_modified_on": pr.head.last_modified,
+                "pr_head_commit_message": pr.head.label,
+                "pr_title": pr.title,
+                "pr_body": pr.body,
+                "pr_state": pr.state,
+                "pr_created_at": pr.created_at,
+                "pr_updated_at": pr.updated_at,
+                "pr_merged_at": pr.merged_at,
+                "pr_closed_at": pr.closed_at,
+                "pr_merged": pr.merged,
+            }
+            print(extra_data)
+            (instance, is_new) = app_models.GithubPullRequest.objects.get_or_create(
+                pr_id=pr.id,
+                pr_number=pr.number,
+                repository=repo,
+                defaults={**extra_data},
+            )
+            if is_new is False:
+                for key, value in extra_data.items():
+                    setattr(instance, key, value)
+                instance.save()
+        # headers = lib.GithubInstallationManager.get_jwt_headers()
+        # headers = {
+        #     "Accept": "application/vnd.github.v3+json",
+        #     "Authorization": f"Token {self.github_token}",
+        # }
+        # response = requests.get(
+        #     f"https://api.github.com/repos/{repo.repo_full_name}/pulls?state=open",
+        #     headers=headers,
+        # )
+        # if response.ok:
+        #     response_data = response.json()
+        #     logger.info(response.content.decode())
+        #     for pr in response_data:
+        #         app_models.GithubPullRequest.objects.get_or_create(
+        #             pr_id=pr["id"],
+        #             pr_number=pr["number"],
+        #             pr_title=pr["title"],
+        #             pr_body=pr["body"],
+        #             pr_state=pr["state"],
+        #             pr_created_at=pr["created_at"],
+        #             pr_updated_at=pr["updated_at"],
+        #             pr_merged_at=pr["merged_at"],
+        #             pr_closed_at=pr["closed_at"],
+        #             pr_merged=pr["merged"],
+        #             pr_merge_commit_sha=pr["merge_commit_sha"],
+        #             pr_assignee=pr["assignee"],
+        #             pr_user=pr["user"],
+        #             pr_repo=repo,
+        #         )

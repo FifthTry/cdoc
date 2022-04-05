@@ -17,24 +17,6 @@ def mocked_f2(**kargs):
 
 
 class AuthCallbackTest(TestCase):
-    # def setUp(self):
-    #     self.user = Mock(id=123, email="foo@bar.com")
-
-    #     patcher = patch("utils.requests.get")
-    #     self.mock_response = Mock(status_code=200)
-    #     self.mock_response.raise_for_status.return_value = None
-    #     self.mock_response.json.return_value = {"UserId": self.user.id}
-    #     self.mock_request = patcher.start()
-    #     self.mock_request.return_value = self.mock_response
-
-    # def tearDown(self):
-    #     self.mock_request.stop()
-
-    # def test_environment_set_in_context(self):
-    #     self.assertIn("environment", context)
-
-    # @mock.patch("requests.post", side_effect=mocked_requests_post)
-
     @mock.patch(
         "lib.GithubInstallationManager.get_jwt_headers",
         mocked_f2,
@@ -143,3 +125,22 @@ class AuthCallbackTest(TestCase):
         self.assertEqual(app_models.GithubUser.objects.count(), 1)
         self.assertEqual(app_models.GithubRepository.objects.count(), 0)
         self.assertEqual(app_models.GithubAppInstallation.objects.count(), 1)
+
+
+class TestGithubWebhook(TestCase):
+    @requests_mock.Mocker()
+    def test_repo_sync(self, mocker):
+        request = RequestFactory().post(
+            "/app/webhook-callback/",
+            data={"asd": 123},
+            content_type="application/json",
+            **{"HTTP_X-Github-Event": "pull_request"},
+        )
+        middleware = SessionMiddleware(request)
+        middleware.process_request(request)
+        request.session.save()
+
+        view = app_views.WebhookCallback()
+        view.setup(request)
+        context = view.post(request)
+        # print(context.body.decode("utf-8"))
