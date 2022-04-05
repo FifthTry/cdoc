@@ -160,7 +160,7 @@ class WebhookCallback(View):
         )
         if EVENT_TYPE == "pull_request":
             if payload["action"] in ["requested", "opened", "edited", "synchronize"]:
-                
+                pass
             pass
         elif EVENT_TYPE == "installation_repositories":
             # Repositories changed. Sync again.
