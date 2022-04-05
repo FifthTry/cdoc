@@ -220,11 +220,11 @@ else:
         "NAME": BASE_DIR / "db.sqlite3",
     }
 
-APP_AUTH_KEY = os.environ.get("APP_AUTH_KEY")
 try:
     from .local_settings import *  # noqa
 except ModuleNotFoundError:
     # Local settings not found. Expect the default settings to be set by env variables
+    APP_AUTH_KEY = bytes(os.environ["APP_AUTH_KEY"], "utf-8")
     GITHUB_CREDS = {
         # GITHUB APP
         "client_id": os.environ["CDOC_GITHUB_CLIENT_ID"],
