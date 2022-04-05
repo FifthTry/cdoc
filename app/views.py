@@ -100,12 +100,12 @@ class AuthCallback(View):
                         },
                     )
                     auth_user_instance.groups.add(access_group)
-                    (github_user, _) = app_models.GithubUser.objects.get_or_create(
+                    (github_user, _) = app_models.GithubUser.objects.update_or_create(
                         account_id=user_instance.id,
-                        account_name=user_instance.login,
-                        account_type=user_instance.type,
                         user=auth_user_instance,
                         defaults={
+                            "account_type": user_instance.type,
+                            "account_name": user_instance.login,
                             "avatar_url": user_instance.avatar_url,
                         },
                     )
@@ -124,9 +124,9 @@ class AuthCallback(View):
                         _,
                     ) = app_models.GithubAppInstallation.objects.update_or_create(
                         installation_id=installation_id,
-                        account_name=account_name,
                         account_id=account_id,
                         defaults={
+                            "account_name": account_name,
                             "state": app_models.GithubAppInstallation.InstallationState.INSTALLED,
                             "account_type": account_type,
                             "avatar_url": avatar_url,
