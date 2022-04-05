@@ -109,6 +109,16 @@ class AuthCallback(View):
                             "avatar_url": user_instance.avatar_url,
                         },
                     )
+                    app_models.GithubUserAccessToken.objects.create(
+                        token=access_token,
+                        expires_at=access_token_expires_at,
+                        github_user=github_user,
+                    )
+                    app_models.GithubUserRefreshToken.objects.create(
+                        token=refresh_token,
+                        expires_at=refresh_token_expires_at,
+                        github_user=github_user,
+                    )
                     (
                         installation_instance,
                         _,
@@ -122,16 +132,6 @@ class AuthCallback(View):
                             "avatar_url": avatar_url,
                             "creator": github_user,
                         },
-                    )
-                    app_models.GithubUserAccessToken.objects.create(
-                        token=access_token,
-                        expires_at=access_token_expires_at,
-                        github_user=github_user,
-                    )
-                    app_models.GithubUserRefreshToken.objects.create(
-                        token=refresh_token,
-                        expires_at=refresh_token_expires_at,
-                        github_user=github_user,
                     )
                     login(request, auth_user_instance)
                     # installation_instance.save()
