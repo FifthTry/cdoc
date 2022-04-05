@@ -78,8 +78,11 @@ class AuthCallback(View):
                 )
                 github_instance = github.Github(access_token)
                 user_instance = github_instance.get_user()
-                github_installation_manager = lib.GithubInstallationManager(
+                github_data_manager = app_lib.GithubDataManager(
                     installation_id=installation_id, user_token=access_token
+                )
+                github_installation_manager = (
+                    github_data_manager.github_manager_instance
                 )
                 installation_details = (
                     github_installation_manager.get_installation_details()
@@ -131,7 +134,7 @@ class AuthCallback(View):
                     installation_instance.save()
                     installation_instance.update_token()
                 # Get all repositories for the account and update it in the DB
-                github_installation_manager.sync_repositories()
+                github_data_manager.sync_repositories()
                 logger.info(response)
         else:
             logger.error(resp.text)
