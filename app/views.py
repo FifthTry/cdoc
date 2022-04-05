@@ -212,12 +212,11 @@ class WebhookCallback(View):
                     f"Found PRs for commit ID: {head_commit_details['id']}",
                     extra={"data": {"pull_requests": prs}},
                 )
-                should_save = (
+                # is_documentation_repo =
+                if (
                     github_repo.code_repos.exists()
                     or github_repo.documentation_repos.exists()
-                )
-                # is_documentation_repo =
-                if should_save:
+                ):
                     for pr in prs:
                         pr_id = pr.get("id")
                         pr_number = pr.get("number")
