@@ -11,11 +11,17 @@ import jwt
 import requests
 from cryptography.hazmat.backends import default_backend
 from django.conf import settings
+from app import models as app_models
 
 logger = logging.getLogger(__name__)
 
 
 class GithubInstallationManager:
+    """
+    This library contains the helper methods required while accessing github data.
+    pyGithub is available but the installation access seems to be broken. So this
+    util is a workaround"""
+
     def __init__(self, installation_id: int, user_token: str):
         self.installation_id = installation_id
         self.github_token = user_token
@@ -68,12 +74,6 @@ class GithubInstallationManager:
             logger.error(
                 f"Unable to communicate with github {response.content.decode()}",
             )
-        # inst = github.Installation.Installation(
-        #     # Params: login_or_token, password, jwt, base_url, timeout, user_agent, per_page, verify, retry, pool_size
-        #     github.Requester.Requester(token.token, None, None, base_url, 30,
-        #                                "PyGithub/Python", 100, None, None, None), {},
-        #     {}, False)
-        # logger.info(resp.content.decode())
 
     def get_installation_details(self):
         headers = GithubInstallationManager.get_jwt_headers()
@@ -130,25 +130,3 @@ class GithubInstallationManager:
             response = self._get_repository_page(page_no, per_page)
             for repo in response["repositories"]:
                 yield repo
-
-    def generate_check_suite_instance(self):
-        headers = GithubInstallationManager.get_jwt_headers()
-        headers.update(
-            {
-                "Accept": "application/vnd.github.v3+json",
-                "Authorization": f"Token {self.github_token}",
-            }
-        )
-        data = {
-            "name": "continuous documentation",
-            "head_sha": "88454dc844210e9b7c635466ba057689928e5b3a",
-            "external_id": uuid.uuid4().__str__(),
-            "status": "in_progress",
-        }
-        response = requests.post(
-            f"https://api.github.com/repos/sharmashobhit/django-wordpress/check-runs",
-            headers=headers,
-            json=data,
-        )
-        logger.info(response.content.decode())
-        pass

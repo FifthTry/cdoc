@@ -10,8 +10,6 @@ import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
@@ -51,6 +49,12 @@ class GithubUser(models.Model):
         except:
             return None
 
+    def get_active_access_token(self):
+        access_token = self.access_token
+        if access_token is None:
+            return self.get_new_tokens()[0]
+        return access_token
+
     @property
     def refresh_token(self):
         try:
@@ -66,17 +70,18 @@ class GithubUser(models.Model):
         now = timezone.now()
         logger.info(token_response)
         data = parse_qs(token_response)
-        GithubUserAccessToken.objects.create(
+        access_token = GithubUserAccessToken.objects.create(
             token=data["access_token"][0],
             github_user=self,
             expires_at=now + datetime.timedelta(seconds=int(data["expires_in"][0])),
         )
-        GithubUserRefreshToken.objects.create(
+        refresh_token = GithubUserRefreshToken.objects.create(
             token=data["refresh_token"][0],
             github_user=self,
             expires_at=now
             + datetime.timedelta(seconds=int(data["refresh_token_expires_in"][0])),
         )
+        return (access_token.token, refresh_token.token)
 
     def get_new_tokens(self):
         refresh_token = self.refresh_tokens.exclude(
@@ -91,7 +96,7 @@ class GithubUser(models.Model):
                 "client_secret": settings.GITHUB_CREDS["client_secret"],
             },
         )
-        self.process_token_response(response.content.decode())
+        return self.process_token_response(response.content.decode())
 
 
 class GithubUserAccessToken(Token):
@@ -192,54 +197,26 @@ class GithubRepoMap(models.Model):
     integration_type = models.CharField(max_length=20, choices=IntegrationType.choices)
 
 
-@receiver(
-    post_save, sender=GithubRepoMap, dispatch_uid="invoke_actions_on_repo_map_save"
-)
-def pull_request_post_save(sender, instance, **kwargs):
-    # TODO: Sync all open PRs for the documentation repository and the code repository
-    pass
-
-
 class GithubPullRequest(models.Model):
     pr_id = models.BigIntegerField()
     pr_number = models.BigIntegerField()
     pr_head_commit_sha = models.CharField(max_length=40)
-    pr_head_tree_sha = models.CharField(max_length=40)
-    pr_head_modified_on = models.DateTimeField()
+    pr_head_modified_on = models.DateTimeField(null=True)
     pr_head_commit_message = models.CharField(max_length=200)
+    pr_title = models.CharField(max_length=200)
+    pr_body = models.TextField(default="", blank=True, null=True)
+    pr_state = models.CharField(max_length=20)
+    pr_created_at = models.DateTimeField()
+    pr_updated_at = models.DateTimeField()
+    pr_merged_at = models.DateTimeField(null=True)
+    pr_closed_at = models.DateTimeField(null=True)
+    pr_merged = models.BooleanField(default=False)
+
     updated_on = models.DateTimeField(auto_now=True)
     repository = models.ForeignKey(GithubRepository, on_delete=models.PROTECT)
 
     def __str__(self) -> str:
         return f"{self.repository.repo_full_name}/{self.pr_number} @ {self.pr_head_commit_sha[:7]}"
-
-
-@receiver(
-    post_save, sender=GithubPullRequest, dispatch_uid="invoke_actions_on_pr_update"
-)
-def pull_request_post_save(sender, instance, **kwargs):
-    for documentation_pr in MonitoredPullRequest.objects.filter(
-        documentation_pull_request=instance
-    ).iterator():
-        if (
-            documentation_pr.pull_request_status
-            == MonitoredPullRequest.PullRequestStatus.APPROVED
-        ):
-            documentation_pr.pull_request_status = (
-                MonitoredPullRequest.PullRequestStatus.STALE_CODE
-            )
-        documentation_pr.save()
-    for code_pr in MonitoredPullRequest.objects.filter(
-        code_pull_request=instance
-    ).iterator():
-        if (
-            code_pr.pull_request_status
-            == MonitoredPullRequest.PullRequestStatus.APPROVED
-        ):
-            code_pr.pull_request_status = (
-                MonitoredPullRequest.PullRequestStatus.STALE_APPROVAL
-            )
-        code_pr.save()
 
 
 class MonitoredPullRequest(models.Model):
@@ -295,23 +272,6 @@ class MonitoredPullRequest(models.Model):
         super().save(*args, **kwargs)
 
 
-@receiver(
-    post_save, sender=MonitoredPullRequest, dispatch_uid="invoke_github_check_for_pr"
-)
-def update_check_run(sender, instance, **kwargs):
-    (instance, is_new) = GithubCheckRun.objects.get_or_create(
-        ref_pull_request=instance, run_sha=instance.code_pull_request.pr_head_commit_sha
-    )
-    if is_new:
-        # Here, we can close the previous checks if any
-        # GithubCheckRun.objects.filter(ref_pull_request=instance).exclude(
-        #     run_sha=instance.code_pull_request.pr_head_commit_sha,
-        # )
-        pass
-    else:
-        instance.save()
-
-
 class GithubCheckRun(models.Model):
     run_id = models.BigIntegerField(blank=True, null=True)
     unique_id = models.UUIDField(default=uuid.uuid4)
@@ -354,63 +314,3 @@ class GithubCheckRun(models.Model):
             )
             self.run_id = check_run_instance.id
         super().save(*args, **kwargs)
-
-
-@receiver(post_save, sender=GithubCheckRun, dispatch_uid="update_github_check")
-def synchronize_github_check(sender, instance, **kwargs):
-    token = (
-        instance.ref_pull_request.code_pull_request.repository.owner.creator.access_token
-    )
-    github_app_instance = github.Github(token)
-    github_repo = github_app_instance.get_repo(
-        instance.ref_pull_request.code_pull_request.repository.repo_id
-    )
-    check_run = github_repo.get_check_run(instance.run_id)
-
-    data = {
-        "name": "continuous documentation",
-        "head_sha": instance.run_sha,
-        "external_id": instance.unique_id.__str__(),
-        "status": "completed",
-        "conclusion": "action_required",
-        "details_url": f"{settings.WEBSITE_HOST}/{github_repo.full_name}/pull/{instance.ref_pull_request.code_pull_request.pr_number}",
-    }
-    if (
-        instance.ref_pull_request.pull_request_status
-        == MonitoredPullRequest.PullRequestStatus.NOT_CONNECTED
-    ):
-        # Update the action with the PR connection action
-        data.update(
-            {
-                "conclusion": "action_required",
-                "output": {
-                    "title": "Documentation PR is not connected",
-                    "summary": "Please connect the documentation PR",
-                    "text": "You can connect the documentation PR by clicking on the button below.",
-                },
-            }
-        )
-    elif (
-        instance.ref_pull_request.pull_request_status
-        == MonitoredPullRequest.PullRequestStatus.APPROVED
-    ):
-        data.update({"conclusion": "success"})
-    elif instance.ref_pull_request.pull_request_status in [
-        MonitoredPullRequest.PullRequestStatus.APPROVAL_PENDING,
-        MonitoredPullRequest.PullRequestStatus.STALE_APPROVAL,
-        MonitoredPullRequest.PullRequestStatus.STALE_CODE,
-    ]:
-        # Update the action with the PR approval action
-        data.update(
-            {
-                "conclusion": "action_required",
-                "output": {
-                    "title": "Approve the PR on CDOC",
-                    "summary": "Please approve the PR on CDOC",
-                    "text": "You can connect the documentation PR by clicking on the button below.",
-                },
-            }
-        )
-    logger.info("Updating github check with data", extra={"payload": data})
-    check_run_instance = check_run.edit(**data)
-    logger.info("Updated the check run", extra={"response": check_run_instance})
