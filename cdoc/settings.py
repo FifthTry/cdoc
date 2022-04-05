@@ -197,10 +197,12 @@ LOGGING = {
         "app": {
             "handlers": ["console_with_extra"],
             "level": "DEBUG",
+            "propagate": True,
         },
         "lib": {
             "handlers": ["console_with_extra"],
             "level": "DEBUG",
+            "propagate": True,
         },
     },
 }

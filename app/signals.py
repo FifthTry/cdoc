@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
     dispatch_uid="update_github_repositories_for_installation",
 )
 def pull_request_post_save(sender, instance, **kwargs):
-    logger.info(f"Pull request post save signal received for {instance}")
+    logger.info(f"GithubAppInstallation signal received for {instance}")
     github_manager = app_lib.GithubDataManager(
         instance.installation_id, instance.creator.get_active_access_token()
     )
@@ -29,6 +29,7 @@ def pull_request_post_save(sender, instance, **kwargs):
     dispatch_uid="invoke_actions_on_repo_map_save",
 )
 def pull_request_post_save(sender, instance, **kwargs):
+    logger.info(f"GithubRepoMap signal received for {instance}")
     installation_instance = instance.integration
     github_data_manager = app_lib.GithubDataManager(
         installation_id=installation_instance.installation_id,
