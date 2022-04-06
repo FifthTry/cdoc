@@ -164,12 +164,18 @@ class WebhookCallback(View):
         )
         if EVENT_TYPE == "pull_request":
             pull_request_data = payload["pull_request"]
-            app_models.GithubPullRequest.objects.update_or_create(
+            (github_repo, _) = app_models.GithubRepository.objects.update_or_create(
+                repo_id=payload["repository"]["id"],
+                defaults={
+                    "repo_full_name": payload["repository"]["full_name"],
+                    "repo_name": payload["repository"]["name"],
+                    "owner": installation_instance,
+                },
+            )
+            (pr_instance, _) = app_models.GithubPullRequest.objects.update_or_create(
                 pr_id=pull_request_data["id"],
                 pr_number=pull_request_data["number"],
-                repository=app_models.GithubRepository.objects.get(
-                    repo_full_name=payload["repository"]["full_name"]
-                ),
+                repository=github_repo,
                 defaults={
                     "pr_head_commit_sha": pull_request_data["head"]["sha"],
                     "pr_title": pull_request_data["title"],
@@ -183,6 +189,15 @@ class WebhookCallback(View):
                     "pr_owner_username": pull_request_data["user"]["login"],
                 },
             )
+            if payload["action"] == "opened" and github_repo.code_repos.exists():
+                (
+                    monitored_pr_instance,
+                    is_new,
+                ) = app_models.MonitoredPullRequest.objects.get_or_create(
+                    code_pull_request=pr_instance,
+                )
+                if is_new is False:
+                    monitored_pr_instance.save()
         elif EVENT_TYPE == "installation_repositories":
             # Repositories changed. Sync again.
             github_data_manager_instance.sync_repositories()
