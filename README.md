@@ -1,6 +1,9 @@
 
-# Workflow:
+# cdoc
 
+`cdoc` is open source continuous documentation github integration tool by FifthTry.
+
+## Flow
 
 - User authorizes the app on Github apps
 - Once authorization + Repo scope management is done, the user is redirected to our platform with installation_id and code
