@@ -3,6 +3,8 @@
 
 `cdoc` is open source continuous documentation github integration tool by FifthTry.
 
+[Documentation](https://fifthtry.github.io/cdoc-doc/).
+
 ## Flow
 
 - User authorizes the app on Github apps
