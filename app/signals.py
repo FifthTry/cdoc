@@ -68,6 +68,16 @@ def pull_request_post_save(sender, instance, **kwargs):
             )
         code_pr.save()
 
+    if instance.repository.code_repos.exists():
+        (
+            monitored_pr_instance,
+            is_new,
+        ) = app_models.MonitoredPullRequest.objects.get_or_create(
+            code_pull_request=instance,
+        )
+        if is_new is False:
+            monitored_pr_instance.save()
+
 
 @receiver(
     post_save,

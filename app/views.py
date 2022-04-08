@@ -189,15 +189,6 @@ class WebhookCallback(View):
                     "pr_owner_username": pull_request_data["user"]["login"],
                 },
             )
-            if payload["action"] == "opened" and github_repo.code_repos.exists():
-                (
-                    monitored_pr_instance,
-                    is_new,
-                ) = app_models.MonitoredPullRequest.objects.get_or_create(
-                    code_pull_request=pr_instance,
-                )
-                if is_new is False:
-                    monitored_pr_instance.save()
         elif EVENT_TYPE == "installation_repositories":
             # Repositories changed. Sync again.
             github_data_manager_instance.sync_repositories()
@@ -245,16 +236,6 @@ class WebhookCallback(View):
                                 repository=github_repo,
                                 defaults={**head_commit_data},
                             )
-                            if github_repo.code_repos.exists():
-                                (
-                                    monitored_pr_instance,
-                                    is_new,
-                                ) = app_models.MonitoredPullRequest.objects.get_or_create(
-                                    code_pull_request=pr_instance,
-                                )
-                                if is_new is False:
-                                    monitored_pr_instance.save()
-
         return JsonResponse({"status": True})
 
 

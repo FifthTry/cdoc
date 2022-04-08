@@ -45,7 +45,6 @@ class GithubDataManager:
                 "pr_merged": pr.merged,
                 "pr_owner_username": pr.user.login,
             }
-            print(extra_data)
             (instance, is_new) = app_models.GithubPullRequest.objects.update_or_create(
                 pr_id=pr.id,
                 pr_number=pr.number,
