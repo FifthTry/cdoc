@@ -19,7 +19,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import models as auth_models
-from django.views.generic import FormView
+from django.views.generic import FormView, TemplateView
 from . import models as app_models
 from . import forms as app_forms
 
@@ -300,3 +300,7 @@ class PRView(FormView):
             )
         instance.save()
         return super().form_valid(form)
+
+
+class IndexView(TemplateView):
+    template_name = "hello_world.ftd"

@@ -44,7 +44,7 @@ CSRF_TRUSTED_ORIGINS = [WEBSITE_HOST]
 # Application definition
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
+    # "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -69,9 +69,9 @@ ROOT_URLCONF = "cdoc.urls"
 
 TEMPLATES = [
     {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
-        "APP_DIRS": True,
+        "BACKEND": "ftd_django.template_backend.FTDTemplateBackend",
+        "DIRS": ["templates"],
+        "APP_DIRS": False,
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",

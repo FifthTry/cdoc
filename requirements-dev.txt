@@ -25,18 +25,23 @@ click==8.0.4
 debugpy==1.6.0
     # via ipykernel
 decorator==5.1.1
-    # via ipython
+    # via
+    #   ipdb
+    #   ipython
 entrypoints==0.4
     # via jupyter-client
 executing==0.8.3
     # via stack-data
 idna==3.3
     # via requests
+ipdb==0.13.9
+    # via -r requirements-dev.in
 ipykernel==6.10.0
     # via -r requirements-dev.in
 ipython==8.2.0
     # via
     #   -r requirements-dev.in
+    #   ipdb
     #   ipykernel
 jedi==0.18.1
     # via ipython
@@ -95,6 +100,8 @@ six==1.16.0
     #   requests-mock
 stack-data==0.2.0
     # via ipython
+toml==0.10.2
+    # via ipdb
 tomli==2.0.1
     # via
     #   black

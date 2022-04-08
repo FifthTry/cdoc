@@ -23,5 +23,5 @@ urlpatterns = [
         app_views.PRView.as_view(),
     ),
     path("app/", include("app.urls")),
-    path("admin/", admin.site.urls),
+    # path("admin/", admin.site.urls),
 ]

@@ -4,3 +4,4 @@ ipykernel
 black
 mock
 requests-mock
+ipdb
