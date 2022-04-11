@@ -26,12 +26,14 @@ class FTDTemplateBackend(BaseEngine):
         self.engine = Engine(self.dirs, self.app_dirs, **options)
 
     def from_string(self, template_code):
+        print("from_string", template_code)
         try:
             return Template(self.engine.from_string(template_code))
         except self.template_library.TemplateCompilationFailed as exc:
             raise TemplateSyntaxError(exc.args)
 
     def get_template(self, template_name):
+        print("get_template", template_name)
         try:
             return Template(self.engine.get_template(template_name))
         except TemplateDoesNotExist as exc:
@@ -43,6 +45,9 @@ class Template:
         self.template = template
 
     def render(self, context=None, request=None):
+        import os
+        from django.http import HttpResponse
+
         async def build(file=None, base_url=None, ignore_failed=None):
             await ftd.fpm_build(file, base_url, ignore_failed)
 
@@ -52,17 +57,29 @@ class Template:
             context["request"] = request
             context["csrf_input"] = csrf_input_lazy(request)
             context["csrf_token"] = csrf_token_lazy(request)
-        # loop = asyncio.new_event_loop()
-        print("get_data:", self.template.origin, self.template.origin.name, self.template.origin.template_name)
+        current_dir = os.getcwd()
+        dir_path, document_id = os.path.split(self.template.origin.name)
+        os.chdir(dir_path)
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        resp = loop.run_until_complete(
+        loop.run_until_complete(
             build(
-                self.template.origin.name, self.template.origin.template_name, False
+                document_id, "/", False
             )
         )
         loop.close()
+        os.chdir(current_dir)
         # assert False, resp
+        doc_id = dir_path + "/.build/"
+        if document_id == "index.ftd":
+            doc_id += "index.html"
+        elif document_id == "FPM.ftd":
+            doc_id += "-/index.html"
+        else:
+            doc_id += document_id.replace(".ftd", "/index.html")
+
+        f = open(doc_id)
+        return HttpResponse(f.read(), content_type="text/html")
         return resp
 
         # return self.template.render(context)
