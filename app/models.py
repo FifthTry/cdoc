@@ -278,7 +278,6 @@ class MonitoredPullRequest(models.Model):
 
     def get_display_name(self):
         return f"{self.code_pull_request.repository.repo_full_name}/#{self.code_pull_request.pr_number}: {self.code_pull_request.pr_title}"
-        pass
 
 
 class GithubCheckRun(models.Model):
