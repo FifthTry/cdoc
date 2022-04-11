@@ -22,6 +22,11 @@ urlpatterns = [
         "<str:account_name>/<str:repo_name>/pull/<int:pr_number>/",
         app_views.PRView.as_view(),
     ),
+    path(
+        "<str:account_name>/<str:repo_name>/pulls/",
+        app_views.AllPRView.as_view(),
+    ),
+    #
     path("app/", include("app.urls")),
     path("admin/", admin.site.urls),
 ]

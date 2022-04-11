@@ -1,0 +1,510 @@
+{% extends 'base.html' %}
+{% block content %}
+<!--content:start-->
+<div class="parent-container">
+    <div class="container">
+
+        <!--breadcrumb:start-->
+        <nav class="breadcrumb">
+            <a href="#" class="main-cta-primary-base"><span class="iconify main-text"
+                    data-icon="octicon:repo-16"></span>{{repo_mapping.code_repo.owner.account_name}}</a>
+            <div class="repo">
+                <span class="iconify main-text" data-icon="octicon:link-16"></span>
+                <a href="#" class="repo-item main-cta-primary-base">{{repo_mapping.code_repo.repo_full_name}}</a>
+                <a href="#"
+                    class="repo-item main-cta-primary-base">{{repo_mapping.documentation_repo.repo_full_name}}</a>
+            </div>
+            <a href="#" class="main-text-strong">
+                <span class="iconify main-text" data-icon="octicon:git-pull-request-16"></span>Pull requests</a>
+        </nav>
+
+        <!--search:start-->
+        <div class="search">
+            <input type="text" placeholder="search" name="">
+        </div>
+        <!--doc-history:start-->
+        <div class="doc-history">
+            <!--Row-->
+            {% for monitored_pr in open_prs %}
+            <div class="doc-history-row">
+                {% if monitored_pr.pull_request_status == "NOT_CONNECTED" %}
+                <div class="row-left">
+                    <div class="cell-group">
+
+                        <a href="#" class="cell-item item-top main-text"><span class="iconify"
+                                data-icon="octicon:code-16"></span>#{{monitored_pr.code_pull_request.pr_number}}
+                            {{monitored_pr.code_pull_request.pr_title}}</a>
+                        <a href="#" class="cell-item main-error-text"><span class="iconify"
+                                data-icon="octicon:note-16"></span>{{monitored_pr.pull_request_status}}</a>
+                    </div>
+                </div>
+                <div class="row-right">
+                    <a href="#" class="cta cta-primary open-attach-code-pr">Connect</a>
+                </div>
+                {% elif monitored_pr.pull_request_status == "APPROVED" %}
+                <div class="row-left">
+                    <div class="cell-group">
+                        <span class="iconify main-cta-secondary-base" data-icon="octicon:link-16"></span>
+                        <a href="#" class="cell-item item-top main-text"><span class="iconify"
+                                data-icon="octicon:code-16"></span>#{{monitored_pr.code_pull_request.pr_number}}
+                            {{monitored_pr.code_pull_request.pr_title}}</a>
+                        <a href="#" class="cell-item main-text-strong"><span class="iconify"
+                                data-icon="octicon:note-16"></span>#{{monitored_pr.documentation_pull_request.pr_number}}
+                            {{monitored_pr.documentation_pull_request.pr_title}}</a>
+                    </div>
+                </div>
+                <div class="row-right">
+                    <a href="#" class="approved main-success-text">Approved</a>
+                    <div class="user main-text">
+                        by <a href="#" class="username main-text">@sharmashobit</a> 20 min ago
+                    </div>
+                </div>
+                {% else %}
+                {% comment %}Expected states `APPROVAL_PENDING`, `STALE_CODE` or `STALE_APPROVAL`{% endcomment %}
+                <div class="row-left">
+                    <div class="cell-group">
+                        <span class="iconify main-cta-secondary-base" data-icon="octicon:link-16"></span>
+                        <a href="#" class="cell-item item-top main-text"><span class="iconify"
+                                data-icon="octicon:code-16"></span>#{{monitored_pr.code_pull_request.pr_number}}
+                            {{monitored_pr.code_pull_request.pr_title}}</a>
+                        <a href="#" class="cell-item main-text-strong"><span class="iconify"
+                                data-icon="octicon:note-16"></span>#{{monitored_pr.documentation_pull_request.pr_number}}
+                            {{monitored_pr.documentation_pull_request.pr_title}}</a>
+                    </div>
+                </div>
+                <div class="row-right visible hide-on-approval">
+                    <a href="#" class="cta cta-primary open-get-approval">Approve</a>
+                </div>
+                <div class="row-right hidden show-on-approval">
+
+                    <a href="#" class="approved main-success-text"> <span class="iconify"
+                            data-icon="octicon:check-24"></span> Approved</a>
+                    <div class="user main-text">
+                        by <a href="#" class="username main-text">@sharmashobit</a> 20 min ago
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <!--Row-->
+        </div>
+
+        <!--modal:start-->
+        <div class="modal warning get-approval">
+            <div class="modal-parent">
+                <div class="modal-container">
+                    <div class="modal-dialog">
+                        <div class="modal-title main-text-strong">
+                            Approve Changes
+                            <span class="close"><span class="iconify" data-icon="ep:close-bold"></span></span>
+                        </div>
+
+                        <div class="modal-body">
+
+                            <div class="body-row">
+                                <div class="cell-group modal-item">
+                                    <span class="iconify main-cta-secondary-base" data-icon="octicon:link-16"></span>
+                                    <a href="#" class="cell-item item-top main-text"><span class="iconify"
+                                            data-icon="octicon:code-16"></span>#203 Code PR name</a>
+                                    <a href="#" class="cell-item main-text-strong"><span class="iconify"
+                                            data-icon="octicon:note-16"></span>#404 Doc PR name</a>
+                                </div>
+                            </div>
+
+                            <div class="body-row modal-msg main-text">
+                                You hereby declare that you’ve verified that the <strong>implemented code</strong>
+                                exactly matches <strong>the documentation,</strong> and is ready for merge.
+                                <br /><br />You take full responsibility for this approval
+
+                            </div>
+
+                            <div class="body-row userinput main-text">
+                                <input type="text" placeholder="Type your Github username to confirm" name="">
+                            </div>
+
+                            <div class="body-row cta-row">
+                                <a href="#" class="cta cta-warning show-approved-state">Confirm</a>
+                            </div>
+
+                            <div class="body-row caption main-text">
+                                Note: Please ask the Dev/Documentor to come in sync if this is not the case
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--modal:end-->
+
+        <!--modal:start-->
+        <div class="modal warning confirm-part1">
+            <div class="modal-parent">
+                <div class="modal-container">
+                    <div class="modal-dialog pb0">
+                        <div class="modal-title main-text-strong">
+                            Are you sure?
+                            <span class="close main-text"><span class="iconify" data-icon="octicon:x-16"></span></span>
+                            <span class="goback back-to-attach-documentation main-text"><span class="iconify"
+                                    data-icon="octicon:arrow-left-24"></span></span>
+                        </div>
+
+                        <div class="modal-body mt12 pt0 pb22 mhz40">
+                            <div class="body-row main-text">
+                                You are declaring that the following pull request
+                            </div>
+                            <div class="body-row mt31">
+                                <div class="cell-group no-bracket large modal-item">
+                                    <a href="#" class="cell-item main-text-strong"><span class="iconify"
+                                            data-icon="octicon:code-16"></span>#222 Code PR Name</a>
+                                </div>
+                            </div>
+
+                            <div class="body-row modal-msg mt11 main-text">
+                                does not need any associated documentation.
+                                <br /><br />This action should be used sparingly. It may be reviewed by your
+                                Manager, and will affect your organizations’ dev statistics
+
+                            </div>
+
+                            <div class="body-row userinput main-text">
+                                <input type="text" placeholder="Type your Github username to confirm" name="">
+                            </div>
+
+                            <div class="body-row cta-row">
+                                <a href="#" class="cta cta-warning">Confirm</a>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--modal:end-->
+
+        <!--modal:start-->
+        <div class="modal warning confirm-part2">
+            <div class="modal-parent">
+                <div class="modal-container">
+                    <div class="modal-dialog pb0">
+                        <div class="modal-title main-text-strong">
+                            Are you sure?
+                            <span class="close main-text"><span class="iconify" data-icon="octicon:x-16"></span></span>
+                            <span class="goback back-confirm-part2 main-text"><span class="iconify"
+                                    data-icon="octicon:arrow-left-24"></span></span>
+                        </div>
+
+                        <div class="modal-body mt12 pt0 pb22">
+                            <div class="body-row main-text">
+                                You are declaring that the following pull request
+                            </div>
+                            <div class="body-row mt31">
+                                <div class="cell-group no-bracket large modal-item">
+                                    <a href="#" class="cell-item main-text-strong"><span class="iconify"
+                                            data-icon="octicon:code-16"></span>#222 Code PR Name</a>
+                                </div>
+                            </div>
+
+                            <div class="body-row modal-msg mt11 main-text">
+                                does not need any associated documentation.
+                                <br /><br />Use this only to do Documentation for deployed code, or improve existing
+                                documentation
+
+                            </div>
+
+                            <div class="body-row cta-row">
+                                <a href="#" class="cta cta-warning">Confirm</a>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--modal:end-->
+
+
+        <!--modal:start-->
+        <div class="modal regular attach-code-pr">
+            <div class="modal-parent">
+                <div class="modal-container">
+                    <div class="modal-dialog large-dialog pb0">
+                        <div class="modal-title main-text-strong">
+                            Attach Code PR
+                            <span class="close main-text"><span class="iconify" data-icon="octicon:x-16"></span></span>
+                        </div>
+
+                        <div class="modal-body pt12">
+                            <div class="body-row main-text">
+                                A healthy code always carry good Documentation
+                                <br />
+                                Attach one for:
+                            </div>
+                            <div class="body-row mt27">
+                                <div class="cell-group no-bracket large modal-item">
+                                    <a href="#" class="cell-item main-text-strong"><span class="iconify"
+                                            data-icon="octicon:note-16"></span>#222 Documentation PR Name</a>
+                                </div>
+                            </div>
+
+                            <div class="body-row modal-msg mt27 main-text">
+                                <!--search:start-->
+                                <div class="search">
+                                    <input type="text" placeholder="search" name="">
+                                </div>
+                            </div>
+                            <div class="group-list">
+                                <div class="body-row bordered-list">
+                                    <!--Row-->
+                                    <div class="dialog-history-row">
+                                        <div class="row-left">
+                                            <div class="cell-group no-bracket modal-item">
+                                                <a href="#" class="cell-item main-text"><span class="iconify"
+                                                        data-icon="octicon:code-16"></span>#222 Code PR Name</a>
+                                            </div>
+                                        </div>
+                                        <div class="row-right">
+                                            <a href="#" class="cta cta-primary hidden connect">Connect</a>
+                                        </div>
+                                    </div>
+                                    <!--Row-->
+                                </div>
+                                <div class="body-row bordered-list">
+                                    <!--Row-->
+                                    <div class="dialog-history-row">
+                                        <div class="row-left">
+                                            <div class="cell-group no-bracket modal-item">
+                                                <a href="#" class="cell-item main-text"><span class="iconify"
+                                                        data-icon="octicon:code-16"></span>#222 Code PR Name</a>
+                                            </div>
+                                        </div>
+                                        <div class="row-right">
+                                            <a href="#" class="cta cta-primary hidden connect">Connect</a>
+                                        </div>
+                                    </div>
+                                    <!--Row-->
+                                </div>
+                                <div class="body-row bordered-list">
+                                    <!--Row-->
+                                    <div class="dialog-history-row">
+                                        <div class="row-left">
+                                            <div class="cell-group no-bracket modal-item">
+                                                <a href="#" class="cell-item main-text"><span class="iconify"
+                                                        data-icon="octicon:code-16"></span>#222 Code PR Name</a>
+                                            </div>
+                                        </div>
+                                        <div class="row-right">
+                                            <a href="#" class="cta cta-primary hidden connect">Connect</a>
+                                        </div>
+                                    </div>
+                                    <!--Row-->
+                                </div>
+                                <div class="body-row bordered-list">
+                                    <!--Row-->
+                                    <div class="dialog-history-row">
+                                        <div class="row-left">
+                                            <div class="cell-group no-bracket modal-item">
+                                                <a href="#" class="cell-item main-text-strong"><span class="iconify"
+                                                        data-icon="octicon:code-16"></span>#222 Code PR Name</a>
+                                            </div>
+                                        </div>
+                                        <div class="row-right">
+                                            <a href="#" class="cta cta-primary hidden connect">Connect</a>
+                                        </div>
+                                    </div>
+                                    <!--Row-->
+                                </div>
+                                <div class="body-row bordered-list">
+                                    <!--Row-->
+                                    <div class="dialog-history-row">
+                                        <div class="row-left">
+                                            <div class="cell-group no-bracket modal-item">
+                                                <a href="#" class="cell-item main-text"><span class="iconify"
+                                                        data-icon="octicon:code-16"></span>#222 Code PR Name</a>
+                                            </div>
+                                        </div>
+                                        <div class="row-right">
+                                            <a href="#" class="cta cta-primary hidden connect">Connect</a>
+                                        </div>
+                                    </div>
+                                    <!--Row-->
+                                </div>
+                            </div>
+                            <div class="body-row mt70 tc main-warning-base lh16">
+                                <div class="text-to-bottom"><a href="#"
+                                        class="main-warning-base open-con open-confirm-part2">This code change
+                                        doesn't need documentation</a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--modal:end-->
+
+
+        <!--modal:start-->
+        <div class="modal regular attach-documentation">
+            <div class="modal-parent">
+                <div class="modal-container">
+                    <div class="modal-dialog large-dialog pb0">
+                        <div class="modal-title main-text-strong">
+                            Attach Documentation
+                            <span class="close"><span class="iconify" data-icon="octicon:x-16"></span></span>
+                        </div>
+
+                        <div class="modal-body pt12">
+                            <div class="body-row main-text">
+                                A healthy code always carry good Documentation
+                                <br />
+                                Attach one for:
+                            </div>
+                            <div class="body-row mt27">
+                                <div class="cell-group no-bracket large modal-item">
+                                    <a href="#" class="cell-item main-text-strong"><span class="iconify"
+                                            data-icon="octicon:note-16"></span>#222 Code PR Name</a>
+                                </div>
+                            </div>
+
+                            <div class="body-row modal-msg mt27 main-text">
+                                <!--search:start-->
+                                <div class="search">
+                                    <input type="text" placeholder="search" name="">
+                                </div>
+                            </div>
+                            <div class="group-list">
+                                <div class="body-row bordered-list">
+                                    <!--Row-->
+                                    <div class="dialog-history-row">
+                                        <div class="row-left">
+                                            <div class="cell-group no-bracket modal-item">
+                                                <a href="#" class="cell-item main-text"><span class="iconify"
+                                                        data-icon="octicon:code-16"></span>#222 Code PR Name</a>
+                                            </div>
+                                        </div>
+                                        <div class="row-right">
+                                            <a href="#" class="cta cta-primary hidden connect">Connect</a>
+                                        </div>
+                                    </div>
+                                    <!--Row-->
+                                </div>
+                                <div class="body-row bordered-list">
+                                    <!--Row-->
+                                    <div class="dialog-history-row">
+                                        <div class="row-left">
+                                            <div class="cell-group no-bracket modal-item">
+                                                <a href="#" class="cell-item main-text"><span class="iconify"
+                                                        data-icon="octicon:code-16"></span>#222 Code PR Name</a>
+                                            </div>
+                                        </div>
+                                        <div class="row-right">
+                                            <a href="#" class="cta cta-primary hidden connect">Connect</a>
+                                        </div>
+                                    </div>
+                                    <!--Row-->
+                                </div>
+                                <div class="body-row bordered-list">
+                                    <!--Row-->
+                                    <div class="dialog-history-row">
+                                        <div class="row-left">
+                                            <div class="cell-group no-bracket modal-item">
+                                                <a href="#" class="cell-item main-text"><span class="iconify"
+                                                        data-icon="octicon:code-16"></span>#222 Code PR Name</a>
+                                            </div>
+                                        </div>
+                                        <div class="row-right">
+                                            <a href="#" class="cta cta-primary hidden connect">Connect</a>
+                                        </div>
+                                    </div>
+                                    <!--Row-->
+                                </div>
+                                <div class="body-row bordered-list">
+                                    <!--Row-->
+                                    <div class="dialog-history-row">
+                                        <div class="row-left">
+                                            <div class="cell-group no-bracket modal-item">
+                                                <a href="#" class="cell-item main-text-strong"><span class="iconify"
+                                                        data-icon="octicon:code-16"></span>#222 Code PR Name</a>
+                                            </div>
+                                        </div>
+                                        <div class="row-right">
+                                            <a href="#" class="cta cta-primary hidden connect">Connect</a>
+                                        </div>
+                                    </div>
+                                    <!--Row-->
+                                </div>
+                                <div class="body-row bordered-list">
+                                    <!--Row-->
+                                    <div class="dialog-history-row">
+                                        <div class="row-left">
+                                            <div class="cell-group no-bracket modal-item">
+                                                <a href="#" class="cell-item main-text"><span class="iconify"
+                                                        data-icon="octicon:code-16"></span>#222 Code PR Name</a>
+                                            </div>
+                                        </div>
+                                        <div class="row-right">
+                                            <a href="#" class="cta cta-primary hidden connect">Connect</a>
+                                        </div>
+                                    </div>
+                                    <!--Row-->
+                                </div>
+                            </div>
+                            <div class="body-row mt70 tc main-warning-base lh16">
+                                <div class="text-to-bottom"><a href="#"
+                                        class="main-warning-base open-confirm-part1">This code change doesn't need
+                                        documentation/a></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--modal:end-->
+    </div>
+</div>
+{% endblock %}
+
+{% block postcontent %}
+<!--SCRIPTS-->
+<script type="text/javascript">
+    $(".open-get-approval").click(function () {
+        $(".get-approval").addClass('opened');
+    });
+    $(".close").click(function () {
+        $(".modal").removeClass('opened');
+    });
+    $(".open-confirm-part1").click(function () {
+        $(".attach-documentation").removeClass('opened');
+        $(".confirm-part1").addClass("opened");
+    });
+    $(".open-confirm-part2").click(function () {
+        $(".attach-code-pr").removeClass("opened");
+        $(".confirm-part2").addClass("opened");
+    });
+    $(".back-confirm-part2").click(function () {
+        $(".confirm-part2").removeClass("opened");
+        $(".attach-code-pr").addClass("opened");
+    });
+    $(".open-attach-code-pr").click(function () {
+        $(".attach-code-pr").addClass("opened");
+    });
+    $(".open-attach-documentation").click(function () {
+        $(".attach-documentation").addClass("opened");
+    });
+    $(".open-attach-documentation").click(function () {
+        $(".attach-documentation").addClass("opened");
+    });
+    $(".back-to-attach-documentation").click(function () {
+        $(".attach-documentation").addClass("opened");
+        $(".confirm-part1").removeClass("opened")
+    });
+    $(".show-approved-state").click(function () {
+        $(".show-on-approval").show();
+        $(".hide-on-approval").hide();
+        $(".get-approval").removeClass("opened");
+    });
+
+</script>
+{% endblock postcontent %}

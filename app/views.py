@@ -4,7 +4,7 @@ import json
 import logging
 import uuid
 from urllib.parse import parse_qs
-
+from typing import Any, Dict
 import github
 import lib
 from . import lib as app_lib
@@ -18,8 +18,9 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import models as auth_models
-from django.views.generic import FormView
+from django.views.generic import FormView, TemplateView
 from . import models as app_models
 from . import forms as app_forms
 
@@ -245,8 +246,26 @@ class OauthCallback(View):
         assert False, request
 
 
+class AllPRView(TemplateView):
+    template_name = "index.html"
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        matches = self.request.resolver_match.kwargs
+        context["repo_mapping"] = app_models.GithubRepoMap.objects.get(
+            code_repo__repo_full_name__iexact="{}/{}".format(
+                matches["account_name"], matches["repo_name"]
+            )
+        )
+        context["open_prs"] = app_models.MonitoredPullRequest.objects.filter(
+            code_pull_request__repository=context["repo_mapping"].code_repo
+        )
+        return context
+
+
+# @method_decorator(login_required(login_url="asdasd"), name="dispatch")
 class PRView(FormView):
-    template_name = "app/pr_approval.html"
+    template_name = "index.html"
     form_class = app_forms.GithubPRApprovalForm
     success_url = "."
 
