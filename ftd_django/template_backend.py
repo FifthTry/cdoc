@@ -43,6 +43,9 @@ class Template:
         self.template = template
 
     def render(self, context=None, request=None):
+        async def build(file=None, base_url=None, ignore_failed=None):
+            await ftd.fpm_build(file, base_url, ignore_failed)
+
         if context is None:
             context = {}
         if request is not None:
@@ -50,13 +53,15 @@ class Template:
             context["csrf_input"] = csrf_input_lazy(request)
             context["csrf_token"] = csrf_token_lazy(request)
         # loop = asyncio.new_event_loop()
+        print("get_data:", self.template.origin, self.template.origin.name, self.template.origin.template_name)
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         resp = loop.run_until_complete(
-            ftd.fpm_build(
+            build(
                 self.template.origin.name, self.template.origin.template_name, False
             )
         )
+        loop.close()
         # assert False, resp
         return resp
 

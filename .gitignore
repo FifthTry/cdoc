@@ -3,6 +3,7 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=django,python,visualstudiocode
 
 ### Django ###
+play-venv
 *.log
 *.pot
 *.pyc
