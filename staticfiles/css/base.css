@@ -497,6 +497,7 @@ header > div.menu .menu-item:last-child{
     line-height: 16px;
     font-weight: 700;
     display: inline-block;
+    cursor: pointer;
 }
 
 .cta-primary{

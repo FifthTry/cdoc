@@ -239,6 +239,7 @@ class MonitoredPullRequest(models.Model):
         STALE_CODE = "STALE_CODE", "Stale Code"
         STALE_APPROVAL = "STALE_APPROVAL", "Stale Approval"
         APPROVED = "APPROVED", "Approved"
+        MANUAL_APPROVAL = "MANUALLY_APPROVEL", "Manual Approval"
 
     code_pull_request = models.OneToOneField(
         GithubPullRequest,
