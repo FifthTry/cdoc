@@ -5,8 +5,8 @@
 ### Django ###
 play-venv
 .idea
-*/.build
-*/.packages
+**/.build
+**/.packages
 *.log
 *.pot
 *.pyc
