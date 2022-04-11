@@ -42,6 +42,21 @@
                     <a href="javascript:void(0)" class="cta cta-primary open-attach-documentation" data-code-pr-title="{{code_pr_name|escapejs}}"
                     data-documentation-pr-title="{{documentation_pr_name|escapejs}}" data-code-pr-id="{{code_pr_number}}">Connect</a>
                 </div>
+                {% elif monitored_pr.pull_request_status == "MANUALLY_APPROVED" %}
+                <div class="row-left">
+                    <div class="cell-group">
+                        <a href="{{monitored_pr.code_pull_request.get_url}}" class="cell-item item-top main-text"><span class="iconify"
+                                data-icon="octicon:code-16"></span>{{ code_pr_name }}</a>
+                        <span class="cell-item main-error-text"><span class="iconify"
+                                data-icon="octicon:note-16"></span>{{monitored_pr.get_pull_request_status_display}}</span>
+                    </div>
+                </div>
+                <div class="row-right">
+                    <span  class="approved main-success-text">Approved</span>
+                    <div class="user main-text">
+                        by <a href="#" class="username main-text">@sharmashobit</a> 20 min ago
+                    </div>
+                </div>
                 {% else %}
             
                 {% with documentation_pr_name="#"|add:documentation_pr_number|add:" "|add:monitored_pr.documentation_pull_request.pr_title %}
@@ -503,17 +518,6 @@
             success_btn.removeClass("cta-disabled").addClass("cta-warning").removeAttr("disabled");
         }
     })
-    // $("#approve-pr-form").submit(function() {
-    //     $.post({
-    //         url: $(this).attr("action"),
-    //         data: $(this).serializeArray(),
-    //         contentType : 'application/json',
-    //         success: function(data) {
-    //             location.reload();
-    //         }
-    //     })
-    //     return false;
-    // });
     $.ajaxSetup({
         headers: {
             'Content-Type': 'application/json',

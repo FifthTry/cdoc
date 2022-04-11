@@ -239,7 +239,7 @@ class MonitoredPullRequest(models.Model):
         STALE_CODE = "STALE_CODE", "Stale Code"
         STALE_APPROVAL = "STALE_APPROVAL", "Stale Approval"
         APPROVED = "APPROVED", "Approved"
-        MANUAL_APPROVAL = "MANUALLY_APPROVEL", "Manual Approval"
+        MANUAL_APPROVAL = "MANUALLY_APPROVED", "Manual Approval"
 
     code_pull_request = models.OneToOneField(
         GithubPullRequest,
@@ -271,7 +271,11 @@ class MonitoredPullRequest(models.Model):
             self.pull_request_status = (
                 MonitoredPullRequest.PullRequestStatus.APPROVAL_PENDING
             )
-        elif self.documentation_pull_request is None:
+        elif (
+            self.documentation_pull_request is None
+            and self.pull_request_status
+            != MonitoredPullRequest.PullRequestStatus.MANUAL_APPROVAL
+        ):
             self.pull_request_status = (
                 MonitoredPullRequest.PullRequestStatus.NOT_CONNECTED
             )

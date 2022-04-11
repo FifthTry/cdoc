@@ -304,7 +304,7 @@ class PRView(View):
                 "documentation_pull_request"
             ]
         elif (
-            action == "approve_pull_request"
+            action == "approve_pr"
             and "approve_pull_request" in payload
             and payload["approve_pull_request"] == "APPROVED"
         ):
@@ -317,9 +317,10 @@ class PRView(View):
         elif action == "unlink":
             instance.documentation_pull_request = None
         elif (
-            action == "manual_pr_approval"
-            and "manual_approval" in payload
-            and payload["manual_approval"] is True
+            action
+            == "manual_pr_approval"
+            # and "manual_approval" in payload
+            # and payload["manual_approval"] is True
         ):
             assert (
                 payload["github_username"] == request.user.github_user.account_name
