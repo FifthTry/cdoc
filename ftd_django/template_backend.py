@@ -4,6 +4,7 @@ from django.template import Library, TemplateDoesNotExist, TemplateSyntaxError
 from django.template.backends.base import BaseEngine
 from django.template.backends.utils import csrf_input_lazy, csrf_token_lazy
 from django.template.engine import Engine
+import ftd_django.template_library
 
 from django.conf import settings
 
@@ -48,28 +49,14 @@ class Template:
         import os
         from django.http import HttpResponse
 
-        async def build(file=None, base_url=None, ignore_failed=None):
-            await ftd.fpm_build(file, base_url, ignore_failed)
-
         if context is None:
             context = {}
         if request is not None:
             context["request"] = request
             context["csrf_input"] = csrf_input_lazy(request)
             context["csrf_token"] = csrf_token_lazy(request)
-        current_dir = os.getcwd()
         dir_path, document_id = os.path.split(self.template.origin.name)
-        os.chdir(dir_path)
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(
-            build(
-                document_id, "/", False
-            )
-        )
-        loop.close()
-        os.chdir(current_dir)
-        # assert False, resp
+        ftd_django.template_library.ftd_build(dir_path, document_id)
         doc_id = dir_path + "/.build/"
         if document_id == "index.ftd":
             doc_id += "index.html"
@@ -80,6 +67,5 @@ class Template:
 
         f = open(doc_id)
         return HttpResponse(f.read(), content_type="text/html")
-        return resp
 
         # return self.template.render(context)
