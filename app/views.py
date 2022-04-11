@@ -260,6 +260,9 @@ class AllPRView(TemplateView):
         context["open_prs"] = app_models.MonitoredPullRequest.objects.filter(
             code_pull_request__repository=context["repo_mapping"].code_repo
         )
+        context["all_documentation_prs"] = app_models.GithubPullRequest.objects.filter(
+            repository=context["repo_mapping"].documentation_repo
+        )
         return context
 
 

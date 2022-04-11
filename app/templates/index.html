@@ -26,31 +26,33 @@
         <div class="doc-history">
             <!--Row-->
             {% for monitored_pr in open_prs %}
+            {% with code_pr_number=monitored_pr.code_pull_request.pr_number|stringformat:"s" documentation_pr_number=monitored_pr.documentation_pull_request.pr_number|stringformat:"s" %}
+            {% with code_pr_name="#"|add:code_pr_number|add:" "|add:monitored_pr.code_pull_request.pr_title %}
             <div class="doc-history-row">
                 {% if monitored_pr.pull_request_status == "NOT_CONNECTED" %}
                 <div class="row-left">
                     <div class="cell-group">
-
                         <a href="#" class="cell-item item-top main-text"><span class="iconify"
-                                data-icon="octicon:code-16"></span>#{{monitored_pr.code_pull_request.pr_number}}
-                            {{monitored_pr.code_pull_request.pr_title}}</a>
+                                data-icon="octicon:code-16"></span>{{ code_pr_name }}</a>
                         <a href="#" class="cell-item main-error-text"><span class="iconify"
                                 data-icon="octicon:note-16"></span>{{monitored_pr.pull_request_status}}</a>
                     </div>
                 </div>
                 <div class="row-right">
-                    <a href="#" class="cta cta-primary open-attach-code-pr">Connect</a>
+                    <a href="#" class="cta cta-primary open-attach-documentation" data-code-pr-title="{{code_pr_name|escapejs}}"
+                    data-documentation-pr-title="{{documentation_pr_name|escapejs}}" data-code-pr-id="{{code_pr_number}}">Connect</a>
                 </div>
-                {% elif monitored_pr.pull_request_status == "APPROVED" %}
+                {% else %}
+            
+                {% with documentation_pr_name="#"|add:documentation_pr_number|add:" "|add:monitored_pr.documentation_pull_request.pr_title %}
+                {% if monitored_pr.pull_request_status == "APPROVED" %}
                 <div class="row-left">
                     <div class="cell-group">
                         <span class="iconify main-cta-secondary-base" data-icon="octicon:link-16"></span>
                         <a href="#" class="cell-item item-top main-text"><span class="iconify"
-                                data-icon="octicon:code-16"></span>#{{monitored_pr.code_pull_request.pr_number}}
-                            {{monitored_pr.code_pull_request.pr_title}}</a>
+                                data-icon="octicon:code-16"></span>#{{code_pr_name}}</a>
                         <a href="#" class="cell-item main-text-strong"><span class="iconify"
-                                data-icon="octicon:note-16"></span>#{{monitored_pr.documentation_pull_request.pr_number}}
-                            {{monitored_pr.documentation_pull_request.pr_title}}</a>
+                                data-icon="octicon:note-16"></span>{{documentation_pr_name}}</a>
                     </div>
                 </div>
                 <div class="row-right">
@@ -65,32 +67,27 @@
                     <div class="cell-group">
                         <span class="iconify main-cta-secondary-base" data-icon="octicon:link-16"></span>
                         <a href="#" class="cell-item item-top main-text"><span class="iconify"
-                                data-icon="octicon:code-16"></span>#{{monitored_pr.code_pull_request.pr_number}}
-                            {{monitored_pr.code_pull_request.pr_title}}</a>
+                                data-icon="octicon:code-16"></span>{{code_pr_name}}</a>
                         <a href="#" class="cell-item main-text-strong"><span class="iconify"
-                                data-icon="octicon:note-16"></span>#{{monitored_pr.documentation_pull_request.pr_number}}
-                            {{monitored_pr.documentation_pull_request.pr_title}}</a>
+                                data-icon="octicon:note-16"></span>{{documentation_pr_name}}</a>
                     </div>
                 </div>
                 <div class="row-right visible hide-on-approval">
-                    <a href="#" class="cta cta-primary open-get-approval">Approve</a>
-                </div>
-                <div class="row-right hidden show-on-approval">
-
-                    <a href="#" class="approved main-success-text"> <span class="iconify"
-                            data-icon="octicon:check-24"></span> Approved</a>
-                    <div class="user main-text">
-                        by <a href="#" class="username main-text">@sharmashobit</a> 20 min ago
-                    </div>
+                    <a href="#" class="cta cta-primary open-approval-modal" data-code-pr-title="{{code_pr_name|escapejs}}"
+                        data-documentation-pr-title="{{documentation_pr_name|escapejs}}" data-code-pr-id="{{code_pr_number}}">Approve</a>
                 </div>
                 {% endif %}
+                {% endwith %}
+                {% endif %}
             </div>
+            {% endwith %}
+            {% endwith %}
             {% endfor %}
             <!--Row-->
         </div>
 
         <!--modal:start-->
-        <div class="modal warning get-approval">
+        <div class="modal warning get-approval" id="approval-modal">
             <div class="modal-parent">
                 <div class="modal-container">
                     <div class="modal-dialog">
@@ -105,9 +102,11 @@
                                 <div class="cell-group modal-item">
                                     <span class="iconify main-cta-secondary-base" data-icon="octicon:link-16"></span>
                                     <a href="#" class="cell-item item-top main-text"><span class="iconify"
-                                            data-icon="octicon:code-16"></span>#203 Code PR name</a>
+                                            data-icon="octicon:code-16"></span><span
+                                            class="code_pr_title"></span></a>
                                     <a href="#" class="cell-item main-text-strong"><span class="iconify"
-                                            data-icon="octicon:note-16"></span>#404 Doc PR name</a>
+                                            data-icon="octicon:note-16"></span><span
+                                            class="documentation_pr_title"></span></a>
                                 </div>
                             </div>
 
@@ -138,7 +137,7 @@
         <!--modal:end-->
 
         <!--modal:start-->
-        <div class="modal warning confirm-part1">
+        <div class="modal warning" id="manual-code-approval-modal">
             <div class="modal-parent">
                 <div class="modal-container">
                     <div class="modal-dialog pb0">
@@ -156,7 +155,7 @@
                             <div class="body-row mt31">
                                 <div class="cell-group no-bracket large modal-item">
                                     <a href="#" class="cell-item main-text-strong"><span class="iconify"
-                                            data-icon="octicon:code-16"></span>#222 Code PR Name</a>
+                                            data-icon="octicon:code-16"></span><span class="pr_title">#222 Code PR Name</span></a>
                                 </div>
                             </div>
 
@@ -346,7 +345,7 @@
 
 
         <!--modal:start-->
-        <div class="modal regular attach-documentation">
+        <div class="modal regular" id="attach-documentation-modal">
             <div class="modal-parent">
                 <div class="modal-container">
                     <div class="modal-dialog large-dialog pb0">
@@ -364,7 +363,7 @@
                             <div class="body-row mt27">
                                 <div class="cell-group no-bracket large modal-item">
                                     <a href="#" class="cell-item main-text-strong"><span class="iconify"
-                                            data-icon="octicon:note-16"></span>#222 Code PR Name</a>
+                                            data-icon="octicon:note-16"></span><span class="pr_title"></span></a>
                                 </div>
                             </div>
 
@@ -377,84 +376,26 @@
                             <div class="group-list">
                                 <div class="body-row bordered-list">
                                     <!--Row-->
+                                    {% for doc_pr in all_documentation_prs %}
                                     <div class="dialog-history-row">
                                         <div class="row-left">
                                             <div class="cell-group no-bracket modal-item">
                                                 <a href="#" class="cell-item main-text"><span class="iconify"
-                                                        data-icon="octicon:code-16"></span>#222 Code PR Name</a>
+                                                        data-icon="octicon:code-16"></span>#{{doc_pr.pr_number}} {{doc_pr.pr_title}}</a>
                                             </div>
                                         </div>
                                         <div class="row-right">
                                             <a href="#" class="cta cta-primary hidden connect">Connect</a>
                                         </div>
                                     </div>
-                                    <!--Row-->
-                                </div>
-                                <div class="body-row bordered-list">
-                                    <!--Row-->
-                                    <div class="dialog-history-row">
-                                        <div class="row-left">
-                                            <div class="cell-group no-bracket modal-item">
-                                                <a href="#" class="cell-item main-text"><span class="iconify"
-                                                        data-icon="octicon:code-16"></span>#222 Code PR Name</a>
-                                            </div>
-                                        </div>
-                                        <div class="row-right">
-                                            <a href="#" class="cta cta-primary hidden connect">Connect</a>
-                                        </div>
-                                    </div>
-                                    <!--Row-->
-                                </div>
-                                <div class="body-row bordered-list">
-                                    <!--Row-->
-                                    <div class="dialog-history-row">
-                                        <div class="row-left">
-                                            <div class="cell-group no-bracket modal-item">
-                                                <a href="#" class="cell-item main-text"><span class="iconify"
-                                                        data-icon="octicon:code-16"></span>#222 Code PR Name</a>
-                                            </div>
-                                        </div>
-                                        <div class="row-right">
-                                            <a href="#" class="cta cta-primary hidden connect">Connect</a>
-                                        </div>
-                                    </div>
-                                    <!--Row-->
-                                </div>
-                                <div class="body-row bordered-list">
-                                    <!--Row-->
-                                    <div class="dialog-history-row">
-                                        <div class="row-left">
-                                            <div class="cell-group no-bracket modal-item">
-                                                <a href="#" class="cell-item main-text-strong"><span class="iconify"
-                                                        data-icon="octicon:code-16"></span>#222 Code PR Name</a>
-                                            </div>
-                                        </div>
-                                        <div class="row-right">
-                                            <a href="#" class="cta cta-primary hidden connect">Connect</a>
-                                        </div>
-                                    </div>
-                                    <!--Row-->
-                                </div>
-                                <div class="body-row bordered-list">
-                                    <!--Row-->
-                                    <div class="dialog-history-row">
-                                        <div class="row-left">
-                                            <div class="cell-group no-bracket modal-item">
-                                                <a href="#" class="cell-item main-text"><span class="iconify"
-                                                        data-icon="octicon:code-16"></span>#222 Code PR Name</a>
-                                            </div>
-                                        </div>
-                                        <div class="row-right">
-                                            <a href="#" class="cta cta-primary hidden connect">Connect</a>
-                                        </div>
-                                    </div>
+                                    {% endfor %}
                                     <!--Row-->
                                 </div>
                             </div>
                             <div class="body-row mt70 tc main-warning-base lh16">
                                 <div class="text-to-bottom"><a href="#"
-                                        class="main-warning-base open-confirm-part1">This code change doesn't need
-                                        documentation/a></div>
+                                        class="main-warning-base" id="open-manual-code-approval">This code change doesn't need
+                                        documentation</a></div>
                             </div>
                         </div>
                     </div>
@@ -469,15 +410,15 @@
 {% block postcontent %}
 <!--SCRIPTS-->
 <script type="text/javascript">
-    $(".open-get-approval").click(function () {
-        $(".get-approval").addClass('opened');
-    });
+    // $(".open-get-approval").click(function () {
+    // });
     $(".close").click(function () {
         $(".modal").removeClass('opened');
     });
-    $(".open-confirm-part1").click(function () {
-        $(".attach-documentation").removeClass('opened');
-        $(".confirm-part1").addClass("opened");
+    $("#open-manual-code-approval").click(function () {
+        $("#attach-documentation-modal").removeClass('opened');
+        $("#manual-code-approval-modal .pr_title").html($(this).attr("data-code-pr-title"));
+        $("#manual-code-approval-modal").addClass("opened");
     });
     $(".open-confirm-part2").click(function () {
         $(".attach-code-pr").removeClass("opened");
@@ -491,20 +432,24 @@
         $(".attach-code-pr").addClass("opened");
     });
     $(".open-attach-documentation").click(function () {
-        $(".attach-documentation").addClass("opened");
-    });
-    $(".open-attach-documentation").click(function () {
-        $(".attach-documentation").addClass("opened");
+        $("#attach-documentation-modal .pr_title").html($(this).attr("data-code-pr-title"));
+        $("#open-manual-code-approval").attr("data-code-pr-id", $(this).attr("data-code-pr-id"));
+        $("#open-manual-code-approval").attr("data-code-pr-title", $(this).attr("data-code-pr-title"));
+        $("#attach-documentation-modal").addClass("opened");
     });
     $(".back-to-attach-documentation").click(function () {
-        $(".attach-documentation").addClass("opened");
-        $(".confirm-part1").removeClass("opened")
+        $("#attach-documentation-modal").addClass("opened");
+        $("#manual-code-approval-modal").removeClass("opened")
     });
     $(".show-approved-state").click(function () {
         $(".show-on-approval").show();
         $(".hide-on-approval").hide();
         $(".get-approval").removeClass("opened");
     });
-
+    $(".open-approval-modal").click(function() {
+        $("#approval-modal .code_pr_title").html($(this).attr("data-code-pr-title"));
+        $("#approval-modal .documentation_pr_title").html($(this).attr("data-documentation-pr-title"));
+        $("#approval-modal").addClass('opened');
+    })
 </script>
 {% endblock postcontent %}
