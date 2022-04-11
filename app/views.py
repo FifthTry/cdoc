@@ -21,6 +21,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import models as auth_models
 from django.views.generic import FormView, TemplateView
+from django.contrib.auth import views as auth_views
+from requests.models import PreparedRequest
+
 from . import models as app_models
 from . import forms as app_forms
 
@@ -39,9 +42,7 @@ class AuthCallback(View):
             - setup_action: str
         """
         code: str = request.GET["code"]
-        installation_id: int = request.GET["installation_id"]
-        setup_action: str = request.GET["setup_action"]
-        logger.info(request.GET)
+        # logger.info(request.GET)
         # github_app_auth_user = app_models.GithubAppAuth.objects.create(
         #     code=code,
         #     installation_id=installation_id,
@@ -79,20 +80,8 @@ class AuthCallback(View):
                 )
                 github_instance = github.Github(access_token)
                 user_instance = github_instance.get_user()
-                github_installation_manager = lib.GithubInstallationManager(
-                    installation_id=installation_id, user_token=access_token
-                )
-                installation_details = (
-                    github_installation_manager.get_installation_details()
-                )
-                account_details = installation_details["account"]
-                account_name = account_details["login"]
-                account_id = account_details["id"]
-                account_type = account_details["type"]
-                avatar_url = account_details["avatar_url"]
-
-                access_group = auth_models.Group.objects.get(name="github_user")
                 with transaction.atomic():
+                    access_group = auth_models.Group.objects.get(name="github_user")
                     (auth_user_instance, _) = get_user_model().objects.get_or_create(
                         username=user_instance.login,
                         defaults={
@@ -120,23 +109,41 @@ class AuthCallback(View):
                         expires_at=refresh_token_expires_at,
                         github_user=github_user,
                     )
-                    (
-                        installation_instance,
-                        _,
-                    ) = app_models.GithubAppInstallation.objects.update_or_create(
-                        installation_id=installation_id,
-                        account_id=account_id,
-                        defaults={
-                            "account_name": account_name,
-                            "state": app_models.GithubAppInstallation.InstallationState.INSTALLED,
-                            "account_type": account_type,
-                            "avatar_url": avatar_url,
-                            "creator": github_user,
-                        },
-                    )
                     login(request, auth_user_instance)
-                    # installation_instance.save()
-                    installation_instance.update_token()
+                if "installation_id" in request.GET:
+                    installation_id: int = request.GET["installation_id"]
+                    setup_action: str = request.GET["setup_action"]
+
+                    github_installation_manager = lib.GithubInstallationManager(
+                        installation_id=installation_id, user_token=access_token
+                    )
+                    installation_details = (
+                        github_installation_manager.get_installation_details()
+                    )
+                    account_details = installation_details["account"]
+                    account_name = account_details["login"]
+                    account_id = account_details["id"]
+                    account_type = account_details["type"]
+                    avatar_url = account_details["avatar_url"]
+
+                    with transaction.atomic():
+
+                        (
+                            installation_instance,
+                            _,
+                        ) = app_models.GithubAppInstallation.objects.update_or_create(
+                            installation_id=installation_id,
+                            account_id=account_id,
+                            defaults={
+                                "account_name": account_name,
+                                "state": app_models.GithubAppInstallation.InstallationState.INSTALLED,
+                                "account_type": account_type,
+                                "avatar_url": avatar_url,
+                                "creator": github_user,
+                            },
+                        )
+                        # installation_instance.save()
+                        installation_instance.update_token()
         else:
             logger.error(resp.text)
         return HttpResponseRedirect("/admin/")
@@ -246,6 +253,7 @@ class OauthCallback(View):
         assert False, request
 
 
+@method_decorator(login_required, name="dispatch")
 class AllPRView(TemplateView):
     template_name = "index.html"
 
@@ -266,8 +274,8 @@ class AllPRView(TemplateView):
         return context
 
 
-# @method_decorator(login_required(login_url="asdasd"), name="dispatch")
-class PRView(FormView):
+@method_decorator(login_required, name="dispatch")
+class PRView(View):
     template_name = "index.html"
     form_class = app_forms.GithubPRApprovalForm
     success_url = "."
@@ -283,23 +291,85 @@ class PRView(FormView):
         )
         return app_models.MonitoredPullRequest.objects.get(code_pull_request=pr)
 
-    def get_form(self, form_class=None):
-        if form_class is None:
-            form_class = self.get_form_class()
-        return form_class(instance=self.get_instance(), **self.get_form_kwargs())
-
-    def form_valid(self, form):
-        # form.instance = self.get_instance()
-        # form.save()
-        clean_data = form.cleaned_data
+    def post(self, request, *args, **kwargs):
+        payload = json.loads(request.body)
         instance = self.get_instance()
-        if "documentation_pull_request" in clean_data:
-            instance.documentation_pull_request = clean_data[
+        action = payload["action"]
+        success = True
+        if (
+            action == "connect_documentation_pr"
+            and "documentation_pull_request" in payload
+        ):
+            instance.documentation_pull_request_id = payload[
                 "documentation_pull_request"
             ]
-        else:
+        elif (
+            action == "approve_pull_request"
+            and "approve_pull_request" in payload
+            and payload["approve_pull_request"] == "APPROVED"
+        ):
+            assert (
+                payload["github_username"] == request.user.github_user.account_name
+            ), "User mismatch"
             instance.pull_request_status = (
                 app_models.MonitoredPullRequest.PullRequestStatus.APPROVED
             )
+        elif action == "unlink":
+            instance.documentation_pull_request = None
+        elif (
+            action == "manual_pr_approval"
+            and "manual_approval" in payload
+            and payload["manual_approval"] is True
+        ):
+            assert (
+                payload["github_username"] == request.user.github_user.account_name
+            ), "User mismatch"
+            instance.pull_request_status = (
+                app_models.MonitoredPullRequest.PullRequestStatus.MANUAL_APPROVAL
+            )
+        else:
+            success = False
         instance.save()
-        return super().form_valid(form)
+        return JsonResponse({"status": success})
+        # form = self.form_class(request.POST, instance=instance)
+        # if form.is_valid():
+        #     form.save()
+        #     return redirect(self.success_url)
+
+    # def get_form(self, form_class=None):
+    #     if form_class is None:
+    #         form_class = self.get_form_class()
+    #     return form_class(instance=self.get_instance(), **self.get_form_kwargs())
+
+    # def form_valid(self, form):
+    #     # form.instance = self.get_instance()
+    #     # form.save()
+    #     clean_data = form.cleaned_data
+    #     instance = self.get_instance()
+    #     if "documentation_pull_request" in clean_data:
+    #         instance.documentation_pull_request = clean_data[
+    #             "documentation_pull_request"
+    #         ]
+    #     else:
+    #         instance.pull_request_status = (
+    #             app_models.MonitoredPullRequest.PullRequestStatus.APPROVED
+    #         )
+    #     instance.save()
+    # return super().form_valid(form)
+
+
+class LoginView(auth_views.LoginView):
+    template_name = "login.html"
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        url = "https://github.com/login/oauth/authorize"
+        params = {
+            "client_id": settings.GITHUB_CREDS["client_id"],
+            "allow_signup": False,
+        }
+        req = PreparedRequest()
+        req.prepare_url(url, params)
+        # print(/)
+        context["github_login_url"] = req.url
+        return context

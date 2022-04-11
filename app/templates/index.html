@@ -32,14 +32,14 @@
                 {% if monitored_pr.pull_request_status == "NOT_CONNECTED" %}
                 <div class="row-left">
                     <div class="cell-group">
-                        <a href="#" class="cell-item item-top main-text"><span class="iconify"
+                        <a href="{{monitored_pr.code_pull_request.get_url}}" class="cell-item item-top main-text"><span class="iconify"
                                 data-icon="octicon:code-16"></span>{{ code_pr_name }}</a>
-                        <a href="#" class="cell-item main-error-text"><span class="iconify"
-                                data-icon="octicon:note-16"></span>{{monitored_pr.pull_request_status}}</a>
+                        <span class="cell-item main-error-text"><span class="iconify"
+                                data-icon="octicon:note-16"></span>{{monitored_pr.pull_request_status}}</span>
                     </div>
                 </div>
                 <div class="row-right">
-                    <a href="#" class="cta cta-primary open-attach-documentation" data-code-pr-title="{{code_pr_name|escapejs}}"
+                    <a href="javascript:void(0)" class="cta cta-primary open-attach-documentation" data-code-pr-title="{{code_pr_name|escapejs}}"
                     data-documentation-pr-title="{{documentation_pr_name|escapejs}}" data-code-pr-id="{{code_pr_number}}">Connect</a>
                 </div>
                 {% else %}
@@ -49,14 +49,14 @@
                 <div class="row-left">
                     <div class="cell-group">
                         <span class="iconify main-cta-secondary-base" data-icon="octicon:link-16"></span>
-                        <a href="#" class="cell-item item-top main-text"><span class="iconify"
+                        <a href="{{monitored_pr.code_pull_request.get_url}}" class="cell-item item-top main-text"><span class="iconify"
                                 data-icon="octicon:code-16"></span>#{{code_pr_name}}</a>
-                        <a href="#" class="cell-item main-text-strong"><span class="iconify"
+                        <a href="{{monitored_pr.documentation_pull_request.get_url}}" class="cell-item main-text-strong"><span class="iconify"
                                 data-icon="octicon:note-16"></span>{{documentation_pr_name}}</a>
                     </div>
                 </div>
                 <div class="row-right">
-                    <a href="#" class="approved main-success-text">Approved</a>
+                    <span  class="approved main-success-text">Approved</span>
                     <div class="user main-text">
                         by <a href="#" class="username main-text">@sharmashobit</a> 20 min ago
                     </div>
@@ -66,9 +66,9 @@
                 <div class="row-left">
                     <div class="cell-group">
                         <span class="iconify main-cta-secondary-base" data-icon="octicon:link-16"></span>
-                        <a href="#" class="cell-item item-top main-text"><span class="iconify"
+                        <a href="{{monitored_pr.code_pull_request.get_url}}" class="cell-item item-top main-text"><span class="iconify"
                                 data-icon="octicon:code-16"></span>{{code_pr_name}}</a>
-                        <a href="#" class="cell-item main-text-strong"><span class="iconify"
+                        <a href="{{monitored_pr.documentation_pull_request.get_url}}" class="cell-item main-text-strong"><span class="iconify"
                                 data-icon="octicon:note-16"></span>{{documentation_pr_name}}</a>
                     </div>
                 </div>
@@ -117,13 +117,17 @@
 
                             </div>
 
-                            <div class="body-row userinput main-text">
-                                <input type="text" placeholder="Type your Github username to confirm" name="">
-                            </div>
-
-                            <div class="body-row cta-row">
-                                <a href="#" class="cta cta-warning show-approved-state">Confirm</a>
-                            </div>
+                            <form class="github-username-confirmation-box" id="approve-pr-form" method="POST" >
+                                {% csrf_token %}
+                                <input type="hidden" value="APPROVED" name="approve_pull_request" />
+                                <input type="hidden" name="action" value="approve_pr"  />
+                                <div class="body-row userinput main-text">
+                                    <input type="text" name="github_username" class="github-username-confirmation" placeholder="Type your Github username to confirm">
+                                </div>
+                                <div class="body-row cta-row">
+                                    <button disabled type="submit" class="cta cta-disabled">Confirm</button>
+                                </div>
+                            </form>
 
                             <div class="body-row caption main-text">
                                 Note: Please ask the Dev/Documentor to come in sync if this is not the case
@@ -155,7 +159,7 @@
                             <div class="body-row mt31">
                                 <div class="cell-group no-bracket large modal-item">
                                     <a href="#" class="cell-item main-text-strong"><span class="iconify"
-                                            data-icon="octicon:code-16"></span><span class="pr_title">#222 Code PR Name</span></a>
+                                            data-icon="octicon:code-16"></span><span class="pr_title"></span></a>
                                 </div>
                             </div>
 
@@ -165,16 +169,17 @@
                                 Manager, and will affect your organizations’ dev statistics
 
                             </div>
-
-                            <div class="body-row userinput main-text">
-                                <input type="text" placeholder="Type your Github username to confirm" name="">
-                            </div>
-
-                            <div class="body-row cta-row">
-                                <a href="#" class="cta cta-warning">Confirm</a>
-                            </div>
-
-
+                            <form method="POST" class="github-username-confirmation-box" id="manual-approval-form">
+                                <input type="hidden" name="action" value="manual_pr_approval"  />
+                                <div class="body-row userinput main-text">
+                                    <input type="text" class="github-username-confirmation" placeholder="Type your Github username to confirm" name="github_username">
+                                </div>
+                                <input type="hidden" name="code_pull_request"  />
+                                
+                                <div class="body-row cta-row">
+                                    <button disabled type="submit" class="cta cta-disabled">Confirm</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -213,7 +218,7 @@
                             </div>
 
                             <div class="body-row cta-row">
-                                <a href="#" class="cta cta-warning">Confirm</a>
+                                <a href="#" class="cta cta-disabled">Confirm</a>
                             </div>
 
 
@@ -374,9 +379,12 @@
                                 </div>
                             </div>
                             <div class="group-list">
-                                <div class="body-row bordered-list">
-                                    <!--Row-->
-                                    {% for doc_pr in all_documentation_prs %}
+                                <!--Row-->
+                                {% for doc_pr in all_documentation_prs %}
+                                <form method="POST" class="connect-documentation-pr-form body-row bordered-list">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="documentation_pull_request" value="{{ doc_pr.id }}"/>
+                                    <input type="hidden" name="action" value="connect_documentation_pr"  />
                                     <div class="dialog-history-row">
                                         <div class="row-left">
                                             <div class="cell-group no-bracket modal-item">
@@ -385,12 +393,12 @@
                                             </div>
                                         </div>
                                         <div class="row-right">
-                                            <a href="#" class="cta cta-primary hidden connect">Connect</a>
+                                            <button type="submit" class="cta cta-primary hidden connect">Connect</button>
                                         </div>
                                     </div>
-                                    {% endfor %}
-                                    <!--Row-->
-                                </div>
+                                </form>
+                                {% endfor %}
+                                <!--Row-->
                             </div>
                             <div class="body-row mt70 tc main-warning-base lh16">
                                 <div class="text-to-bottom"><a href="#"
@@ -410,14 +418,46 @@
 {% block postcontent %}
 <!--SCRIPTS-->
 <script type="text/javascript">
+    function objectifyForm(formArray) {
+        //serialize data function
+        // var formdata = $("#myform").serializeArray();
+        var data = {};
+        $(formArray).each(function(index, obj){
+            data[obj.name] = obj.value;
+        });
+        return data;
+        // var returnArray = {};
+        // for (var i = 0; i < formArray.length; i++){
+        //     returnArray[formArray[i]['name']] = formArray[i]['value'];
+        // }
+        // return returnArray;
+    }
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
     // $(".open-get-approval").click(function () {
     // });
     $(".close").click(function () {
         $(".modal").removeClass('opened');
+        $(".github-username-confirmation-box .github-username-confirmation").val("").trigger("change");
     });
     $("#open-manual-code-approval").click(function () {
         $("#attach-documentation-modal").removeClass('opened');
         $("#manual-code-approval-modal .pr_title").html($(this).attr("data-code-pr-title"));
+        $("#manual-approval-form").attr("action", "/{{repo_mapping.code_repo.repo_full_name}}/pull/"+$(this).attr("data-code-pr-id")+"/");
         $("#manual-code-approval-modal").addClass("opened");
     });
     $(".open-confirm-part2").click(function () {
@@ -435,6 +475,7 @@
         $("#attach-documentation-modal .pr_title").html($(this).attr("data-code-pr-title"));
         $("#open-manual-code-approval").attr("data-code-pr-id", $(this).attr("data-code-pr-id"));
         $("#open-manual-code-approval").attr("data-code-pr-title", $(this).attr("data-code-pr-title"));
+        $("#attach-documentation-modal .connect-documentation-pr-form").attr("action", "/{{repo_mapping.code_repo.repo_full_name}}/pull/"+$(this).attr("data-code-pr-id")+"/");
         $("#attach-documentation-modal").addClass("opened");
     });
     $(".back-to-attach-documentation").click(function () {
@@ -449,7 +490,52 @@
     $(".open-approval-modal").click(function() {
         $("#approval-modal .code_pr_title").html($(this).attr("data-code-pr-title"));
         $("#approval-modal .documentation_pr_title").html($(this).attr("data-documentation-pr-title"));
+        $("#approve-pr-form").attr("action", "/{{repo_mapping.code_repo.repo_full_name}}/pull/"+$(this).attr("data-code-pr-id")+"/");
         $("#approval-modal").addClass('opened');
     })
+    // window.CURRENT_USERNAME=;
+    $(".github-username-confirmation-box .github-username-confirmation").on("keyup change", function() {
+        current_val = $(this).val();
+        success_btn = $(this).parents(".github-username-confirmation-box").find("button")
+        if (current_val != "{{request.user.github_user.account_name|escapejs}}") {
+            success_btn.removeClass("cta-warning").addClass("cta-disabled").attr("disabled", true);
+        } else {
+            success_btn.removeClass("cta-disabled").addClass("cta-warning").removeAttr("disabled");
+        }
+    })
+    // $("#approve-pr-form").submit(function() {
+    //     $.post({
+    //         url: $(this).attr("action"),
+    //         data: $(this).serializeArray(),
+    //         contentType : 'application/json',
+    //         success: function(data) {
+    //             location.reload();
+    //         }
+    //     })
+    //     return false;
+    // });
+    $.ajaxSetup({
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            "X-CSRFToken": getCookie('csrftoken'),
+            "mode": 'same-origin' // Do not send CSRF token to another domain.
+        }
+    });
+
+    $("form").submit(function() {
+        data = objectifyForm($(this).serializeArray());
+        console.log(data);
+        $.ajax({
+            url: $(this).attr("action"),
+            method: $(this).attr("method"),
+            data: JSON.stringify(data),
+            dataType: 'json',
+            success: function(data) {
+                location.reload();
+            }
+        })
+        return false;
+    });
 </script>
 {% endblock postcontent %}
