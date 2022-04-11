@@ -4,6 +4,8 @@
 
 ### Django ###
 play-venv
+.DS_Store
+cdoc-doc/
 .idea
 **/.build
 **/.packages

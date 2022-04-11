@@ -237,6 +237,7 @@ except ModuleNotFoundError:
         "app_id": os.environ["CDOC_GITHUB_APP_ID"],
         "app_name": "Continuous Documentation",
     }
+    TEMPLATE_PATH = "fifthtry.github.io/cdoc-doc"
 
     if "CDOC_SENTRY_DSN" in os.environ:
         import sentry_sdk  # noqa

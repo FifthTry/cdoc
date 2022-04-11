@@ -303,4 +303,4 @@ class PRView(FormView):
 
 
 class IndexView(TemplateView):
-    template_name = "test.com/hello_world.ftd"
+    template_name = "/"
