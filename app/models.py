@@ -161,6 +161,14 @@ class GithubAppInstallation(models.Model):
         )[1]
 
 
+class GithubAppUser(models.Model):
+    installation = models.ForeignKey(GithubAppInstallation, on_delete=models.CASCADE)
+    github_user = models.ForeignKey(GithubUser, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ("installation", "github_user")
+
+
 class GithubInstallationToken(Token):
     github_app_installation = models.ForeignKey(
         GithubAppInstallation, on_delete=models.CASCADE, related_name="tokens"

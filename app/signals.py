@@ -134,10 +134,10 @@ def synchronize_github_check(sender, instance, **kwargs):
                 },
             }
         )
-    elif (
-        instance.ref_pull_request.pull_request_status
-        == app_models.MonitoredPullRequest.PullRequestStatus.APPROVED
-    ):
+    elif instance.ref_pull_request.pull_request_status in [
+        app_models.MonitoredPullRequest.PullRequestStatus.APPROVED,
+        app_models.MonitoredPullRequest.PullRequestStatus.MANUAL_APPROVAL,
+    ]:
         data.update(
             {
                 "conclusion": "success",
