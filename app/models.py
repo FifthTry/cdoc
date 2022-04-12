@@ -164,6 +164,7 @@ class GithubAppInstallation(models.Model):
 class GithubAppUser(models.Model):
     installation = models.ForeignKey(GithubAppInstallation, on_delete=models.CASCADE)
     github_user = models.ForeignKey(GithubUser, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ("installation", "github_user")
@@ -184,6 +185,7 @@ class GithubRepository(models.Model):
     repo_name = models.CharField(max_length=150)
     repo_full_name = models.CharField(max_length=200, unique=True)
     owner = models.ForeignKey(GithubAppInstallation, on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         return self.repo_full_name
@@ -207,6 +209,7 @@ class GithubRepoMap(models.Model):
         GithubRepository, on_delete=models.PROTECT, related_name="documentation_repos"
     )
     integration_type = models.CharField(max_length=20, choices=IntegrationType.choices)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ("integration", "code_repo", "documentation_repo")
@@ -349,3 +352,17 @@ class GithubCheckRun(models.Model):
             )
             self.run_id = check_run_instance.id
         super().save(*args, **kwargs)
+
+
+class GithubLoginState(models.Model):
+    """
+    This model is used to store the state of the login process. Along with it,
+    it also stores the redirect URL for the state.
+    """
+
+    state = models.UUIDField(default=uuid.uuid4)
+    redirect_url = models.URLField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return self.state.__str__()
