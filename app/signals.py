@@ -69,7 +69,7 @@ def pull_request_post_save(sender, instance, **kwargs):
         code_pr.save()
 
     if instance.repository.code_repos.exists():
-        installation_instance = instance.repository.code_repos.last()
+        installation_instance = instance.repository.code_repos.last().integration
         (
             monitored_pr_instance,
             is_new,
