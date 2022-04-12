@@ -3,8 +3,6 @@
 from django.db import migrations, models
 import django.db.models.deletion
 
-from app.models import GithubAppInstallation
-
 
 def migrate_admin_users(apps, schema_editor):
     # Add, change, delete, view
@@ -14,7 +12,6 @@ def migrate_admin_users(apps, schema_editor):
         GithubAppUser.objects.update_or_create(
             github_user=gai_instance.creator, installation=gai_instance
         )
-    # assert False, "ASD"
 
 
 class Migration(migrations.Migration):

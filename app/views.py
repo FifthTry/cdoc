@@ -322,6 +322,11 @@ class PRView(View):
     def post(self, request, *args, **kwargs):
         payload = json.loads(request.body)
         instance = self.get_instance()
+        get_object_or_404(
+            app_models.GithubAppUser,
+            github_user=request.user.github_user,
+            installation=instance.integration,
+        )
         action = payload["action"]
         success = True
         if (
@@ -344,12 +349,7 @@ class PRView(View):
             )
         elif action == "unlink":
             instance.documentation_pull_request = None
-        elif (
-            action
-            == "manual_pr_approval"
-            # and "manual_approval" in payload
-            # and payload["manual_approval"] is True
-        ):
+        elif action == "manual_pr_approval":
             assert (
                 payload["github_username"] == request.user.github_user.account_name
             ), "User mismatch"
@@ -360,31 +360,6 @@ class PRView(View):
             success = False
         instance.save()
         return JsonResponse({"status": success})
-        # form = self.form_class(request.POST, instance=instance)
-        # if form.is_valid():
-        #     form.save()
-        #     return redirect(self.success_url)
-
-    # def get_form(self, form_class=None):
-    #     if form_class is None:
-    #         form_class = self.get_form_class()
-    #     return form_class(instance=self.get_instance(), **self.get_form_kwargs())
-
-    # def form_valid(self, form):
-    #     # form.instance = self.get_instance()
-    #     # form.save()
-    #     clean_data = form.cleaned_data
-    #     instance = self.get_instance()
-    #     if "documentation_pull_request" in clean_data:
-    #         instance.documentation_pull_request = clean_data[
-    #             "documentation_pull_request"
-    #         ]
-    #     else:
-    #         instance.pull_request_status = (
-    #             app_models.MonitoredPullRequest.PullRequestStatus.APPROVED
-    #         )
-    #     instance.save()
-    # return super().form_valid(form)
 
 
 class LoginView(auth_views.LoginView):
