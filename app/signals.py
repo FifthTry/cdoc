@@ -117,7 +117,7 @@ def synchronize_github_check(sender, instance, **kwargs):
         "external_id": instance.unique_id.__str__(),
         "status": "completed",
         "conclusion": "action_required",
-        "details_url": f"{settings.WEBSITE_HOST}/{github_repo.full_name}/pull/{instance.ref_pull_request.code_pull_request.pr_number}",
+        "details_url": f"{settings.WEBSITE_HOST}/{github_repo.full_name}/pulls/",
     }
     if (
         instance.ref_pull_request.pull_request_status
