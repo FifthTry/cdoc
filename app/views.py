@@ -43,6 +43,7 @@ class AuthCallback(View):
             - setup_action: str
         """
         code: str = request.GET["code"]
+
         # logger.info(request.GET)
         # github_app_auth_user = app_models.GithubAppAuth.objects.create(
         #     code=code,
@@ -64,6 +65,7 @@ class AuthCallback(View):
         resp = requests.post(
             "https://github.com/login/oauth/access_token", json=payload
         )
+        redirect_url = None
         if resp.ok:
             response = parse_qs(resp.text)
             if "error" in response:
@@ -145,6 +147,10 @@ class AuthCallback(View):
                         )
                         # installation_instance.save()
                         installation_instance.update_token()
+                    if redirect_url is None:
+                        redirect_url = (
+                            f"/{installation_instance.account_name}/repositories/"
+                        )
                 for installation in user_instance.get_installations():
                     if installation.app_id == settings.GITHUB_CREDS["app_id"]:
                         installation_instance = (
@@ -157,9 +163,20 @@ class AuthCallback(View):
                             github_user=github_user,
                             installation=installation_instance,
                         )
+                        if redirect_url is None:
+                            redirect_url = (
+                                f"/{installation_instance.account_name}/repositories/"
+                            )
         else:
             logger.error(resp.text)
-        return HttpResponseRedirect("/admin/")
+            return Http404("Something went wrong")
+        if "state" in request.GET:
+            next_url = app_models.GithubLoginState.objects.get(
+                state=request.GET["state"]
+            ).redirect_url
+            if next_url is not None or next_url != "":
+                redirect_url = next_url
+        return HttpResponseRedirect(redirect_url or "/installations/")
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -365,15 +382,62 @@ class PRView(View):
 class LoginView(auth_views.LoginView):
     template_name = "login.html"
 
+    def get(self, request, *args: Any, **kwargs: Any):
+        if request.user.is_authenticated:
+            return HttpResponseRedirect("/installations/")
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
+        login_state_instance = app_models.GithubLoginState()
+        if self.request.GET.get("next"):
+            login_state_instance.redirect_url = self.request.GET.get("next")
+        login_state_instance.save()
         url = "https://github.com/login/oauth/authorize"
         params = {
             "client_id": settings.GITHUB_CREDS["client_id"],
             "allow_signup": False,
+            "state": login_state_instance.state.__str__(),
         }
         req = PreparedRequest()
         req.prepare_url(url, params)
-        # print(/)
         context["github_login_url"] = req.url
+        return context
+
+
+class AllInstallationsView(TemplateView):
+    template_name = "all_installations.html"
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["all_installations"] = app_models.GithubAppInstallation.objects.filter(
+            id__in=app_models.GithubAppUser.objects.filter(
+                github_user=self.request.user.github_user
+            ).values_list("installation", flat=True)
+        )
+        return context
+
+
+class ListInstallationRepos(TemplateView):
+    template_name = "all_repos.html"
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        matches = self.request.resolver_match.kwargs
+
+        context = super().get_context_data(**kwargs)
+        current_installation = app_models.GithubAppInstallation.objects.get(
+            id__in=app_models.GithubAppUser.objects.filter(
+                github_user=self.request.user.github_user
+            ).values_list("installation", flat=True),
+            **matches,
+        )
+
+        context["current_installation"] = current_installation
+        context["all_repos"] = app_models.GithubRepository.objects.filter(
+            id__in=app_models.MonitoredPullRequest.objects.filter(
+                integration=current_installation
+            )
+            .values_list("code_pull_request__repository", flat=True)
+            .distinct()
+        )
         return context
