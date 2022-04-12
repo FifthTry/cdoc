@@ -208,6 +208,9 @@ class GithubRepoMap(models.Model):
     )
     integration_type = models.CharField(max_length=20, choices=IntegrationType.choices)
 
+    class Meta:
+        unique_together = ("integration", "code_repo", "documentation_repo")
+
 
 class GithubPullRequest(models.Model):
     pr_id = models.BigIntegerField()
@@ -270,6 +273,10 @@ class MonitoredPullRequest(models.Model):
         choices=PullRequestStatus.choices,
         default=PullRequestStatus.NOT_CONNECTED,
     )
+    integration = models.ForeignKey(GithubAppInstallation, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ("code_pull_request", "documentation_pull_request")
 
     def __str__(self) -> str:
         return f"{self.code_pull_request.repository.repo_full_name}[{self.code_pull_request.pr_number}]"
