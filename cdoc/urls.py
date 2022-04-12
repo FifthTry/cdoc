@@ -17,13 +17,17 @@ from django.contrib import admin
 from django.urls import path, include
 from app import views as app_views
 
-# from django.contrib.auth import views as auth_views
+from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
     path(
         "accounts/login/",
         app_views.LoginView.as_view(),
+    ),
+    path(
+        "accounts/logout/",
+        auth_views.LogoutView.as_view(next_page="/"),
     ),
     path(
         "<str:account_name>/<str:repo_name>/pull/<int:pr_number>/",
