@@ -69,11 +69,12 @@ def pull_request_post_save(sender, instance, **kwargs):
         code_pr.save()
 
     if instance.repository.code_repos.exists():
+        installation_instance = instance.repository.code_repos.last()
         (
             monitored_pr_instance,
             is_new,
         ) = app_models.MonitoredPullRequest.objects.get_or_create(
-            code_pull_request=instance,
+            code_pull_request=instance, integration=installation_instance
         )
         if is_new is False:
             monitored_pr_instance.save()
