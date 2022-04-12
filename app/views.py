@@ -12,7 +12,7 @@ import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
 from django.db import transaction
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import Http404, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -23,6 +23,7 @@ from django.contrib.auth import models as auth_models
 from django.views.generic import FormView, TemplateView
 from django.contrib.auth import views as auth_views
 from requests.models import PreparedRequest
+from django.shortcuts import get_object_or_404
 
 from . import models as app_models
 from . import forms as app_forms
@@ -144,6 +145,18 @@ class AuthCallback(View):
                         )
                         # installation_instance.save()
                         installation_instance.update_token()
+                for installation in user_instance.get_installations():
+                    if installation.app_id == settings.GITHUB_CREDS["app_id"]:
+                        installation_instance = (
+                            app_models.GithubAppInstallation.objects.get(
+                                account_id=installation.target_id,
+                                installation_id=installation.id,
+                            )
+                        )
+                        app_models.GithubAppUser.objects.update_or_create(
+                            github_user=github_user,
+                            installation=installation_instance,
+                        )
         else:
             logger.error(resp.text)
         return HttpResponseRedirect("/admin/")
@@ -256,6 +269,21 @@ class OauthCallback(View):
 @method_decorator(login_required, name="dispatch")
 class AllPRView(TemplateView):
     template_name = "index.html"
+
+    def get(self, request, *args: Any, **kwargs: Any):
+        github_user = request.user.github_user
+        context = self.get_context_data(**kwargs)
+
+        if github_user is None:
+            return Http404("User not found")
+        # elif app_models.GithubAppUser.objects.filter():
+        #     pass
+        get_object_or_404(
+            app_models.GithubAppUser,
+            github_user=github_user,
+            installation=context["repo_mapping"].integration,
+        )
+        return self.render_to_response(context)
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
