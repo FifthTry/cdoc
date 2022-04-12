@@ -3,28 +3,72 @@
 from django.db import migrations, models
 import django.db.models.deletion
 
+from app.models import GithubAppInstallation
+
+
+def migrate_admin_users(apps, schema_editor):
+    # Add, change, delete, view
+    GithubAppUser = apps.get_model("app", "GithubAppUser")
+    GithubAppInstallation = apps.get_model("app", "GithubAppInstallation")
+    for gai_instance in GithubAppInstallation.objects.all():
+        GithubAppUser.objects.update_or_create(
+            github_user=gai_instance.creator, installation=gai_instance
+        )
+    # assert False, "ASD"
+
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('app', '0012_alter_githubpullrequest_pr_closed_at_and_more'),
+        ("app", "0012_alter_githubpullrequest_pr_closed_at_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='monitoredpullrequest',
-            name='pull_request_status',
-            field=models.CharField(choices=[('NOT_CONNECTED', 'Not Connected'), ('APPROVAL_PENDING', 'Approval Pending'), ('STALE_CODE', 'Stale Code'), ('STALE_APPROVAL', 'Stale Approval'), ('APPROVED', 'Approved'), ('MANUALLY_APPROVED', 'Manual Approval')], default='NOT_CONNECTED', max_length=20),
+            model_name="monitoredpullrequest",
+            name="pull_request_status",
+            field=models.CharField(
+                choices=[
+                    ("NOT_CONNECTED", "Not Connected"),
+                    ("APPROVAL_PENDING", "Approval Pending"),
+                    ("STALE_CODE", "Stale Code"),
+                    ("STALE_APPROVAL", "Stale Approval"),
+                    ("APPROVED", "Approved"),
+                    ("MANUALLY_APPROVED", "Manual Approval"),
+                ],
+                default="NOT_CONNECTED",
+                max_length=20,
+            ),
         ),
         migrations.CreateModel(
-            name='GithubAppUser',
+            name="GithubAppUser",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('github_user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='app.githubuser')),
-                ('installation', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='app.githubappinstallation')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "github_user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="app.githubuser"
+                    ),
+                ),
+                (
+                    "installation",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="app.githubappinstallation",
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('installation', 'github_user')},
+                "unique_together": {("installation", "github_user")},
             },
         ),
+        migrations.RunPython(migrate_admin_users, migrations.RunPython.noop),
     ]

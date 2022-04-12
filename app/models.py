@@ -168,6 +168,10 @@ class GithubAppUser(models.Model):
     class Meta:
         unique_together = ("installation", "github_user")
 
+    def __str__(self) -> str:
+        return f"{self.github_user.account_name}[{self.installation.installation_id}]"
+        return super().__str__()
+
 
 class GithubInstallationToken(Token):
     github_app_installation = models.ForeignKey(

@@ -6,13 +6,13 @@ from django.core.management import call_command
 
 
 def update_permissions(schema, group):
-    call_command('update_permissions')
+    call_command("update_permissions")
 
 
 def apply_migration(apps, schema_editor):
     # Add, change, delete, view
-    Group = apps.get_model('auth', 'Group')
-    Permission = apps.get_model('auth', 'Permission')
+    Group = apps.get_model("auth", "Group")
+    Permission = apps.get_model("auth", "Permission")
     required_permissions = [
         "view_githubappinstallation",
         "change_githubappinstallation",
@@ -39,12 +39,13 @@ def revert_migration(*args, **kwargs):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('app', '0001_initial'),
-        ('auth', "0012_alter_user_first_name_max_length"),
+        ("app", "0001_initial"),
+        ("auth", "0012_alter_user_first_name_max_length"),
     ]
 
     operations = [
-        migrations.RunPython(update_permissions,
-                             reverse_code=migrations.RunPython.noop),
-        migrations.RunPython(apply_migration, revert_migration)
+        migrations.RunPython(
+            update_permissions, reverse_code=migrations.RunPython.noop
+        ),
+        migrations.RunPython(apply_migration, revert_migration),
     ]
