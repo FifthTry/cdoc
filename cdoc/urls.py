@@ -15,10 +15,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from app import views as app_views
-
+from django.conf import settings
+from django.shortcuts import render
 from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
+
+import glob
+
+from app import views as app_views
 
 urlpatterns = [
     path(
@@ -49,3 +53,37 @@ urlpatterns = [
         TemplateView.as_view(template_name="index.html"),
     ),
 ]
+
+def make_v(template, context):
+    def v(request):
+        return render(request, template, context=context)
+    return v
+
+
+def s(p, **data):
+    import json
+
+    d = json.load(open(p))
+
+    p = p.replace('samples/', '').replace('.json', '')
+    print(p, d)
+
+    return (
+        path('samples/' + ('' if p == "index" else p + '/'), make_v(d["template"], d)),
+        p,
+        d,
+    )
+
+
+if settings.DEBUG:
+    d = [
+        s(f) for f in glob.glob('samples/**/*.json', recursive=True)
+    ]
+
+    urlpatterns.append(
+        path(
+            "samples/", make_v("samples.html", context={ "data": d})
+        )
+    )
+
+    urlpatterns += [i[0] for i in d]

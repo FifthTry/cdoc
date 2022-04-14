@@ -1,0 +1,9 @@
+<h1>Samples</h1>
+
+<ul>
+{% for i in data %}
+    <li><a href="{{ i.1 }}/">{{ i.1 }} ({{ i.2.template }})</a></li>
+{% empty %}
+    No JSONs found in samples folder.
+{% endfor %}
+</ul>
