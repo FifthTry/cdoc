@@ -147,11 +147,11 @@ class AuthCallback(View):
                         )
                         # installation_instance.save()
                         installation_instance.update_token()
-                    if redirect_url is None:
-                        redirect_url = (
-                            f"/{installation_instance.account_name}/repositories/"
-                        )
+                    redirect_url = redirect_url or (
+                        f"/{installation_instance.account_name}/repos/"
+                    )
                 for installation in user_instance.get_installations():
+                    # assert False, "ASD"
                     if installation.app_id == settings.GITHUB_CREDS["app_id"]:
                         installation_instance = (
                             app_models.GithubAppInstallation.objects.get(
@@ -163,10 +163,9 @@ class AuthCallback(View):
                             github_user=github_user,
                             installation=installation_instance,
                         )
-                        if redirect_url is None:
-                            redirect_url = (
-                                f"/{installation_instance.account_name}/repositories/"
-                            )
+                        redirect_url = redirect_url or (
+                            f"/{installation_instance.account_name}/repos/"
+                        )
         else:
             logger.error(resp.text)
             return Http404("Something went wrong")
@@ -174,9 +173,9 @@ class AuthCallback(View):
             next_url = app_models.GithubLoginState.objects.get(
                 state=request.GET["state"]
             ).redirect_url
-            if next_url is not None or next_url != "":
+            if next_url is not None and next_url != "":
                 redirect_url = next_url
-        return HttpResponseRedirect(redirect_url or "/installations/")
+        return HttpResponseRedirect(redirect_url)
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -285,7 +284,7 @@ class OauthCallback(View):
 
 @method_decorator(login_required, name="dispatch")
 class AllPRView(TemplateView):
-    template_name = "index.html"
+    template_name = "all_pr_for_org.html"
 
     def get(self, request, *args: Any, **kwargs: Any):
         github_user = request.user.github_user
@@ -413,19 +412,6 @@ class LoginView(auth_views.LoginView):
         req.prepare_url(url, params)
         context["github_login_url"] = req.url
         return context
-
-
-# class AllInstallationsView(TemplateView):
-#     template_name = "all_installations.html"
-
-#     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-#         context = super().get_context_data(**kwargs)
-#         context["all_installations"] = app_models.GithubAppInstallation.objects.filter(
-#             id__in=app_models.GithubAppUser.objects.filter(
-#                 github_user=self.request.user.github_user
-#             ).values_list("installation", flat=True)
-#         )
-#         return context
 
 
 class ListInstallationRepos(TemplateView):
