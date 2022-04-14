@@ -147,6 +147,11 @@ class AuthCallback(View):
                         )
                         # installation_instance.save()
                         installation_instance.update_token()
+
+                        app_models.GithubAppUser.objects.update_or_create(
+                            github_user=github_user,
+                            installation=installation_instance,
+                        )
                     redirect_url = redirect_url or (
                         f"/{installation_instance.account_name}/repos/"
                     )
