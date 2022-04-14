@@ -26,6 +26,7 @@
                 <img src="{% static 'images/fifthtry-logo.png' %}">
             </a>
         </div>
+        {% if request.user.is_authenticated %}
         <div>
             <select id="org-selector">
                 {% for installation in all_installations %}
@@ -33,6 +34,7 @@
                 {% endfor %}
             </select>
         </div>
+        {% endif %}
         <div class="menu">
             <a href="#" class="menu-item">
                 <span class="iconify" data-icon="bi:moon"></span>

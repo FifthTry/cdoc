@@ -18,7 +18,7 @@ from django.urls import path, include
 from app import views as app_views
 
 from django.contrib.auth import views as auth_views
-
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path(
@@ -29,10 +29,6 @@ urlpatterns = [
         "accounts/logout/",
         auth_views.LogoutView.as_view(next_page="/"),
     ),
-    # path(
-    #     "installations/",
-    #     app_views.AllInstallationsView.as_view(),
-    # ),
     path(
         "<str:account_name>/repos/",
         app_views.ListInstallationRepos.as_view(),
@@ -48,4 +44,8 @@ urlpatterns = [
     #
     path("app/", include("app.urls")),
     path("admin/", admin.site.urls),
+    path(
+        "",
+        TemplateView.as_view(template_name="index.html"),
+    ),
 ]
