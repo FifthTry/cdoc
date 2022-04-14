@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+
 <div class="parent-container">
     <div class="container">
 
@@ -45,7 +46,7 @@
         <div class="modal-container">
             <div class="modal-dialog large-dialog pb0">
                 <div class="modal-title main-text-strong">
-                    Attach Documentation
+                    Attach Repositories
                     <span class="close"><span class="iconify" data-icon="octicon:x-16"></span></span>
                 </div>
 
@@ -55,46 +56,33 @@
                         <br />
                         Attach one for:
                     </div>
-                    <div class="body-row mt27">
-                        <div class="cell-group no-bracket large modal-item">
-                            <a href="#" class="cell-item main-text-strong"><span class="iconify"
-                                    data-icon="octicon:note-16"></span><span class="pr_title"></span></a>
-                        </div>
-                    </div>
 
                     <div class="body-row modal-msg mt27 main-text">
                         <!--search:start-->
-                        <div class="search">
-                            <input type="text" placeholder="search" name="">
-                        </div>
-                    </div>
-                    <div class="group-list">
-                        <!--Row-->
-                        {% for doc_pr in all_documentation_prs %}
-                        <form method="POST" class="connect-documentation-pr-form body-row bordered-list">
-                            {% csrf_token %}
-                            <input type="hidden" name="documentation_pull_request" value="{{ doc_pr.id }}"/>
-                            <input type="hidden" name="action" value="connect_documentation_pr"  />
-                            <div class="dialog-history-row">
-                                <div class="row-left">
-                                    <div class="cell-group no-bracket modal-item">
-                                        <a href="#" class="cell-item main-text"><span class="iconify"
-                                                data-icon="octicon:code-16"></span>#{{doc_pr.pr_number}} {{doc_pr.pr_title}}</a>
-                                    </div>
-                                </div>
-                                <div class="row-right">
-                                    <button type="submit" class="cta cta-primary hidden connect">Connect</button>
-                                </div>
+                        <form method="POST" action="" id="attach-repos-form">
+                            <div>
+                                Code Repository:
+                                <select name="code_repo_id">
+                                    {% for repo in available_repos_for_mapping %}
+                                    <option value="{{repo.id}}">{{repo.repo_full_name}}</option>
+                                    {% endfor %}
+                                </select>
                             </div>
+                            <div>
+                                Documentation Repository:
+                                <select name="documentation_repo_id">
+                                    {% for repo in available_repos_for_mapping %}
+                                    <option value="{{repo.id}}">{{repo.repo_full_name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <input type="hidden" name="integration_id" value="{{current_installation.id}}" />
+                            <input type="hidden" name="integration_type" value="FULL" />
+                            <button type="submit" class="cta cta-primary">Attach</button>
                         </form>
-                        {% endfor %}
-                        <!--Row-->
+                        
                     </div>
-                    <div class="body-row mt70 tc main-warning-base lh16">
-                        <div class="text-to-bottom"><a href="#"
-                                class="main-warning-base" id="open-manual-code-approval">This code change doesn't need
-                                documentation</a></div>
-                    </div>
+                    
                 </div>
             </div>
         </div>
@@ -105,7 +93,58 @@
 
 {% block postcontent %}
 <script>
+    function objectifyForm(formArray) {
+        var data = {};
+        $(formArray).each(function(index, obj){
+            data[obj.name] = obj.value;
+        });
+        return data;
+    }
     $("#open-new-repo-connection-modal").click(function(){
         $("#attach-documentation-modal").addClass("opened");
+    });
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    $.ajaxSetup({
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            "X-CSRFToken": getCookie('csrftoken'),
+            "mode": 'same-origin' // Do not send CSRF token to another domain.
+        }
+    });
+    
+
+    $("#attach-repos-form").submit(function() {
+        data = objectifyForm($(this).serializeArray());
+        if (data["documentation_repo_id"] == data["code_repo_id"]){
+            alert("Documentation and Code Repository cannot be same");
+            return false;
+        }
+        console.log(data);
+        $.ajax({
+            url: $(this).attr("action"),
+            method: $(this).attr("method"),
+            data: JSON.stringify(data),
+            dataType: 'json',
+            success: function(data) {
+                location.reload();
+            }
+        })
+        return false;
     });
 </script>{% endblock postcontent %}
