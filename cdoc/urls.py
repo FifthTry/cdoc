@@ -29,10 +29,10 @@ urlpatterns = [
         "accounts/logout/",
         auth_views.LogoutView.as_view(next_page="/"),
     ),
-    path(
-        "installations/",
-        app_views.AllInstallationsView.as_view(),
-    ),
+    # path(
+    #     "installations/",
+    #     app_views.AllInstallationsView.as_view(),
+    # ),
     path(
         "<str:account_name>/repos/",
         app_views.ListInstallationRepos.as_view(),

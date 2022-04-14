@@ -310,6 +310,11 @@ class AllPRView(TemplateView):
                 matches["account_name"], matches["repo_name"]
             )
         )
+        context["all_installations"] = app_models.GithubAppInstallation.objects.filter(
+            id__in=app_models.GithubAppUser.objects.filter(
+                github_user=self.request.user.github_user
+            ).values_list("installation_id", flat=True)
+        )
         context["open_prs"] = app_models.MonitoredPullRequest.objects.filter(
             code_pull_request__repository=context["repo_mapping"].code_repo
         )
@@ -375,7 +380,12 @@ class PRView(View):
             )
         else:
             success = False
-        instance.save()
+        with transaction.atomic():
+            instance.save()
+            if instance.is_approved:
+                app_models.PrApproval.objects.create(
+                    monitored_pull_request=instance, approver=request.user
+                )
         return JsonResponse({"status": success})
 
 
@@ -405,39 +415,37 @@ class LoginView(auth_views.LoginView):
         return context
 
 
-class AllInstallationsView(TemplateView):
-    template_name = "all_installations.html"
+# class AllInstallationsView(TemplateView):
+#     template_name = "all_installations.html"
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context["all_installations"] = app_models.GithubAppInstallation.objects.filter(
-            id__in=app_models.GithubAppUser.objects.filter(
-                github_user=self.request.user.github_user
-            ).values_list("installation", flat=True)
-        )
-        return context
+#     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+#         context = super().get_context_data(**kwargs)
+#         context["all_installations"] = app_models.GithubAppInstallation.objects.filter(
+#             id__in=app_models.GithubAppUser.objects.filter(
+#                 github_user=self.request.user.github_user
+#             ).values_list("installation", flat=True)
+#         )
+#         return context
 
 
 class ListInstallationRepos(TemplateView):
-    template_name = "all_repos.html"
+    template_name = "org-dashboard.html"
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         matches = self.request.resolver_match.kwargs
 
         context = super().get_context_data(**kwargs)
-        current_installation = app_models.GithubAppInstallation.objects.get(
+        context["all_installations"] = app_models.GithubAppInstallation.objects.filter(
             id__in=app_models.GithubAppUser.objects.filter(
                 github_user=self.request.user.github_user
-            ).values_list("installation", flat=True),
+            ).values_list("installation_id", flat=True)
+        )
+        current_installation = context["all_installations"].get(
             **matches,
         )
 
         context["current_installation"] = current_installation
-        context["all_repos"] = app_models.GithubRepository.objects.filter(
-            id__in=app_models.MonitoredPullRequest.objects.filter(
-                integration=current_installation
-            )
-            .values_list("code_pull_request__repository", flat=True)
-            .distinct()
+        context["all_repo_map"] = app_models.GithubRepoMap.objects.filter(
+            integration=current_installation
         )
         return context

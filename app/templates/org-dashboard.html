@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="parent-container">
+    <div class="container">
+
+        <!--breadcrumb:start-->
+        <nav class="breadcrumb">
+            <a href="#" class="main-cta-primary-base"><span class="iconify main-text"
+                    data-icon="octicon:repo-16"></span>{{repo_mapping.code_repo.owner.account_name}}</a>
+                <a href="#" class="repo-item main-cta-primary-base">{{current_installation.account_name}}</a>
+            <a href="#" class="main-text-strong">
+                <span class="iconify main-text" data-icon="octicon:git-pull-request-16"></span>Connections</a>
+        </nav>
+
+        <!--search:start-->
+        <div class="search">
+            <input type="text" placeholder="search" name="">
+            <a id="open-new-repo-connection-modal" class="cta cta-primary">+ New connection</a>
+        </div>
+        <div class="doc-history">
+            {% for repo_map in all_repo_map %}
+            <div class="doc-history-row">
+                <div class="row-left">
+                    <div class="cell-group">
+                        <a href="{{repo_map.code_repo.get_url}}" class="cell-item item-top main-text"><span class="iconify"
+                                data-icon="octicon:code-16"></span>{{repo_map.code_repo.repo_full_name}}</a>
+                        <a href="{{repo_map.documentation_repo.get_url}}" class="cell-item main-text"><span class="iconify"
+                                data-icon="octicon:note-16"></span>{{repo_map.documentation_repo.repo_full_name}}</a>
+                    </div>
+                </div>
+                <div class="row-right">
+                    <a href="/{{repo_map.code_repo.repo_full_name}}/pulls" class="cta cta-primary">></a>
+                </div>
+            </div>
+        {% endfor %}
+
+        </div>
+        
+        
+    </div>
+</div>
+
+<div class="modal regular" id="attach-documentation-modal">
+    <div class="modal-parent">
+        <div class="modal-container">
+            <div class="modal-dialog large-dialog pb0">
+                <div class="modal-title main-text-strong">
+                    Attach Documentation
+                    <span class="close"><span class="iconify" data-icon="octicon:x-16"></span></span>
+                </div>
+
+                <div class="modal-body pt12">
+                    <div class="body-row main-text">
+                        A healthy code always carry good Documentation
+                        <br />
+                        Attach one for:
+                    </div>
+                    <div class="body-row mt27">
+                        <div class="cell-group no-bracket large modal-item">
+                            <a href="#" class="cell-item main-text-strong"><span class="iconify"
+                                    data-icon="octicon:note-16"></span><span class="pr_title"></span></a>
+                        </div>
+                    </div>
+
+                    <div class="body-row modal-msg mt27 main-text">
+                        <!--search:start-->
+                        <div class="search">
+                            <input type="text" placeholder="search" name="">
+                        </div>
+                    </div>
+                    <div class="group-list">
+                        <!--Row-->
+                        {% for doc_pr in all_documentation_prs %}
+                        <form method="POST" class="connect-documentation-pr-form body-row bordered-list">
+                            {% csrf_token %}
+                            <input type="hidden" name="documentation_pull_request" value="{{ doc_pr.id }}"/>
+                            <input type="hidden" name="action" value="connect_documentation_pr"  />
+                            <div class="dialog-history-row">
+                                <div class="row-left">
+                                    <div class="cell-group no-bracket modal-item">
+                                        <a href="#" class="cell-item main-text"><span class="iconify"
+                                                data-icon="octicon:code-16"></span>#{{doc_pr.pr_number}} {{doc_pr.pr_title}}</a>
+                                    </div>
+                                </div>
+                                <div class="row-right">
+                                    <button type="submit" class="cta cta-primary hidden connect">Connect</button>
+                                </div>
+                            </div>
+                        </form>
+                        {% endfor %}
+                        <!--Row-->
+                    </div>
+                    <div class="body-row mt70 tc main-warning-base lh16">
+                        <div class="text-to-bottom"><a href="#"
+                                class="main-warning-base" id="open-manual-code-approval">This code change doesn't need
+                                documentation</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block postcontent %}
+<script>
+    $("#open-new-repo-connection-modal").click(function(){
+        $("#attach-documentation-modal").addClass("opened");
+    });
+</script>{% endblock postcontent %}
