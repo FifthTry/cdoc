@@ -561,6 +561,9 @@ header > div.menu .menu-item:last-child{
 .lh16{
     line-height: 16px !important;
 }
+.pb45{
+    padding-bottom: 45px !important;
+}
 .text-to-bottom{
     display: inline-block;
     border-bottom: 1px solid #966220;
