@@ -54,7 +54,7 @@
                 <div class="row-right">
                     <span  class="approved main-success-text">Approved</span>
                     <div class="user main-text">
-                        by <a href="#" class="username main-text">@sharmashobit</a> 20 min ago
+                        by <a href="#" class="username main-text">{{monitored_pr.get_latest_approval.approver.github_user.account_name}}</a> {{monitored_pr.get_latest_approval.created_on|timesince}} ago
                     </div>
                 </div>
                 {% else %}
@@ -73,7 +73,7 @@
                 <div class="row-right">
                     <span  class="approved main-success-text">Approved</span>
                     <div class="user main-text">
-                        by <a href="#" class="username main-text">@sharmashobit</a> 20 min ago
+                        by <a href="#" class="username main-text">{{monitored_pr.get_latest_approval.approver.github_user.account_name}}</a> {{monitored_pr.get_latest_approval.created_on|timesince}} ago
                     </div>
                 </div>
                 {% else %}

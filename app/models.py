@@ -190,6 +190,9 @@ class GithubRepository(models.Model):
     def __str__(self) -> str:
         return self.repo_full_name
 
+    def get_url(self):
+        return f"https://github.com/{self.repo_full_name}/pulls/"
+
 
 class GithubRepoMap(models.Model):
     class IntegrationType(models.TextChoices):
@@ -305,6 +308,28 @@ class MonitoredPullRequest(models.Model):
 
     def get_display_name(self):
         return f"{self.code_pull_request.repository.repo_full_name}/#{self.code_pull_request.pr_number}: {self.code_pull_request.pr_title}"
+
+    @property
+    def is_approved(self):
+        return self.pull_request_status in [
+            MonitoredPullRequest.PullRequestStatus.APPROVED,
+            MonitoredPullRequest.PullRequestStatus.MANUAL_APPROVAL,
+        ]
+
+    def get_latest_approval(self):
+        try:
+            return self.prapproval_set.latest("created_on")
+        except:
+            return None
+
+
+class PrApproval(models.Model):
+    updated_on = models.DateTimeField(auto_now=True)
+    created_on = models.DateTimeField(auto_now_add=True)
+    monitored_pull_request = models.ForeignKey(
+        MonitoredPullRequest, on_delete=models.CASCADE
+    )
+    approver = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
 
 
 class GithubCheckRun(models.Model):

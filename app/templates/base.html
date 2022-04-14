@@ -26,6 +26,13 @@
                 <img src="{% static 'images/fifthtry-logo.png' %}">
             </a>
         </div>
+        <div>
+            <select id="org-selector">
+                {% for installation in all_installations %}
+                <option value="{{installation.account_name}}" {% if installation.account_name == current_installation.account_name %}selected="selected"{% endif %}>{{installation.account_name}}</option>
+                {% endfor %}
+            </select>
+        </div>
         <div class="menu">
             <a href="#" class="menu-item">
                 <span class="iconify" data-icon="bi:moon"></span>
@@ -40,5 +47,11 @@
 </body>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 {% block postcontent %}{% endblock postcontent %}
-
+<script>
+    // $(window).load(function(){
+        $('#org-selector').change(function(){
+            window.location.href = '/' + $(this).val() + '/repos/';
+        });
+    // });
+</script>
 </html>
