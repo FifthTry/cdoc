@@ -417,6 +417,29 @@ class LoginView(auth_views.LoginView):
 class ListInstallationRepos(TemplateView):
     template_name = "org-dashboard.html"
 
+    def post(self, request, *args, **kwargs):
+        payload = json.loads(request.body)
+        matches = self.request.resolver_match.kwargs
+
+        # context = super().get_context_data(**kwargs)
+        payload["all_installations"] = app_models.GithubAppInstallation.objects.filter(
+            id__in=app_models.GithubAppUser.objects.filter(
+                github_user=self.request.user.github_user
+            ).values_list("installation_id", flat=True)
+        )
+        current_installation = payload["all_installations"].get(
+            **matches,
+        )
+        app_models.GithubRepoMap.objects.update_or_create(
+            integration_id=payload["integration_id"],
+            code_repo_id=payload["code_repo_id"],
+            documentation_repo_id=payload["documentation_repo_id"],
+            defaults={
+                "integration_type": app_models.GithubRepoMap.IntegrationType.FULL,
+            },
+        )
+        return JsonResponse({"success": True})
+
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         matches = self.request.resolver_match.kwargs
 
@@ -433,5 +456,18 @@ class ListInstallationRepos(TemplateView):
         context["current_installation"] = current_installation
         context["all_repo_map"] = app_models.GithubRepoMap.objects.filter(
             integration=current_installation
+        )
+        context["available_repos_for_mapping"] = (
+            app_models.GithubRepository.objects.filter(
+                owner=current_installation,
+            )
+            .exclude(
+                id__in=current_installation.githubrepomap_set.values("code_repo_id")
+            )
+            .exclude(
+                id__in=current_installation.githubrepomap_set.values(
+                    "documentation_repo_id"
+                )
+            )
         )
         return context
