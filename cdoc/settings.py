@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_extensions",
     "app.apps.AppConfig",
+    "django_rq",
 ]
 
 MIDDLEWARE = [
@@ -213,6 +214,14 @@ LOGGING = {
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
+
+RQ_QUEUES = {
+    "default": {
+        "HOST": "localhost",
+        "PORT": 6379,
+        "DB": 0,
+    }
+}
 
 
 DATABASES = dict()

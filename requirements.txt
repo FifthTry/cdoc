@@ -6,6 +6,8 @@
 #
 asgiref==3.5.0
     # via django
+async-timeout==4.0.2
+    # via redis
 backports-zoneinfo==0.2.1
     # via django
 certifi==2021.10.8
@@ -18,24 +20,33 @@ cffi==1.15.0
     #   pynacl
 charset-normalizer==2.0.12
     # via requests
+click==8.1.2
+    # via rq
 colorlog==6.6.0
     # via -r requirements.in
 cryptography==36.0.2
     # via -r requirements.in
 deprecated==1.2.13
-    # via pygithub
+    # via
+    #   pygithub
+    #   redis
 dj-database-url==0.5.0
     # via -r requirements.in
 django==4.0.3
     # via
     #   -r requirements.in
     #   django-extensions
+    #   django-rq
 django-extensions==3.1.5
+    # via -r requirements.in
+django-rq==2.5.1
     # via -r requirements.in
 gunicorn==20.1.0
     # via -r requirements.in
 idna==3.3
     # via requests
+packaging==21.3
+    # via redis
 psycopg2==2.9.3
     # via -r requirements.in
 pycparser==2.21
@@ -48,12 +59,22 @@ pyjwt==2.3.0
     #   pygithub
 pynacl==1.5.0
     # via pygithub
+pyparsing==3.0.8
+    # via packaging
 python-json-logger==2.0.2
     # via -r requirements.in
+redis==4.2.2
+    # via
+    #   django-rq
+    #   rq
 requests==2.27.1
     # via
     #   -r requirements.in
     #   pygithub
+rq==1.10.1
+    # via
+    #   -r requirements.in
+    #   django-rq
 sentry-sdk==1.5.8
     # via -r requirements.in
 sqlparse==0.4.2

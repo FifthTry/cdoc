@@ -48,10 +48,7 @@ def pull_request_post_save(sender, instance, **kwargs):
     for documentation_pr in app_models.MonitoredPullRequest.objects.filter(
         documentation_pull_request=instance
     ).iterator():
-        if (
-            documentation_pr.pull_request_status
-            == app_models.MonitoredPullRequest.PullRequestStatus.APPROVED
-        ):
+        if documentation_pr.is_approved:
             documentation_pr.pull_request_status = (
                 app_models.MonitoredPullRequest.PullRequestStatus.STALE_CODE
             )
@@ -59,10 +56,7 @@ def pull_request_post_save(sender, instance, **kwargs):
     for code_pr in app_models.MonitoredPullRequest.objects.filter(
         code_pull_request=instance
     ).iterator():
-        if (
-            code_pr.pull_request_status
-            == app_models.MonitoredPullRequest.PullRequestStatus.APPROVED
-        ):
+        if code_pr.is_approved:
             code_pr.pull_request_status = (
                 app_models.MonitoredPullRequest.PullRequestStatus.STALE_APPROVAL
             )
