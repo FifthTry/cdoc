@@ -1,4 +1,5 @@
 import logging
+import django
 
 import django_rq
 import github
@@ -33,7 +34,9 @@ def sync_prs_for_repository(repository_id: int):
         installation_id=installation_instance.installation_id,
         user_token=installation_instance.creator.get_active_access_token(),
     )
-    github_data_manager.sync_open_prs(instance)
+    all_prs = github_data_manager.sync_open_prs(instance)
+    for pr_id in all_prs:
+        django_rq.enqueue(on_pr_update, pr_id)
 
 
 @job
