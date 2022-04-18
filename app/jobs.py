@@ -74,22 +74,22 @@ def on_pr_update(pull_request_id: int):
 
 @job
 def monitored_pr_post_save(instance_id: int):
-    instance = app_models.MonitoredPullRequest.objects.get(id=instance_id)
-    (cr_instance, is_new) = app_models.GithubCheckRun.objects.get_or_create(
-        ref_pull_request=instance, run_sha=instance.code_pull_request.pr_head_commit_sha
+    monitored_pr_instance = app_models.MonitoredPullRequest.objects.get(id=instance_id)
+    (instance, is_new) = app_models.GithubCheckRun.objects.get_or_create(
+        ref_pull_request=monitored_pr_instance,
+        run_sha=monitored_pr_instance.code_pull_request.pr_head_commit_sha,
     )
     if is_new is False:
         # Here, we can close the previous checks if any
         # app_models.GithubCheckRun.objects.filter(ref_pull_request=instance).exclude(
         #     run_sha=instance.code_pull_request.pr_head_commit_sha,
         # )
-        cr_instance.save()
-    django_rq.enqueue(update_github_check, cr_instance.id)
+        instance.save()
+    #     django_rq.enqueue(update_github_check, cr_instance.id)
 
-
-@job
-def update_github_check(github_check_run_id: int):
-    instance = app_models.GithubCheckRun.objects.get(id=github_check_run_id)
+    # @job
+    # def update_github_check(github_check_run_id: int):
+    #     instance = app_models.GithubCheckRun.objects.get(id=github_check_run_id)
     token = (
         instance.ref_pull_request.code_pull_request.repository.owner.creator.access_token
     )
