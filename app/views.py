@@ -238,6 +238,7 @@ class WebhookCallback(View):
                     "pr_owner_username": pull_request_data["user"]["login"],
                 },
             )
+            django_rq.enqueue(app_jobs.on_pr_update, pr_instance.id)
         elif EVENT_TYPE == "installation_repositories":
             # Repositories changed. Sync again.
             github_data_manager_instance.sync_repositories()
@@ -285,6 +286,7 @@ class WebhookCallback(View):
                                 repository=github_repo,
                                 defaults={**head_commit_data},
                             )
+                            django_rq.enqueue(app_jobs.on_pr_update, pr_instance.id)
         return JsonResponse({"status": True})
 
 
