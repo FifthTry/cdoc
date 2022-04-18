@@ -82,6 +82,10 @@ TEMPLATES = [
             ],
         },
     },
+    {
+        "BACKEND": "ftd_django.TemplateBackend",
+        "DIRS": ["../cdoc-doc"],
+    },
 ]
 
 WSGI_APPLICATION = "cdoc.wsgi.application"
