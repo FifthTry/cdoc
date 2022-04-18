@@ -189,23 +189,29 @@ LOGGING = {
             "filters": ["require_debug_true"],
             "formatter": "color_with_extra",
         },
+        "prod": {
+            "class": "logging.StreamHandler",
+            "level": "INFO",
+            "filters": ["require_debug_false"],
+            "formatter": "verbose",
+        },
     },
     "loggers": {
         "django": {
-            "handlers": ["console"],
+            "handlers": ["console", "prod"],
             "propagate": True,
         },
         "py.warnings": {
-            "handlers": ["console"],
+            "handlers": ["console", "prod"],
             "propagate": True,
         },
         "app": {
-            "handlers": ["console_with_extra"],
+            "handlers": ["console_with_extra", "prod"],
             "level": "DEBUG",
             "propagate": True,
         },
         "lib": {
-            "handlers": ["console_with_extra"],
+            "handlers": ["console_with_extra", "prod"],
             "level": "DEBUG",
             "propagate": True,
         },
