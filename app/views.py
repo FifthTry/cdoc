@@ -397,7 +397,7 @@ class PRView(View):
                 app_models.PrApproval.objects.create(
                     monitored_pull_request=instance, approver=request.user
                 )
-        django_rq.enqueue(app_jobs.update_github_check, instance.id)
+        django_rq.enqueue(app_jobs.monitored_pr_post_save, instance.id)
         return JsonResponse({"status": success})
 
 
