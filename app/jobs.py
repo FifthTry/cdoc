@@ -69,7 +69,7 @@ def on_pr_update(pull_request_id: int):
         )
         if is_new is False:
             monitored_pr_instance.save()
-        django_rq.enque(monitored_pr_post_save, monitored_pr_instance.id)
+        django_rq.enqueue(monitored_pr_post_save, monitored_pr_instance.id)
 
 
 @job
