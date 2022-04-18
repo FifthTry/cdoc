@@ -1,0 +1,25 @@
+from pathlib import Path
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+GITHUB_CREDS = {
+    # GITHUB APP
+    "client_id": "Iv1.9dec99e944d9875d",
+    "client_secret": "2b9fde5b4902851875c6b88125070f16c885905c",
+    "app_id": 186940,
+    "app_name": "Continuous Documentation(dev)"
+    # OAUTH APP
+    # "client_id": "ccfacc5a7c7248a0a216",
+    # "client_secret": "c8fa37283014aea57cf1761d9f61f9c1d79d1d4a"
+}
+
+APP_AUTH_PEM_FILE = BASE_DIR.joinpath("PRIVATE_KEY.pem")
+if APP_AUTH_PEM_FILE.exists():
+    with open(APP_AUTH_PEM_FILE, "r") as pem_file:
+        APP_AUTH_KEY = pem_file.read().encode()
+else:
+    print("PRIVATE_KEY.pem not found")
+    PRIVATE_KEY = None
+
+DEBUG = True
