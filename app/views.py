@@ -328,6 +328,11 @@ class AllPRView(TemplateView):
                 github_user=self.request.user.github_user
             ).values_list("installation_id", flat=True)
         )
+        current_installation = context["all_installations"].get(
+            account_name=matches["account_name"]
+        )
+
+        context["current_installation"] = current_installation
         context["open_prs"] = app_models.MonitoredPullRequest.objects.filter(
             code_pull_request__repository=context["repo_mapping"].code_repo
         )
