@@ -69,6 +69,7 @@ class AuthCallback(View):
             "https://github.com/login/oauth/access_token", json=payload
         )
         redirect_url = None
+        logger.info(resp.text)
         if resp.ok:
             response = parse_qs(resp.text)
             if "error" in response:
@@ -187,7 +188,9 @@ class AuthCallback(View):
             ).redirect_url
             if next_url is not None and next_url != "":
                 redirect_url = next_url
-        return HttpResponseRedirect(redirect_url)
+        if redirect_url is not None:
+            return HttpResponseRedirect(redirect_url)
+        assert False, "Panic!!"
 
 
 @method_decorator(csrf_exempt, name="dispatch")
