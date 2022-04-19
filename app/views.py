@@ -164,6 +164,7 @@ class AuthCallback(View):
                     redirect_url = redirect_url or (
                         f"/{installation_instance.account_name}/repos/"
                     )
+                logger.info([x for x in user_instance.get_installations()])
                 for installation in user_instance.get_installations():
                     if installation.app_id == settings.GITHUB_CREDS["app_id"]:
                         installation_instance = (
