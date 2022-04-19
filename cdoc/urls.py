@@ -52,6 +52,7 @@ urlpatterns = [
         "",
         TemplateView.as_view(template_name="index.html"),
     ),
+    path("ftd/", app_views.IndexView.as_view()),
 ]
 
 def make_v(template, context):
