@@ -85,6 +85,7 @@ class AuthCallback(View):
                 refresh_token_expires_at = now + datetime.timedelta(
                     seconds=int(response["refresh_token_expires_in"][0])
                 )
+                logger.info(access_token)
                 github_instance = github.Github(access_token)
                 user_instance = github_instance.get_user()
                 with transaction.atomic():
@@ -164,7 +165,6 @@ class AuthCallback(View):
                         f"/{installation_instance.account_name}/repos/"
                     )
                 for installation in user_instance.get_installations():
-                    # assert False, "ASD"
                     if installation.app_id == settings.GITHUB_CREDS["app_id"]:
                         installation_instance = (
                             app_models.GithubAppInstallation.objects.get(
@@ -188,8 +188,7 @@ class AuthCallback(View):
             ).redirect_url
             if next_url is not None and next_url != "":
                 redirect_url = next_url
-        if redirect_url is not None:
-            return HttpResponseRedirect(redirect_url)
+        return HttpResponseRedirect(redirect_url)
         assert False, "Panic!!"
 
 
