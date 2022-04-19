@@ -11,4 +11,4 @@ dj-database-url
 psycopg2
 whitenoise
 sentry-sdk
-ftd-django
+ftd-django==0.1.0
