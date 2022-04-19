@@ -164,7 +164,7 @@ class AuthCallback(View):
                     redirect_url = redirect_url or (
                         f"/{installation_instance.account_name}/repos/"
                     )
-                logger.info([x for x in user_instance.get_installations()])
+                # logger.info([x for x in user_instance.get_installations()])
                 for installation in user_instance.get_installations():
                     if installation.app_id == settings.GITHUB_CREDS["app_id"]:
                         installation_instance = (
@@ -189,8 +189,7 @@ class AuthCallback(View):
             ).redirect_url
             if next_url is not None and next_url != "":
                 redirect_url = next_url
-        return HttpResponseRedirect(redirect_url)
-        assert False, "Panic!!"
+        return HttpResponseRedirect(redirect_url or "/")
 
 
 @method_decorator(csrf_exempt, name="dispatch")

@@ -249,7 +249,7 @@ except ModuleNotFoundError:
         # GITHUB APP
         "client_id": os.environ["CDOC_GITHUB_CLIENT_ID"],
         "client_secret": os.environ["CDOC_GITHUB_CLIENT_SECRET"],
-        "app_id": os.environ["CDOC_GITHUB_APP_ID"],
+        "app_id": int(os.environ["CDOC_GITHUB_APP_ID"]),
         "app_name": "Continuous Documentation",
     }
 
