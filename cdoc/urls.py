@@ -26,6 +26,7 @@ import glob
 from app import views as app_views
 
 urlpatterns = [
+    path("django-rq/", include("django_rq.urls")),
     path(
         "accounts/login/",
         app_views.LoginView.as_view(),
@@ -55,6 +56,7 @@ urlpatterns = [
     ),
     path("ftd/", app_views.IndexView.as_view()),
 ] + ftd_django.static()
+
 
 
 def make_v(template, context):
