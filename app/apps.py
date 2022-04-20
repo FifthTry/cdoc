@@ -5,4 +5,5 @@ class AppConfig(AppConfig):
     name = "app"
 
     def ready(self):
-        import app.signals  # noqa
+        # import app.jobs  # noqa
+        pass

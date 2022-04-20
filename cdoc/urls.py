@@ -25,6 +25,7 @@ import glob
 from app import views as app_views
 
 urlpatterns = [
+    path("django-rq/", include("django_rq.urls")),
     path(
         "accounts/login/",
         app_views.LoginView.as_view(),
@@ -55,9 +56,11 @@ urlpatterns = [
     path("ftd/", app_views.IndexView.as_view()),
 ]
 
+
 def make_v(template, context):
     def v(request):
         return render(request, template, context=context)
+
     return v
 
 
@@ -66,25 +69,19 @@ def s(p, **data):
 
     d = json.load(open(p))
 
-    p = p.replace('samples/', '').replace('.json', '')
+    p = p.replace("samples/", "").replace(".json", "")
     print(p, d)
 
     return (
-        path('samples/' + ('' if p == "index" else p + '/'), make_v(d["template"], d)),
+        path("samples/" + ("" if p == "index" else p + "/"), make_v(d["template"], d)),
         p,
         d,
     )
 
 
 if settings.DEBUG:
-    d = [
-        s(f) for f in glob.glob('samples/**/*.json', recursive=True)
-    ]
+    d = [s(f) for f in glob.glob("samples/**/*.json", recursive=True)]
 
-    urlpatterns.append(
-        path(
-            "samples/", make_v("samples.html", context={ "data": d})
-        )
-    )
+    urlpatterns.append(path("samples/", make_v("samples.html", context={"data": d})))
 
     urlpatterns += [i[0] for i in d]

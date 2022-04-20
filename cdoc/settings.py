@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "django_extensions",
-    "app",
+    "app.apps.AppConfig",
+    "django_rq",
 ]
 
 MIDDLEWARE = [
@@ -192,23 +193,29 @@ LOGGING = {
             "filters": ["require_debug_true"],
             "formatter": "color_with_extra",
         },
+        "prod": {
+            "class": "logging.StreamHandler",
+            "level": "INFO",
+            "filters": ["require_debug_false"],
+            "formatter": "verbose",
+        },
     },
     "loggers": {
         "django": {
-            "handlers": ["console"],
+            "handlers": ["console", "prod"],
             "propagate": True,
         },
         "py.warnings": {
-            "handlers": ["console"],
+            "handlers": ["console", "prod"],
             "propagate": True,
         },
         "app": {
-            "handlers": ["console_with_extra"],
+            "handlers": ["console_with_extra", "prod"],
             "level": "DEBUG",
             "propagate": True,
         },
         "lib": {
-            "handlers": ["console_with_extra"],
+            "handlers": ["console_with_extra", "prod"],
             "level": "DEBUG",
             "propagate": True,
         },
@@ -217,6 +224,13 @@ LOGGING = {
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
+
+RQ_QUEUES = {
+    "default": {
+        "URL": os.getenv("REDIS_URL", "redis://localhost:6379/0"),
+        "DEFAULT_TIMEOUT": 500,
+    },
+}
 
 
 DATABASES = dict()
@@ -239,7 +253,7 @@ except ModuleNotFoundError:
         # GITHUB APP
         "client_id": os.environ["CDOC_GITHUB_CLIENT_ID"],
         "client_secret": os.environ["CDOC_GITHUB_CLIENT_SECRET"],
-        "app_id": os.environ["CDOC_GITHUB_APP_ID"],
+        "app_id": int(os.environ["CDOC_GITHUB_APP_ID"]),
         "app_name": "Continuous Documentation",
     }
 

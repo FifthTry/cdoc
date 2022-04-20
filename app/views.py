@@ -1,32 +1,35 @@
 import datetime
-from distutils.command.clean import clean
 import json
 import logging
 import uuid
-from urllib.parse import parse_qs
+from distutils.command.clean import clean
 from typing import Any, Dict
+from urllib.parse import parse_qs
+
+import django_rq
 import github
-import lib
-from . import lib as app_lib
 import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
+from django.contrib.auth import models as auth_models
+from django.contrib.auth import views as auth_views
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import Http404, HttpResponseRedirect, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import models as auth_models
 from django.views.generic import FormView, TemplateView
-from django.contrib.auth import views as auth_views
 from requests.models import PreparedRequest
-from django.shortcuts import get_object_or_404
 
-from . import models as app_models
+import lib
+
 from . import forms as app_forms
+from . import jobs as app_jobs
+from . import lib as app_lib
+from . import models as app_models
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +69,7 @@ class AuthCallback(View):
             "https://github.com/login/oauth/access_token", json=payload
         )
         redirect_url = None
+        logger.info(resp.text)
         if resp.ok:
             response = parse_qs(resp.text)
             if "error" in response:
@@ -81,6 +85,7 @@ class AuthCallback(View):
                 refresh_token_expires_at = now + datetime.timedelta(
                     seconds=int(response["refresh_token_expires_in"][0])
                 )
+                logger.info(access_token)
                 github_instance = github.Github(access_token)
                 user_instance = github_instance.get_user()
                 with transaction.atomic():
@@ -133,7 +138,7 @@ class AuthCallback(View):
 
                         (
                             installation_instance,
-                            _,
+                            is_new,
                         ) = app_models.GithubAppInstallation.objects.update_or_create(
                             installation_id=installation_id,
                             account_id=account_id,
@@ -147,7 +152,11 @@ class AuthCallback(View):
                         )
                         # installation_instance.save()
                         installation_instance.update_token()
-
+                        if is_new:
+                            django_rq.enqueue(
+                                app_jobs.sync_repositories_for_installation,
+                                installation_instance,
+                            )
                         app_models.GithubAppUser.objects.update_or_create(
                             github_user=github_user,
                             installation=installation_instance,
@@ -155,8 +164,8 @@ class AuthCallback(View):
                     redirect_url = redirect_url or (
                         f"/{installation_instance.account_name}/repos/"
                     )
+                # logger.info([x for x in user_instance.get_installations()])
                 for installation in user_instance.get_installations():
-                    # assert False, "ASD"
                     if installation.app_id == settings.GITHUB_CREDS["app_id"]:
                         installation_instance = (
                             app_models.GithubAppInstallation.objects.get(
@@ -180,7 +189,7 @@ class AuthCallback(View):
             ).redirect_url
             if next_url is not None and next_url != "":
                 redirect_url = next_url
-        return HttpResponseRedirect(redirect_url)
+        return HttpResponseRedirect(redirect_url or "/")
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -231,6 +240,7 @@ class WebhookCallback(View):
                     "pr_owner_username": pull_request_data["user"]["login"],
                 },
             )
+            django_rq.enqueue(app_jobs.on_pr_update, pr_instance.id)
         elif EVENT_TYPE == "installation_repositories":
             # Repositories changed. Sync again.
             github_data_manager_instance.sync_repositories()
@@ -278,6 +288,7 @@ class WebhookCallback(View):
                                 repository=github_repo,
                                 defaults={**head_commit_data},
                             )
+                            django_rq.enqueue(app_jobs.on_pr_update, pr_instance.id)
         return JsonResponse({"status": True})
 
 
@@ -319,6 +330,11 @@ class AllPRView(TemplateView):
                 github_user=self.request.user.github_user
             ).values_list("installation_id", flat=True)
         )
+        current_installation = context["all_installations"].get(
+            account_name=matches["account_name"]
+        )
+
+        context["current_installation"] = current_installation
         context["open_prs"] = app_models.MonitoredPullRequest.objects.filter(
             code_pull_request__repository=context["repo_mapping"].code_repo
         )
@@ -390,6 +406,7 @@ class PRView(View):
                 app_models.PrApproval.objects.create(
                     monitored_pull_request=instance, approver=request.user
                 )
+        django_rq.enqueue(app_jobs.monitored_pr_post_save, instance.id)
         return JsonResponse({"status": success})
 
 
@@ -435,13 +452,17 @@ class ListInstallationRepos(TemplateView):
         current_installation = payload["all_installations"].get(
             **matches,
         )
-        app_models.GithubRepoMap.objects.update_or_create(
+        (instance, _) = app_models.GithubRepoMap.objects.update_or_create(
             integration_id=payload["integration_id"],
             code_repo_id=payload["code_repo_id"],
             documentation_repo_id=payload["documentation_repo_id"],
             defaults={
                 "integration_type": app_models.GithubRepoMap.IntegrationType.FULL,
             },
+        )
+        django_rq.enqueue(app_jobs.sync_prs_for_repository, payload["code_repo_id"])
+        django_rq.enqueue(
+            app_jobs.sync_prs_for_repository, payload["documentation_repo_id"]
         )
         return JsonResponse({"success": True})
 

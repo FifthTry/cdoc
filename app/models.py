@@ -300,6 +300,7 @@ class MonitoredPullRequest(models.Model):
             self.documentation_pull_request is None
             and self.pull_request_status
             != MonitoredPullRequest.PullRequestStatus.MANUAL_APPROVAL
+            # In case of a manual approval, the documentation PR is not connected
         ):
             self.pull_request_status = (
                 MonitoredPullRequest.PullRequestStatus.NOT_CONNECTED
