@@ -491,13 +491,14 @@ header > div.menu .menu-item:last-child{
 
 /* actionables  */
 .cta{
-    padding: 8px 16px;
+    padding: 12px 16px;
     border-radius: 8px;
     font-size: 16px;
     line-height: 16px;
     font-weight: 700;
     display: inline-block;
     cursor: pointer;
+    border:  none;
 }
 
 .cta-primary{
@@ -572,4 +573,9 @@ header > div.menu .menu-item:last-child{
 }
 .hidden{
     display: none;
+}
+
+.github-filled .iconify{
+    font-size: 24px !important;
+    vertical-align: middle;
 }

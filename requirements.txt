@@ -32,7 +32,7 @@ deprecated==1.2.13
     #   redis
 dj-database-url==0.5.0
     # via -r requirements.in
-django==4.0.3
+django==4.0.4
     # via
     #   -r requirements.in
     #   django-extensions
@@ -41,6 +41,12 @@ django-extensions==3.1.5
     # via -r requirements.in
 django-rq==2.5.1
     # via -r requirements.in
+ftd==0.1.2
+    # via ftd-django
+ftd-django==0.1.0
+    # via -r requirements.in
+ftd-sys==0.1.0
+    # via ftd
 gunicorn==20.1.0
     # via -r requirements.in
 idna==3.3
@@ -75,7 +81,7 @@ rq==1.10.1
     # via
     #   -r requirements.in
     #   django-rq
-sentry-sdk==1.5.8
+sentry-sdk==1.5.10
     # via -r requirements.in
 sqlparse==0.4.2
     # via django

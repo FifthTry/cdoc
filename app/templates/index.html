@@ -1,4 +1,29 @@
 {% extends 'base.html' %}
 {% block content %}
 <a href="/accounts/login">Go to login page</a>
+
+<!--modal:start-->
+        <div class="modal warning opened" id="manual-code-approval-modal">
+            <div class="modal-parent">
+                <div class="modal-container">
+                    <div class="modal-dialog pb0">
+                        <div class="modal-title pb22 main-text-strong">
+                            Login to Github
+                        </div>
+
+                        <div class="modal-body mt70 pt0 pb22 mhz40">
+                            <div class="body-row main-text">
+                                Click below to login with your Github account:
+                            </div>
+                            <div class="body-row mt31 github-filled cta-row">
+                              	<button type="submit" class="cta cta-primary">Sign In With Github <span class="iconify"
+                                data-icon="ant-design:github-filled"></span></span></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--modal:end-->
+
 {% endblock %}
