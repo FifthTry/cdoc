@@ -84,7 +84,7 @@ TEMPLATES = [
     },
     {
         "BACKEND": "ftd_django.TemplateBackend",
-        "DIRS": ["../cdoc-doc"],
+        "DIRS": ["cdoc-doc"],
     },
 ]
 

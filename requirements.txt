@@ -34,7 +34,7 @@ django-extensions==3.1.5
     # via -r requirements.in
 ftd==0.1.2
     # via ftd-django
-ftd-django==0.1.0
+ftd-django==0.1.1
     # via -r requirements.in
 ftd-sys==0.1.0
     # via ftd

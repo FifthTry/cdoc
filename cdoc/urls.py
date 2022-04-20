@@ -13,6 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import ftd_django
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -53,11 +54,13 @@ urlpatterns = [
         TemplateView.as_view(template_name="index.html"),
     ),
     path("ftd/", app_views.IndexView.as_view()),
-]
+] + ftd_django.static()
+
 
 def make_v(template, context):
     def v(request):
         return render(request, template, context=context)
+
     return v
 
 
@@ -66,25 +69,19 @@ def s(p, **data):
 
     d = json.load(open(p))
 
-    p = p.replace('samples/', '').replace('.json', '')
+    p = p.replace("samples/", "").replace(".json", "")
     print(p, d)
 
     return (
-        path('samples/' + ('' if p == "index" else p + '/'), make_v(d["template"], d)),
+        path("samples/" + ("" if p == "index" else p + "/"), make_v(d["template"], d)),
         p,
         d,
     )
 
 
 if settings.DEBUG:
-    d = [
-        s(f) for f in glob.glob('samples/**/*.json', recursive=True)
-    ]
+    d = [s(f) for f in glob.glob("samples/**/*.json", recursive=True)]
 
-    urlpatterns.append(
-        path(
-            "samples/", make_v("samples.html", context={ "data": d})
-        )
-    )
+    urlpatterns.append(path("samples/", make_v("samples.html", context={"data": d})))
 
     urlpatterns += [i[0] for i in d]
