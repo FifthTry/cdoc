@@ -1,0 +1,17 @@
+{
+    "template": "all_pr_for_org.html",
+    "repo_mapping": {
+        "code_repo": {
+            "owner": {
+                "account_name": "Acme, Inc"
+            },
+            "repo_full_name": "acme/mono-repo"
+        },
+        "documentation_repo": {
+            "repo_full_name": "acme/documentation"
+        }
+    },
+    "monitored_pr": {
+        "pull_request_status": "NOT_CONNECTED"
+    }
+}
