@@ -151,11 +151,11 @@ class AuthCallback(View):
                         )
                         # installation_instance.save()
                         installation_instance.update_token()
-                        if is_new:
-                            django_rq.enqueue(
-                                app_jobs.sync_repositories_for_installation,
-                                installation_instance,
-                            )
+                        # if is_new:
+                        django_rq.enqueue(
+                            app_jobs.sync_repositories_for_installation,
+                            installation_instance,
+                        )
                         app_models.GithubAppUser.objects.update_or_create(
                             github_user=github_user,
                             installation=installation_instance,
@@ -198,96 +198,108 @@ class WebhookCallback(View):
         )
         EVENT_TYPE = headers.get("X-Github-Event", None)
         # header is "installation_repositories" -> Updated the repositories installed for the installation
-        get_installation_instance = (
-            lambda data: app_models.GithubAppInstallation.objects.get(
-                installation_id=data["installation"]["id"]
-            )
-        )
-        installation_instance = get_installation_instance(payload)
-        github_data_manager_instance = app_lib.GithubDataManager(
-            installation_id=installation_instance.installation_id,
-            user_token=installation_instance.creator.get_active_access_token(),
-        )
-        if EVENT_TYPE == "pull_request":
-            pull_request_data = payload["pull_request"]
-            (github_repo, _) = app_models.GithubRepository.objects.update_or_create(
-                repo_id=payload["repository"]["id"],
-                defaults={
-                    "repo_full_name": payload["repository"]["full_name"],
-                    "repo_name": payload["repository"]["name"],
-                    "owner": installation_instance,
-                },
-            )
-            (pr_instance, _) = app_models.GithubPullRequest.objects.update_or_create(
-                pr_id=pull_request_data["id"],
-                pr_number=pull_request_data["number"],
-                repository=github_repo,
-                defaults={
-                    "pr_head_commit_sha": pull_request_data["head"]["sha"],
-                    "pr_title": pull_request_data["title"],
-                    "pr_body": pull_request_data["body"],
-                    "pr_state": pull_request_data["state"],
-                    "pr_created_at": pull_request_data["created_at"],
-                    "pr_updated_at": pull_request_data["updated_at"],
-                    "pr_merged_at": pull_request_data["merged_at"],
-                    "pr_closed_at": pull_request_data["closed_at"],
-                    "pr_merged": pull_request_data["merged"],
-                    "pr_owner_username": pull_request_data["user"]["login"],
-                },
-            )
-            django_rq.enqueue(app_jobs.on_pr_update, pr_instance.id)
-        elif EVENT_TYPE == "installation_repositories":
-            # Repositories changed. Sync again.
-            # github_data_manager_instance.sync_repositories()
-            django_rq.enqueue(
-                app_jobs.sync_repositories_for_installation,
-                installation_instance,
-            )
-        elif EVENT_TYPE == "check_suite":
-            if payload.get("action") == "requested":
-
-                repository_data = payload.get("repository", {})
-                (github_repo, _) = app_models.GithubRepository.objects.get_or_create(
-                    repo_id=repository_data["id"],
-                    repo_name=repository_data["name"],
-                    repo_full_name=repository_data["full_name"],
-                    owner=installation_instance,
+        interesting_events = [
+            "pull_request",
+            "installation_repositories",
+            "check_suite",
+        ]
+        if EVENT_TYPE in interesting_events:
+            get_installation_instance = (
+                lambda data: app_models.GithubAppInstallation.objects.get(
+                    installation_id=data["installation"]["id"]
                 )
-                prs = payload.get("check_suite", {}).get("pull_requests", [])
-
-                head_commit_details = payload["check_suite"]["head_commit"]
-                head_commit_data = {
-                    "pr_head_commit_sha": head_commit_details["id"],
-                    # "pr_head_tree_sha": head_commit_details["tree_id"],
-                    "pr_head_commit_message": head_commit_details["message"],
-                    "pr_head_modified_on": datetime.datetime.strptime(
-                        head_commit_details["timestamp"], "%Y-%m-%dT%H:%M:%S%z"
-                    ),
-                }
-
-                logger.info(
-                    f"Found PRs for commit ID: {head_commit_details['id']}",
-                    extra={"data": {"pull_requests": prs}},
+            )
+            installation_instance = get_installation_instance(payload)
+            github_data_manager_instance = app_lib.GithubDataManager(
+                installation_id=installation_instance.installation_id,
+                user_token=installation_instance.creator.get_active_access_token(),
+            )
+            if EVENT_TYPE == "pull_request":
+                pull_request_data = payload["pull_request"]
+                (github_repo, _) = app_models.GithubRepository.objects.update_or_create(
+                    repo_id=payload["repository"]["id"],
+                    defaults={
+                        "repo_full_name": payload["repository"]["full_name"],
+                        "repo_name": payload["repository"]["name"],
+                        "owner": installation_instance,
+                    },
                 )
-                # is_documentation_repo =
-                if (
-                    github_repo.code_repos.exists()
-                    or github_repo.documentation_repos.exists()
-                ):
-                    for pr in prs:
-                        pr_id = pr.get("id")
-                        pr_number = pr.get("number")
-                        with transaction.atomic():
-                            (
-                                pr_instance,
-                                is_new,
-                            ) = app_models.GithubPullRequest.objects.update_or_create(
-                                pr_id=pr_id,
-                                pr_number=pr_number,
-                                repository=github_repo,
-                                defaults={**head_commit_data},
-                            )
-                            django_rq.enqueue(app_jobs.on_pr_update, pr_instance.id)
+                (
+                    pr_instance,
+                    _,
+                ) = app_models.GithubPullRequest.objects.update_or_create(
+                    pr_id=pull_request_data["id"],
+                    pr_number=pull_request_data["number"],
+                    repository=github_repo,
+                    defaults={
+                        "pr_head_commit_sha": pull_request_data["head"]["sha"],
+                        "pr_title": pull_request_data["title"],
+                        "pr_body": pull_request_data["body"],
+                        "pr_state": pull_request_data["state"],
+                        "pr_created_at": pull_request_data["created_at"],
+                        "pr_updated_at": pull_request_data["updated_at"],
+                        "pr_merged_at": pull_request_data["merged_at"],
+                        "pr_closed_at": pull_request_data["closed_at"],
+                        "pr_merged": pull_request_data["merged"],
+                        "pr_owner_username": pull_request_data["user"]["login"],
+                    },
+                )
+                django_rq.enqueue(app_jobs.on_pr_update, pr_instance.id)
+            elif EVENT_TYPE == "installation_repositories":
+                # Repositories changed. Sync again.
+                # github_data_manager_instance.sync_repositories()
+                django_rq.enqueue(
+                    app_jobs.sync_repositories_for_installation,
+                    installation_instance,
+                )
+            elif EVENT_TYPE == "check_suite":
+                if payload.get("action") == "requested":
+
+                    repository_data = payload.get("repository", {})
+                    (
+                        github_repo,
+                        _,
+                    ) = app_models.GithubRepository.objects.get_or_create(
+                        repo_id=repository_data["id"],
+                        repo_name=repository_data["name"],
+                        repo_full_name=repository_data["full_name"],
+                        owner=installation_instance,
+                    )
+                    prs = payload.get("check_suite", {}).get("pull_requests", [])
+
+                    head_commit_details = payload["check_suite"]["head_commit"]
+                    head_commit_data = {
+                        "pr_head_commit_sha": head_commit_details["id"],
+                        # "pr_head_tree_sha": head_commit_details["tree_id"],
+                        "pr_head_commit_message": head_commit_details["message"],
+                        "pr_head_modified_on": datetime.datetime.strptime(
+                            head_commit_details["timestamp"], "%Y-%m-%dT%H:%M:%S%z"
+                        ),
+                    }
+
+                    logger.info(
+                        f"Found PRs for commit ID: {head_commit_details['id']}",
+                        extra={"data": {"pull_requests": prs}},
+                    )
+                    # is_documentation_repo =
+                    if (
+                        github_repo.code_repos.exists()
+                        or github_repo.documentation_repos.exists()
+                    ):
+                        for pr in prs:
+                            pr_id = pr.get("id")
+                            pr_number = pr.get("number")
+                            with transaction.atomic():
+                                (
+                                    pr_instance,
+                                    is_new,
+                                ) = app_models.GithubPullRequest.objects.update_or_create(
+                                    pr_id=pr_id,
+                                    pr_number=pr_number,
+                                    repository=github_repo,
+                                    defaults={**head_commit_data},
+                                )
+                                django_rq.enqueue(app_jobs.on_pr_update, pr_instance.id)
         return JsonResponse({"status": True})
 
 
