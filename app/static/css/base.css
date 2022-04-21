@@ -113,11 +113,10 @@ header > div.menu .menu-item:last-child{
     line-height: 16px;
 }
 
-
 .search{
-    grid-column: span 10;
+    grid-column: span 8;
     grid-column-start: 2;
-    grid-column-end: 10;
+    grid-column-end: 8;
     margin-bottom: 17px;
 }
 
@@ -136,6 +135,25 @@ header > div.menu .menu-item:last-child{
     border: 1px solid #919192;
 }
 
+.search-with-button{
+    grid-column: span 12;
+    grid-column-start: 2;
+    grid-column-end: 12;
+    display: grid;
+}
+
+.search-with-button > div.search{
+    grid-column-start: 1;
+    grid-column-end: 10;
+}
+
+.search-with-button > div.new_connections{
+    grid-column-start: 10;
+    grid-column-end: 12;
+    justify-self: end;
+    padding-top: 10px;
+}
+
 
 .doc-history{
     grid-column: span 12;
@@ -146,6 +164,11 @@ header > div.menu .menu-item:last-child{
     box-sizing: border-box;
     border-radius: 8px;
     margin: 0;
+}
+.doc-history.empty_row{
+    border: 0px solid #434547;
+    border-top: 1px solid #434547;
+    border-radius: 0px;
 }
 .doc-history .doc-history-row {
     padding: 0px 30px;
@@ -532,7 +555,9 @@ header > div.menu .menu-item:last-child{
 .mt12{
     margin-top: 12px !important;
 }
-
+.ml10{
+    margin-left: 10px;
+}
 .pt0{
     padding-top: 0px !important;
 }
@@ -581,4 +606,49 @@ header > div.menu .menu-item:last-child{
 .github-filled .iconify{
     font-size: 24px !important;
     vertical-align: middle;
+}
+
+.empty_row{
+    padding: 30px 30px;
+    font-size: 24px;
+    color:  #A8A29E;
+}
+.span_spacer{
+    color: #FFFFFF;
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 24px;
+    margin: 0 5px;
+    line-height: 36px;
+}
+.combo_black{
+    border: 1px solid #966220;
+    background-color: transparent;
+    color: #FFFFFF;
+    padding: 8px 10px;
+    border-radius: 6px;
+}
+
+.tabled-row{
+    padding: 10px 0px;
+    grid-column: span 12;
+    grid-column-start: 2;
+    grid-column-end: 12;
+    display: grid;
+}
+.tabled-row > .row-left{
+    grid-column-start: 1;
+    grid-column-end: 6;
+    justify-content: space-between;
+    margin-bottom: 15px;
+
+}
+.tabled-row > .row-right{
+    grid-column-start: 6;
+    grid-column-end: 12;
+    justify-content: left;
+    margin-bottom: 25px;
+}
+.tabled-row > .button-row{
+    margin-top: 10px !important;
 }

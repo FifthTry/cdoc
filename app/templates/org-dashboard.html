@@ -7,17 +7,23 @@
         <!--breadcrumb:start-->
         <nav class="breadcrumb">
             <a href="#" class="main-cta-primary-base"><span class="iconify main-text"
-                    data-icon="octicon:repo-16"></span>{{repo_mapping.code_repo.owner.account_name}}</a>
+                    data-icon="octicon:repo-16"></span>{{repo_mapping.code_repo.owner.account_name}}</a> 
+                    <span class="span_spacer">/</span>
                 <a href="#" class="repo-item main-cta-primary-base">{{current_installation.account_name}}</a>
-            <a href="#" class="main-text-strong">
+            <a href="#" class="main-text-strong ml10">
                 <span class="iconify main-text" data-icon="octicon:git-pull-request-16"></span>Connections</a>
         </nav>
-
-        <!--search:start-->
-        <div class="search">
-            <input type="text" placeholder="search" name="">
-            <a id="open-new-repo-connection-modal" class="cta cta-primary">+ New connection</a>
+        <!--search-with-button-->
+        <div class="search-with-button">
+            <!--search:start-->
+            <div class="search">
+                <input type="text" placeholder="search" name="">
+            </div>
+            <div class="new_connections">
+                 <a id="open-new-repo-connection-modal" class="cta cta-primary">+ New connection</a>
+            </div>
         </div>
+        <!--search-with-button-->
         <div class="doc-history">
             {% for repo_map in all_repo_map %}
             <div class="doc-history-row">
@@ -30,7 +36,7 @@
                     </div>
                 </div>
                 <div class="row-right">
-                    <a href="/{{repo_map.code_repo.repo_full_name}}/pulls" class="cta cta-primary">></a>
+                    <a href="/{{repo_map.code_repo.repo_full_name}}/pulls" class="cta cta-primary">>Connect</a>
                 </div>
             </div>
         {% endfor %}
@@ -44,7 +50,7 @@
 <div class="modal regular" id="attach-documentation-modal">
     <div class="modal-parent">
         <div class="modal-container">
-            <div class="modal-dialog large-dialog pb0">
+            <div class="modal-dialog pb0">
                 <div class="modal-title main-text-strong">
                     Attach Repositories
                     <span class="close"><span class="iconify" data-icon="octicon:x-16"></span></span>
@@ -60,25 +66,38 @@
                     <div class="body-row modal-msg mt27 main-text">
                         <!--search:start-->
                         <form method="POST" action="" id="attach-repos-form">
-                            <div>
-                                Code Repository:
-                                <select name="code_repo_id">
+                            <!--tabled-row-->
+                            <div class="tabled-row">
+                                <div class="row-left">
+                                    Code Repository:
+                                </div>
+                                <div class="row-right">
+                                    <select name="code_repo_id" class="combo_black">
+                                        {% for repo in available_repos_for_mapping %}
+                                        <option value="{{repo.id}}">{{repo.repo_full_name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="row-left">
+                                    Documentation Repository:
+                                </div>
+                                <div class="row-right">
+                                    <select name="documentation_repo_id" class="combo_black">
                                     {% for repo in available_repos_for_mapping %}
                                     <option value="{{repo.id}}">{{repo.repo_full_name}}</option>
                                     {% endfor %}
-                                </select>
+                                    </select>
+                                </div>
+                                <div class="row-left">
+                                </div>
+                                <div class="row-right button-row">
+                                    <input type="hidden" name="integration_id" value="{{current_installation.id}}" />
+                                    <input type="hidden" name="integration_type" value="FULL" />
+                                    <button type="submit" class="cta cta-primary">Attach</button>
+                                </div>
                             </div>
-                            <div>
-                                Documentation Repository:
-                                <select name="documentation_repo_id">
-                                    {% for repo in available_repos_for_mapping %}
-                                    <option value="{{repo.id}}">{{repo.repo_full_name}}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <input type="hidden" name="integration_id" value="{{current_installation.id}}" />
-                            <input type="hidden" name="integration_type" value="FULL" />
-                            <button type="submit" class="cta cta-primary">Attach</button>
+                            <!--tabled-row-->
+                            
                         </form>
                         
                     </div>
@@ -93,6 +112,10 @@
 
 {% block postcontent %}
 <script>
+    $(".close").click(function () {
+        $(".modal").removeClass('opened');
+    });
+
     function objectifyForm(formArray) {
         var data = {};
         $(formArray).each(function(index, obj){
