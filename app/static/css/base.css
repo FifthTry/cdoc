@@ -120,7 +120,7 @@ header > div.menu .menu-item:last-child{
     margin-bottom: 17px;
 }
 
-.search > input{
+.search input{
     padding: 14px 28px;
     border: 1px solid #919192;
     color: #A8A29E;
@@ -131,7 +131,7 @@ header > div.menu .menu-item:last-child{
     border-radius: 8px;
     box-sizing: border-box;
 }
-.search > input:focus{
+.search input:focus{
     border: 1px solid #919192;
 }
 
@@ -272,7 +272,20 @@ header > div.menu .menu-item:last-child{
     padding: 20px 0;
 } 
 
+.doc-history-row > .row-left.full-width,
+.dialog-history-row > .row-left.full-width{
+    grid-column-start: 1;
+    grid-column-end: 4;
+    justify-self: start;
+}
 
+.doc-history-row > .row-right.full-width,
+.dialog-history-row > .row-right.full-width{
+    justify-self: start;
+    grid-column-start: 4;
+    grid-column-end: 13;
+    width: 100%;
+}
 
 
 .doc-history-row > .row-right  .approved{
