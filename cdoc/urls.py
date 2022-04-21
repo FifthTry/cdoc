@@ -13,6 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import ftd_django
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -54,7 +55,8 @@ urlpatterns = [
         TemplateView.as_view(template_name="index.html"),
     ),
     path("ftd/", app_views.IndexView.as_view()),
-]
+] + ftd_django.static()
+
 
 
 def make_v(template, context):
