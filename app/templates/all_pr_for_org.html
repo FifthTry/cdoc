@@ -17,13 +17,18 @@
             <a href="#" class="main-text-strong">
                 <span class="iconify main-text" data-icon="octicon:git-pull-request-16"></span>Pull requests</a>
         </nav>
-
+        {% if open_prs %}
         <!--search:start-->
         <div class="search">
             <input type="text" placeholder="search" name="">
         </div>
         <!--doc-history:start-->
+        {% endif %}
+        {% if open_prs %}
         <div class="doc-history">
+        {% else %}
+        <div class="doc-history empty_row">
+        {% endif %}
             <!--Row-->
             {% for monitored_pr in open_prs %}
 
@@ -99,6 +104,8 @@
             </div>
             {% endwith %}
             {% endwith %}
+            {% empty %}
+                <p class="empty_row">No recent entries found</p>
             {% endfor %}
             <!--Row-->
         </div>
