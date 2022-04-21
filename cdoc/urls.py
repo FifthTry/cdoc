@@ -47,7 +47,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path(
         "",
-        app_views.AppIndexPage.as_view(template_name="index.html"),
+        app_views.AppIndexPage.as_view(),
     ),
     path("ftd/", app_views.IndexView.as_view()),
 ]

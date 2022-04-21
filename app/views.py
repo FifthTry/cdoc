@@ -432,7 +432,7 @@ class PRView(View):
 
 
 class AppIndexPage(TemplateView):
-    template_name = "login.html"
+    template_name = "index.html"
 
     def post(self, request, *args, **kwargs):
         payload = json.loads(request.body)
