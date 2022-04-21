@@ -189,7 +189,7 @@ header > div.menu .menu-item:last-child{
 .doc-history-row > .row-left,
 .dialog-history-row > .row-left{
     grid-column-start: 1;
-    grid-column-end: 8;
+    grid-column-end: 11;
     justify-self: start;
     padding: 20px 0;
 } 
@@ -265,7 +265,7 @@ header > div.menu .menu-item:last-child{
 
 .doc-history-row > .row-right,
 .dialog-history-row > .row-right{
-    grid-column-start: 8;
+    grid-column-start: 11;
     grid-column-end: 13;
     justify-self: end;
     text-align: right;
