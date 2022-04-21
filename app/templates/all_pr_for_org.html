@@ -26,8 +26,10 @@
         <div class="doc-history">
             <!--Row-->
             {% for monitored_pr in open_prs %}
+
             {% with code_pr_number=monitored_pr.code_pull_request.pr_number|stringformat:"s" documentation_pr_number=monitored_pr.documentation_pull_request.pr_number|stringformat:"s" %}
             {% with code_pr_name="#"|add:code_pr_number|add:" "|add:monitored_pr.code_pull_request.pr_title %}
+            { % 'title':"{{'jjj'}} %s"}
             <div class="doc-history-row">
                 {% if monitored_pr.pull_request_status == "NOT_CONNECTED" %}
                 <div class="row-left">
@@ -35,7 +37,7 @@
                         <a href="{{monitored_pr.code_pull_request.get_url}}" class="cell-item item-top main-text"><span class="iconify"
                                 data-icon="octicon:code-16"></span>{{ code_pr_name }}</a>
                         <span class="cell-item main-error-text"><span class="iconify"
-                                data-icon="octicon:note-16"></span>{{monitored_pr.pull_request_status}}</span>
+                                data-icon="octicon:note-16"></span>{{monitored_pr.get_pull_request_status_display}}</span>
                     </div>
                 </div>
                 <div class="row-right">

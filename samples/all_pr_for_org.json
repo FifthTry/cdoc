@@ -1,0 +1,100 @@
+{
+    "template": "all_pr_for_org.html",
+    "repo_mapping": {
+        "code_repo": {
+            "owner": {
+                "account_name": "Acme, Inc"
+            },
+            "repo_full_name": "acme/mono-repo"
+        },
+        "documentation_repo": {
+            "repo_full_name": "acme/documentation"
+        }
+    },
+    "open_prs": [
+        {
+            "pull_request_status": "NOT_CONNECTED",
+            "get_pull_request_status_display": "Not Connected",
+            "get_latest_approval": {
+                "approver": {
+                    "github_user":{
+                        "account_name": "Amit Upadhyay"
+                    }
+                },
+                "created_on": "2 minutes"
+            },
+            "code_pull_request": {
+                "pr_number": 20,
+                "pr_title" : "Code PR title here",
+                "get_url" : "https://github.com/fifthtry"
+            },
+            "documentation_pull_request":{
+                "pr_number": 10,
+                "pr_title" : "Document PR title here"
+            }
+        },
+        {
+            "pull_request_status": "APPROVED",
+            "get_pull_request_status_display": "Approved",
+            "get_latest_approval": {
+                "approver": {
+                    "github_user":{
+                        "account_name": "Amit Upadhyay"
+                    }
+                },
+                "created_on": "2 minutes"
+            },
+            "code_pull_request": {
+                "pr_number": 20,
+                "pr_title" : "Code PR title here",
+                "get_url" : "https://github.com/fifthtry"
+            },
+            "documentation_pull_request":{
+                "pr_number": 10,
+                "pr_title" : "Document PR title here"
+            }
+        },
+        {
+            "pull_request_status": "APPROVAL_PENDING",
+            "get_pull_request_status_display": "Approval Pending",
+            "get_latest_approval": {
+                "approver": {
+                    "github_user":{
+                        "account_name": "Amit Upadhyay"
+                    }
+                },
+                "created_on": "2 minutes"
+            },
+            "code_pull_request": {
+                "pr_number": 20,
+                "pr_title" : "Code PR title here",
+                "get_url" : "https://github.com/fifthtry"
+            },
+            "documentation_pull_request":{
+                "pr_number": 10,
+                "pr_title" : "Document PR title here"
+            }
+        },
+        {
+            "pull_request_status": "STALE_CODE",
+            "get_pull_request_status_display": "Stale Code",
+            "get_latest_approval": {
+                "approver": {
+                    "github_user":{
+                        "account_name": "Amit Upadhyay"
+                    }
+                },
+                "created_on": "2 minutes"
+            },
+            "code_pull_request": {
+                "pr_number": 20,
+                "pr_title" : "Code PR title here",
+                "get_url" : "https://github.com/fifthtry"
+            },
+            "documentation_pull_request":{
+                "pr_number": 10,
+                "pr_title" : "Document PR title here"
+            }
+        }
+    ]
+}
