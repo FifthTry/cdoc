@@ -1,0 +1,79 @@
+{
+    "template": "org-dashboard.html",
+    "repo_mapping": {
+        "code_repo": {
+            "owner": {
+                "account_name": "Acme, Inc"
+            },
+            "repo_full_name": "acme/mono-repo"
+        },
+        "documentation_repo": {
+            "repo_full_name": "acme/documentation"
+        }
+    },
+    "current_installation":{
+        "account_name": "cdoc"
+    },
+    "all_repo_map":[{
+        "code_repo": {
+            "repo_full_name": "PDF documentation",
+            "get_url": "https://github.com/fifthtry"
+        },
+        "documentation_repo":{
+            "repo_full_name": "Doc repository"
+        }
+
+    },
+    {
+        "code_repo": {
+            "repo_full_name": "Work documentation",
+            "get_url": "https://github.com/fifthtry"
+        },
+        "documentation_repo":{
+            "repo_full_name": "Office repository"
+        }
+
+    },
+    {
+        "code_repo": {
+            "repo_full_name": "Work documentation",
+            "get_url": "https://github.com/fifthtry"
+        },
+        "documentation_repo":{
+            "repo_full_name": "Office repository"
+        }
+
+    },
+    {
+        "code_repo": {
+            "repo_full_name": "Work documentation",
+            "get_url": "https://github.com/fifthtry"
+        },
+        "documentation_repo":{
+            "repo_full_name": "Office repository"
+        }
+
+    }],
+    "available_repos_for_mapping": [
+        {
+            "id": "id1",
+            "repo_full_name": "Document repository"
+        },
+        {
+            "id": "id2",
+            "repo_full_name": "New repository"
+        },
+        {
+            "id": "id3",
+            "repo_full_name": "PDF repository"
+        },
+        {
+            "id": "id4",
+            "repo_full_name": "Worddoc repository"
+        }
+
+
+
+    ]
+
+}
