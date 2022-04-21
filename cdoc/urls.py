@@ -47,7 +47,6 @@ urlpatterns = [
         "<str:account_name>/<str:repo_name>/pulls/",
         app_views.AllPRView.as_view(),
     ),
-    #
     path("app/", include("app.urls")),
     path("admin/", admin.site.urls),
     path(
@@ -55,8 +54,8 @@ urlpatterns = [
         TemplateView.as_view(template_name="index.html"),
     ),
     path("ftd/", app_views.IndexView.as_view()),
-] + ftd_django.static()
-
+]
+#  + ftd_django.static()
 
 
 def make_v(template, context):
