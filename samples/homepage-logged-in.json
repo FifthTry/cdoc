@@ -1,0 +1,49 @@
+{
+    "template": "index.html",
+    "request": {
+    	"user": {
+    		"is_authenticated": true
+    	}
+    },
+    "all_repo_map":[{
+        "code_repo": {
+            "repo_full_name": "PDF documentation",
+            "get_url": "https://github.com/fifthtry"
+        },
+        "documentation_repo":{
+            "repo_full_name": "Doc repository"
+        }
+
+    },
+	{
+        "code_repo": {
+            "repo_full_name": "PDF documentation",
+            "get_url": "https://github.com/fifthtry"
+        },
+        "documentation_repo":{
+            "repo_full_name": "Doc repository"
+        }
+
+    }],
+    "available_repos_for_mapping": [
+        {
+            "id": "id1",
+            "repo_full_name": "Document repository"
+        },
+        {
+            "id": "id2",
+            "repo_full_name": "New repository"
+        },
+        {
+            "id": "id3",
+            "repo_full_name": "PDF repository"
+        },
+        {
+            "id": "id4",
+            "repo_full_name": "Worddoc repository"
+        }
+
+
+
+    ]
+}

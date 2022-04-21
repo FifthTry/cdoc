@@ -13,9 +13,11 @@
         <!--search-with-button-->
         <div class="search-with-button">
             <!--search:start-->
-            <form class="search"method="GET">
-                <input type="text" placeholder="search" name="q" value="{{q}}"/>
-            </form>
+            <div class="search">
+                <form method="GET">
+                    <input type="text" placeholder="search" name="q" value="{{q}}"/>
+                </form>
+            </div>
             <div class="new_connections">
                  <a id="open-new-repo-connection-modal" class="cta cta-primary">+ New connection</a>
             </div>
@@ -24,7 +26,7 @@
         <div class="doc-history">
             {% for repo_map in all_repo_map %}
                 <div class="doc-history-row">
-                    <div class="row-left">
+                    <div class="row-left full-width">
                         <div class="cell-group">
                             <a href="{{repo_map.code_repo.get_url}}" class="cell-item item-top main-text"><span class="iconify"
                                     data-icon="octicon:code-16"></span>{{repo_map.code_repo.repo_full_name}}</a>
@@ -32,8 +34,10 @@
                                     data-icon="octicon:note-16"></span>{{repo_map.documentation_repo.repo_full_name}}</a>
                         </div>
                     </div>
-                    <div class="row-right">
-                        <a href="/{{repo_map.code_repo.repo_full_name}}/pulls" class="cta cta-primary">&gt;</a>
+                    <div class="row-right full-width">
+                        <div class="clickable-row" style="cursor: pointer;">
+                            <a href="/{{repo_map.code_repo.repo_full_name}}/pulls" class="cta cta-primary">&gt;</a>
+                        </div>
                     </div>
                 </div>
             {% endfor %}
@@ -188,12 +192,16 @@
         })
         return false;
     });
+    $(".clickable-row").click(function(){
+        window.location.href = `/{{repo_map.code_repo.repo_full_name}}/pulls`;
+    });
 </script>
 {% else %}
 <script type="text/javascript">
     $(".github_login_url").click(function(){
         window.location.href = `{{github_login_url}}`;
 	});
+    $
 </script>
 
 {% endif %}
