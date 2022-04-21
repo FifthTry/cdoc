@@ -6,12 +6,12 @@
 
         <!--breadcrumb:start-->
         <nav class="breadcrumb">
-            <a href="#" class="main-cta-primary-base"><span class="iconify main-text"
-                    data-icon="octicon:repo-16"></span>{{repo_mapping.code_repo.owner.account_name}}</a>
+            {% comment %}<a href="#" class="main-cta-primary-base"><span class="iconify main-text"
+                    data-icon="octicon:repo-16"></span>{{repo_mapping.code_repo.owner.account_name}}</a>{% endcomment %}
             <div class="repo">
                 <span class="iconify main-text" data-icon="octicon:link-16"></span>
-                <a href="#" class="repo-item main-cta-primary-base">{{repo_mapping.code_repo.repo_full_name}}</a>
-                <a href="#"
+                <a href="{{repo_mapping.code_repo.get_url}}" class="repo-item main-cta-primary-base">{{repo_mapping.code_repo.repo_full_name}}</a>
+                <a href="{{repo_mapping.documentation_repo.get_url}}"
                     class="repo-item main-cta-primary-base">{{repo_mapping.documentation_repo.repo_full_name}}</a>
             </div>
             <a href="#" class="main-text-strong">
@@ -19,9 +19,9 @@
         </nav>
         {% if open_prs %}
         <!--search:start-->
-        <div class="search">
-            <input type="text" placeholder="search" name="">
-        </div>
+        <form class="search" method="GET">
+            <input type="text" placeholder="search" name="q" value="{{q}}"/>
+        </form>
         <!--doc-history:start-->
         {% endif %}
         {% if open_prs %}
@@ -34,7 +34,6 @@
 
             {% with code_pr_number=monitored_pr.code_pull_request.pr_number|stringformat:"s" documentation_pr_number=monitored_pr.documentation_pull_request.pr_number|stringformat:"s" %}
             {% with code_pr_name="#"|add:code_pr_number|add:" "|add:monitored_pr.code_pull_request.pr_title %}
-            { % 'title':"{{'jjj'}} %s"}
             <div class="doc-history-row">
                 {% if monitored_pr.pull_request_status == "NOT_CONNECTED" %}
                 <div class="row-left">
@@ -59,7 +58,7 @@
                     </div>
                 </div>
                 <div class="row-right">
-                    <span  class="approved main-success-text">Approved</span>
+                    <span class="approved main-success-text">Documentation Not Required</span>
                     <div class="user main-text">
                         by <a href="#" class="username main-text">{{monitored_pr.get_latest_approval.approver.github_user.account_name}}</a> {{monitored_pr.get_latest_approval.created_on|timesince}} ago
                     </div>
@@ -72,7 +71,7 @@
                     <div class="cell-group">
                         <span class="iconify main-cta-secondary-base" data-icon="octicon:link-16"></span>
                         <a href="{{monitored_pr.code_pull_request.get_url}}" class="cell-item item-top main-text"><span class="iconify"
-                                data-icon="octicon:code-16"></span>#{{code_pr_name}}</a>
+                                data-icon="octicon:code-16"></span>{{code_pr_name}}</a>
                         <a href="{{monitored_pr.documentation_pull_request.get_url}}" class="cell-item main-text-strong"><span class="iconify"
                                 data-icon="octicon:note-16"></span>{{documentation_pr_name}}</a>
                     </div>
@@ -536,7 +535,7 @@
         }
     });
 
-    $("form").submit(function() {
+    $("form").not("form.search").submit(function() {
         data = objectifyForm($(this).serializeArray());
         console.log(data);
         $.ajax({

@@ -28,17 +28,13 @@ from app import views as app_views
 urlpatterns = [
     path("django-rq/", include("django_rq.urls")),
     path(
-        "accounts/login/",
-        app_views.LoginView.as_view(),
-    ),
-    path(
         "accounts/logout/",
         auth_views.LogoutView.as_view(next_page="/"),
     ),
-    path(
-        "<str:account_name>/repos/",
-        app_views.ListInstallationRepos.as_view(),
-    ),
+    # path(
+    #     "<str:account_name>/repos/",
+    #     app_views.ListInstallationRepos.as_view(),
+    # ),
     path(
         "<str:account_name>/<str:repo_name>/pull/<int:pr_number>/",
         app_views.PRView.as_view(),
@@ -51,7 +47,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path(
         "",
-        TemplateView.as_view(template_name="index.html"),
+        app_views.AppIndexPage.as_view(),
     ),
     path("ftd/", app_views.IndexView.as_view()),
 ]

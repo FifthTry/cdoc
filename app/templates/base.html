@@ -26,6 +26,7 @@
                 <img src="{% static 'images/fifthtry-logo.png' %}">
             </a>
         </div>
+        {% comment %}
         {% if request.user.is_authenticated %}
         <div>
             <select id="org-selector">
@@ -35,6 +36,7 @@
             </select>
         </div>
         {% endif %}
+        {% endcomment %}
         <div class="menu">
             <a href="#" class="menu-item">
                 <span class="iconify" data-icon="bi:moon"></span>
