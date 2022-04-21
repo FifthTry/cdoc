@@ -385,6 +385,7 @@ class PRView(View):
     def post(self, request, *args, **kwargs):
         payload = json.loads(request.body)
         instance = self.get_instance()
+        old_status = instance.pull_request_status
         get_object_or_404(
             app_models.GithubAppUser,
             github_user=request.user.github_user,
@@ -428,6 +429,32 @@ class PRView(View):
                     monitored_pull_request=instance, approver=request.user
                 )
         django_rq.enqueue(app_jobs.monitored_pr_post_save, instance.id)
+        instance.refresh_from_db()
+        new_status = instance.pull_request_status
+        if old_status != new_status:
+            comment_msg = None  # Allowed: None, Body of the comment
+            if (
+                old_status
+                == app_models.MonitoredPullRequest.PullRequestStatus.NOT_CONNECTED
+                and new_status
+                == app_models.MonitoredPullRequest.PullRequestStatus.APPROVAL_PENDING
+            ):
+                # Documentation PR is connected
+                # Send a comment to the code PR that PR has been attached
+                comment_msg = "Documentation PR connected"
+            elif instance.is_approved:
+                # Send a comment to the code PR that PR has been approved
+                comment_msg = "Documentation PR approved"
+
+            if comment_msg is not None:
+                github_instance = github.Github(
+                    request.user.github_user.get_active_access_token()
+                )
+                repo = github_instance.get_repo(
+                    instance.code_pull_request.repository.repo_id
+                )
+                pr = repo.get_pull(instance.code_pull_request.pr_number)
+                pr.create_issue_comment(comment_msg)
         return JsonResponse({"status": success})
 
 

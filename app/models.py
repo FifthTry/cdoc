@@ -363,6 +363,8 @@ class PrApproval(models.Model):
     )
     approver = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
 
 class GithubCheckRun(models.Model):
     run_id = models.BigIntegerField(blank=True, null=True)
