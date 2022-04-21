@@ -97,6 +97,10 @@ def monitored_pr_post_save(instance_id: int):
     github_repo = github_app_instance.get_repo(
         instance.ref_pull_request.code_pull_request.repository.repo_id
     )
+    current_pr = github_repo.get_pull(
+        instance.ref_pull_request.code_pull_request.pr_number
+    )
+
     check_run = github_repo.get_check_run(instance.run_id)
 
     data = {
@@ -148,7 +152,7 @@ def monitored_pr_post_save(instance_id: int):
                 "output": {
                     "title": "Approve the PR on CDOC",
                     "summary": "Please approve the PR on CDOC",
-                    "text": "You can connect the documentation PR by clicking on the button below.",
+                    "text": "You can approve the PR by heading to the cdoc platform and clicking on the button below.",
                 },
             }
         )
