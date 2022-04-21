@@ -28,10 +28,6 @@ from app import views as app_views
 urlpatterns = [
     path("django-rq/", include("django_rq.urls")),
     path(
-        "accounts/login/",
-        app_views.LoginView.as_view(),
-    ),
-    path(
         "accounts/logout/",
         auth_views.LogoutView.as_view(next_page="/"),
     ),
@@ -51,7 +47,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path(
         "",
-        TemplateView.as_view(template_name="index.html"),
+        app_views.AppIndexPage.as_view(template_name="index.html"),
     ),
     path("ftd/", app_views.IndexView.as_view()),
 ]

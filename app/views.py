@@ -411,29 +411,46 @@ class PRView(View):
         return JsonResponse({"status": success})
 
 
-class LoginView(auth_views.LoginView):
+class AppIndexPage(TemplateView):
     template_name = "login.html"
 
     def get(self, request, *args: Any, **kwargs: Any):
-        if request.user.is_authenticated:
-            return HttpResponseRedirect("/installations/")
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        login_state_instance = app_models.GithubLoginState()
-        if self.request.GET.get("next"):
-            login_state_instance.redirect_url = self.request.GET.get("next")
-        login_state_instance.save()
-        url = "https://github.com/login/oauth/authorize"
-        params = {
-            "client_id": settings.GITHUB_CREDS["client_id"],
-            "allow_signup": False,
-            "state": login_state_instance.state.__str__(),
-        }
-        req = PreparedRequest()
-        req.prepare_url(url, params)
-        context["github_login_url"] = req.url
+        if self.request.user.is_authenticated:
+            all_installations = app_models.GithubAppInstallation.objects.filter(
+                id__in=app_models.GithubAppUser.objects.filter(
+                    github_user=self.request.user.github_user
+                ).values_list("installation_id", flat=True)
+            )
+            context["all_installations"] = all_installations
+            context["all_repo_map"] = app_models.GithubRepoMap.objects.filter(
+                integration__in=all_installations
+            )
+            context[
+                "available_repos_for_mapping"
+            ] = app_models.GithubRepository.objects.filter(
+                owner__in=all_installations,
+                code_repos__isnull=True,
+                documentation_repos__isnull=True,
+            )
+        else:
+            login_state_instance = app_models.GithubLoginState()
+            if self.request.GET.get("next"):
+                login_state_instance.redirect_url = self.request.GET.get("next")
+            login_state_instance.save()
+            url = "https://github.com/login/oauth/authorize"
+            params = {
+                "client_id": settings.GITHUB_CREDS["client_id"],
+                "allow_signup": False,
+                "state": login_state_instance.state.__str__(),
+            }
+            req = PreparedRequest()
+            req.prepare_url(url, params)
+            context["github_login_url"] = req.url
+
         return context
 
 

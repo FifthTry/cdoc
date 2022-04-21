@@ -6,12 +6,12 @@
 
         <!--breadcrumb:start-->
         <nav class="breadcrumb">
-            <a href="#" class="main-cta-primary-base"><span class="iconify main-text"
-                    data-icon="octicon:repo-16"></span>{{repo_mapping.code_repo.owner.account_name}}</a>
+            {% comment %}<a href="#" class="main-cta-primary-base"><span class="iconify main-text"
+                    data-icon="octicon:repo-16"></span>{{repo_mapping.code_repo.owner.account_name}}</a>{% endcomment %}
             <div class="repo">
                 <span class="iconify main-text" data-icon="octicon:link-16"></span>
-                <a href="#" class="repo-item main-cta-primary-base">{{repo_mapping.code_repo.repo_full_name}}</a>
-                <a href="#"
+                <a href="{{repo_mapping.code_repo.get_url}}" class="repo-item main-cta-primary-base">{{repo_mapping.code_repo.repo_full_name}}</a>
+                <a href="{{repo_mapping.documentation_repo.get_url}}"
                     class="repo-item main-cta-primary-base">{{repo_mapping.documentation_repo.repo_full_name}}</a>
             </div>
             <a href="#" class="main-text-strong">
@@ -34,7 +34,6 @@
 
             {% with code_pr_number=monitored_pr.code_pull_request.pr_number|stringformat:"s" documentation_pr_number=monitored_pr.documentation_pull_request.pr_number|stringformat:"s" %}
             {% with code_pr_name="#"|add:code_pr_number|add:" "|add:monitored_pr.code_pull_request.pr_title %}
-            { % 'title':"{{'jjj'}} %s"}
             <div class="doc-history-row">
                 {% if monitored_pr.pull_request_status == "NOT_CONNECTED" %}
                 <div class="row-left">
@@ -59,7 +58,7 @@
                     </div>
                 </div>
                 <div class="row-right">
-                    <span  class="approved main-success-text">Approved</span>
+                    <span class="approved main-success-text">Documentation Not Required</span>
                     <div class="user main-text">
                         by <a href="#" class="username main-text">{{monitored_pr.get_latest_approval.approver.github_user.account_name}}</a> {{monitored_pr.get_latest_approval.created_on|timesince}} ago
                     </div>
