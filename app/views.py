@@ -68,7 +68,6 @@ class AuthCallback(View):
         resp = requests.post(
             "https://github.com/login/oauth/access_token", json=payload
         )
-        redirect_url = None
         logger.info(resp.text)
         if resp.ok:
             response = parse_qs(resp.text)
@@ -161,9 +160,6 @@ class AuthCallback(View):
                             github_user=github_user,
                             installation=installation_instance,
                         )
-                    redirect_url = redirect_url or (
-                        f"/{installation_instance.account_name}/repos/"
-                    )
                 # logger.info([x for x in user_instance.get_installations()])
                 for installation in user_instance.get_installations():
                     if installation.app_id == settings.GITHUB_CREDS["app_id"]:
@@ -177,12 +173,11 @@ class AuthCallback(View):
                             github_user=github_user,
                             installation=installation_instance,
                         )
-                        redirect_url = redirect_url or (
-                            f"/{installation_instance.account_name}/repos/"
-                        )
         else:
             logger.error(resp.text)
             return Http404("Something went wrong")
+        redirect_url = None
+
         if "state" in request.GET:
             next_url = app_models.GithubLoginState.objects.get(
                 state=request.GET["state"]
