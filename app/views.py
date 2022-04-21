@@ -238,7 +238,11 @@ class WebhookCallback(View):
             django_rq.enqueue(app_jobs.on_pr_update, pr_instance.id)
         elif EVENT_TYPE == "installation_repositories":
             # Repositories changed. Sync again.
-            github_data_manager_instance.sync_repositories()
+            # github_data_manager_instance.sync_repositories()
+            django_rq.enqueue(
+                app_jobs.sync_repositories_for_installation,
+                installation_instance,
+            )
         elif EVENT_TYPE == "check_suite":
             if payload.get("action") == "requested":
 
