@@ -19,9 +19,9 @@
         </nav>
         {% if open_prs %}
         <!--search:start-->
-        <div class="search">
-            <input type="text" placeholder="search" name="">
-        </div>
+        <form class="search" method="GET">
+            <input type="text" placeholder="search" name="q" value="{{q}}"/>
+        </form>
         <!--doc-history:start-->
         {% endif %}
         {% if open_prs %}
@@ -535,7 +535,7 @@
         }
     });
 
-    $("form").submit(function() {
+    $("form").not("form.search").submit(function() {
         data = objectifyForm($(this).serializeArray());
         console.log(data);
         $.ajax({

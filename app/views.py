@@ -5,7 +5,7 @@ import uuid
 from distutils.command.clean import clean
 from typing import Any, Dict
 from urllib.parse import parse_qs
-
+from django.db.models import Q
 import django_rq
 import github
 import requests
@@ -299,12 +299,10 @@ class AllPRView(TemplateView):
 
     def get(self, request, *args: Any, **kwargs: Any):
         github_user = request.user.github_user
-        context = self.get_context_data(**kwargs)
 
         if github_user is None:
             return Http404("User not found")
-        # elif app_models.GithubAppUser.objects.filter():
-        #     pass
+        context = self.get_context_data(**kwargs)
         get_object_or_404(
             app_models.GithubAppUser,
             github_user=github_user,
@@ -334,6 +332,17 @@ class AllPRView(TemplateView):
             code_pull_request__repository=context["repo_mapping"].code_repo,
             code_pull_request__pr_state="open",
         )
+        search_query = self.request.GET.get("q")
+        if search_query:
+            context["open_prs"] = context["open_prs"].filter(
+                Q(code_pull_request__pr_title__icontains=search_query)
+                | Q(documentation_pull_request__pr_title__icontains=search_query)
+            )
+            context["q"] = search_query
+        #     context["all_repo_map"] = context["all_repo_map"].filter(
+        #         Q(code_repo__repo_full_name__icontains=search_query)
+        #         | Q(documentation_repo__repo_full_name__icontains=search_query)
+        #     )
         context["all_documentation_prs"] = app_models.GithubPullRequest.objects.filter(
             repository=context["repo_mapping"].documentation_repo, pr_state="open"
         )
@@ -409,8 +418,27 @@ class PRView(View):
 class AppIndexPage(TemplateView):
     template_name = "login.html"
 
-    def get(self, request, *args: Any, **kwargs: Any):
-        return super().get(request, *args, **kwargs)
+    def post(self, request, *args, **kwargs):
+        payload = json.loads(request.body)
+        payload["all_installations"] = app_models.GithubAppInstallation.objects.filter(
+            id__in=app_models.GithubAppUser.objects.filter(
+                github_user=self.request.user.github_user
+            ).values_list("installation_id", flat=True)
+        )
+        code_repo = app_models.GithubRepository.objects.get(id=payload["code_repo_id"])
+        (instance, _) = app_models.GithubRepoMap.objects.update_or_create(
+            integration=code_repo.owner,
+            code_repo=code_repo,
+            documentation_repo_id=payload["documentation_repo_id"],
+            defaults={
+                "integration_type": app_models.GithubRepoMap.IntegrationType.FULL,
+            },
+        )
+        django_rq.enqueue(app_jobs.sync_prs_for_repository, payload["code_repo_id"])
+        django_rq.enqueue(
+            app_jobs.sync_prs_for_repository, payload["documentation_repo_id"]
+        )
+        return JsonResponse({"success": True})
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -424,6 +452,13 @@ class AppIndexPage(TemplateView):
             context["all_repo_map"] = app_models.GithubRepoMap.objects.filter(
                 integration__in=all_installations
             )
+            search_query = self.request.GET.get("q")
+            if search_query:
+                context["all_repo_map"] = context["all_repo_map"].filter(
+                    Q(code_repo__repo_full_name__icontains=search_query)
+                    | Q(documentation_repo__repo_full_name__icontains=search_query)
+                )
+                context["q"] = search_query
             context[
                 "available_repos_for_mapping"
             ] = app_models.GithubRepository.objects.filter(
@@ -449,67 +484,67 @@ class AppIndexPage(TemplateView):
         return context
 
 
-class ListInstallationRepos(TemplateView):
-    template_name = "org-dashboard.html"
+# class ListInstallationRepos(TemplateView):
+#     template_name = "org-dashboard.html"
 
-    def post(self, request, *args, **kwargs):
-        payload = json.loads(request.body)
-        matches = self.request.resolver_match.kwargs
+#     def post(self, request, *args, **kwargs):
+#         payload = json.loads(request.body)
+#         matches = self.request.resolver_match.kwargs
 
-        # context = super().get_context_data(**kwargs)
-        payload["all_installations"] = app_models.GithubAppInstallation.objects.filter(
-            id__in=app_models.GithubAppUser.objects.filter(
-                github_user=self.request.user.github_user
-            ).values_list("installation_id", flat=True)
-        )
-        current_installation = payload["all_installations"].get(
-            **matches,
-        )
-        (instance, _) = app_models.GithubRepoMap.objects.update_or_create(
-            integration_id=payload["integration_id"],
-            code_repo_id=payload["code_repo_id"],
-            documentation_repo_id=payload["documentation_repo_id"],
-            defaults={
-                "integration_type": app_models.GithubRepoMap.IntegrationType.FULL,
-            },
-        )
-        django_rq.enqueue(app_jobs.sync_prs_for_repository, payload["code_repo_id"])
-        django_rq.enqueue(
-            app_jobs.sync_prs_for_repository, payload["documentation_repo_id"]
-        )
-        return JsonResponse({"success": True})
+#         # context = super().get_context_data(**kwargs)
+#         payload["all_installations"] = app_models.GithubAppInstallation.objects.filter(
+#             id__in=app_models.GithubAppUser.objects.filter(
+#                 github_user=self.request.user.github_user
+#             ).values_list("installation_id", flat=True)
+#         )
+#         current_installation = payload["all_installations"].get(
+#             **matches,
+#         )
+#         (instance, _) = app_models.GithubRepoMap.objects.update_or_create(
+#             integration_id=payload["integration_id"],
+#             code_repo_id=payload["code_repo_id"],
+#             documentation_repo_id=payload["documentation_repo_id"],
+#             defaults={
+#                 "integration_type": app_models.GithubRepoMap.IntegrationType.FULL,
+#             },
+#         )
+#         django_rq.enqueue(app_jobs.sync_prs_for_repository, payload["code_repo_id"])
+#         django_rq.enqueue(
+#             app_jobs.sync_prs_for_repository, payload["documentation_repo_id"]
+#         )
+#         return JsonResponse({"success": True})
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        matches = self.request.resolver_match.kwargs
+#     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+#         matches = self.request.resolver_match.kwargs
 
-        context = super().get_context_data(**kwargs)
-        context["all_installations"] = app_models.GithubAppInstallation.objects.filter(
-            id__in=app_models.GithubAppUser.objects.filter(
-                github_user=self.request.user.github_user
-            ).values_list("installation_id", flat=True)
-        )
-        current_installation = context["all_installations"].get(
-            **matches,
-        )
+#         context = super().get_context_data(**kwargs)
+#         context["all_installations"] = app_models.GithubAppInstallation.objects.filter(
+#             id__in=app_models.GithubAppUser.objects.filter(
+#                 github_user=self.request.user.github_user
+#             ).values_list("installation_id", flat=True)
+#         )
+#         current_installation = context["all_installations"].get(
+#             **matches,
+#         )
 
-        context["current_installation"] = current_installation
-        context["all_repo_map"] = app_models.GithubRepoMap.objects.filter(
-            integration=current_installation
-        )
-        context["available_repos_for_mapping"] = (
-            app_models.GithubRepository.objects.filter(
-                owner=current_installation,
-            )
-            .exclude(
-                id__in=current_installation.githubrepomap_set.values("code_repo_id")
-            )
-            .exclude(
-                id__in=current_installation.githubrepomap_set.values(
-                    "documentation_repo_id"
-                )
-            )
-        )
-        return context
+#         context["current_installation"] = current_installation
+#         context["all_repo_map"] = app_models.GithubRepoMap.objects.filter(
+#             integration=current_installation
+#         )
+#         context["available_repos_for_mapping"] = (
+#             app_models.GithubRepository.objects.filter(
+#                 owner=current_installation,
+#             )
+#             .exclude(
+#                 id__in=current_installation.githubrepomap_set.values("code_repo_id")
+#             )
+#             .exclude(
+#                 id__in=current_installation.githubrepomap_set.values(
+#                     "documentation_repo_id"
+#                 )
+#             )
+#         )
+#         return context
 
 
 class IndexView(TemplateView):
