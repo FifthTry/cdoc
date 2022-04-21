@@ -34,6 +34,7 @@ DEPLOYMENT_HOST_NAME = os.environ.get("DEPLOYMENT_HOST_NAME", "localhost")
 ALLOWED_HOSTS = [
     "localhost",
     "0.0.0.0",
+    "fifthtry-cdoc.herokuapp.com",
     DEPLOYMENT_HOST_NAME,
 ]
 
@@ -41,6 +42,7 @@ WEBSITE_HOST = f"https://{DEPLOYMENT_HOST_NAME}"
 
 CSRF_TRUSTED_ORIGINS = [WEBSITE_HOST]
 
+SECURE_SSL_REDIRECT = True
 # Application definition
 
 INSTALLED_APPS = [
