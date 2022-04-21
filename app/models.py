@@ -288,6 +288,12 @@ class MonitoredPullRequest(models.Model):
         return f"{self.code_pull_request.repository.repo_full_name}[{self.code_pull_request.pr_number}]"
 
     def save(self, *args, **kwargs):
+        new_status = old_status = self.pull_request_status
+        if self.pk:
+            # existing record
+            old_status = MonitoredPullRequest.objects.get(
+                pk=self.pk
+            ).pull_request_status
         if (
             self.documentation_pull_request is not None
             and self.pull_request_status
@@ -305,7 +311,32 @@ class MonitoredPullRequest(models.Model):
             self.pull_request_status = (
                 MonitoredPullRequest.PullRequestStatus.NOT_CONNECTED
             )
-        super().save(*args, **kwargs)
+        resp = super().save(*args, **kwargs)
+        if old_status != new_status:
+            comment_msg = None  # Allowed: None, Body of the comment
+
+            if (
+                old_status == MonitoredPullRequest.PullRequestStatus.NOT_CONNECTED
+                and new_status
+                == MonitoredPullRequest.PullRequestStatus.APPROVAL_PENDING
+            ):
+                # Documentation PR is connected
+                # Send a comment to the code PR that PR has been attached
+                comment_msg = "Documentation PR connected"
+            elif self.is_approved:
+                # Send a comment to the code PR that PR has been approved
+                comment_msg = "Documentation PR approved"
+
+            if comment_msg is not None:
+                github_instance = github.Github(
+                    self.integration.creator.get_active_access_token()
+                )
+                repo = github_instance.get_repo(
+                    self.code_pull_request.repository.repo_id
+                )
+                pr = repo.get_pull(self.code_pull_request.pr_number)
+                pr.create_issue_comment(comment_msg)
+        return resp
 
     def get_display_name(self):
         return f"{self.code_pull_request.repository.repo_full_name}/#{self.code_pull_request.pr_number}: {self.code_pull_request.pr_title}"

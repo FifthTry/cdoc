@@ -46,6 +46,10 @@ urlpatterns = [
     path("app/", include("app.urls")),
     path("admin/", admin.site.urls),
     path(
+        "initiate-github-login/",
+        app_views.InitializeGithubLogin.as_view(),
+    ),
+    path(
         "",
         app_views.AppIndexPage.as_view(),
     ),
