@@ -23,9 +23,9 @@
             </div> -->
         </div>
         <!--search-with-button-->
-        <div class="doc-history">
+        <div class="repo-heading main-text-strong">Mapped repos</div>
+        <div class="doc-history mb25">
             {% if all_repo_map %}
-            Mapped repos
             {% for repo_map in all_repo_map %}
                 <div class="doc-history-row clickable-row" style="cursor: pointer;">
                     <div class="row-left">
@@ -42,16 +42,17 @@
                 </div>
             {% endfor %}
             {% endif %}
-
+        </div>
+        <div class="repo-heading main-text-strong">Available repos</div>
+        <div class="doc-history">
             {% if unmapped_repos_display %}
-            Available repos
             {% for repo in unmapped_repos_display %}
                 <div class="doc-history-row">
-                    <div class="row-left full-width">
+                    <div class="row-left horizontal-links">
                             <a href="{{repo.get_url}}" class="cell-item item-top main-text"><span class="iconify"
-                                    data-icon="octicon:code-16"></span>{{repo.repo_full_name}}</a>
+                                    data-icon="octicon:repo-16"></span>{{repo.repo_full_name}}</a>
                     </div>
-                    <div class="row-right full-width">
+                    <div class="row-right">
                         <a href="javascript: void(0);" class="cta cta-primary open-connect-pr-modal" data-repo-id="{{repo.id}}" data-repo-full-name="{{repo.repo_full_name}}">Connect</a>
                     </div>
                 </div>
