@@ -91,22 +91,20 @@
         <div class="modal-container">
             <div class="modal-dialog pb0">
                 <div class="modal-title main-text-strong">
-                    Attach Repositories
+                    <span></span>
                     <span class="close"><span class="iconify" data-icon="octicon:x-16"></span></span>
                 </div>
 
                 <div class="modal-body pt12">
-                    <div class="body-row main-text">
-                        A healthy code always carry good Documentation
-                        <br />
-                        Attach one for:
+                    <div class="body-row main-text for-repo-text">
+                        
                     </div>
 
                     <div class="body-row modal-msg mt27 main-text">
                         <!--search:start-->
                         <form method="POST" action="" id="attach-repos-form">
                             <!--tabled-row-->
-                            <div class="tabled-row">
+                            <div class="tabled-row code-repo-field">
                                 <div class="row-left">
                                     Code Repository:
                                 </div>
@@ -118,7 +116,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="tabled-row">
+                            <div class="tabled-row doc-repo-field">
                                 <div class="row-left">
                                     Documentation Repository:
                                 </div>
@@ -198,17 +196,51 @@
         $("#code-or-doc-repo-modal #code-repo-btn").attr("data-code-repo-full-name", $(this).attr("data-repo-full-name"));
         $("#code-or-doc-repo-modal #code-repo-btn").attr("data-code-repo-id", $(this).attr("data-repo-id"));
 
+
         $("#code-or-doc-repo-modal #doc-repo-btn").attr("data-doc-repo-full-name", $(this).attr("data-repo-full-name"));
         $("#code-or-doc-repo-modal #doc-repo-btn").attr("data-doc-repo-id", $(this).attr("data-repo-id"));
         $("#code-or-doc-repo-modal").addClass("opened");
     })
     $("#code-or-doc-repo-modal #code-repo-btn").click(function() {
-        $("#code-or-doc-repo-modal").removeClass("opened");
+        
+        // Set code repo val and reset doc repo val
+        $('select[name="code_repo_id"]').val($(this).attr("data-code-repo-id"));
+        $('select[name="documentation_repo_id"]').prop('selectedIndex',0);
+        $("#attach-documentation-modal div.modal-title span").first().text("Attach Documentation repository");
+        $("#attach-documentation-modal .for-repo-text").text("For "+ $(this).attr("data-code-repo-full-name"));
+        // Show hide appropriate fields
+        $("#attach-documentation-modal .code-repo-field").hide();
+        $("#attach-documentation-modal .doc-repo-field").show();
+        
+        // Open the modal
         $("#attach-documentation-modal").addClass("opened");
+        
+        // Close previous modal
+        $("#code-or-doc-repo-modal").removeClass("opened");
     });
     $("#code-or-doc-repo-modal #doc-repo-btn").click(function() {
-        $("#code-or-doc-repo-modal").removeClass("opened");
+
+
+        // Set code repo val and reset doc repo val
+        $('select[name="documentation_repo_id"]').val($(this).attr("data-doc-repo-id"));
+        $('select[name="code_repo_id"]').prop('selectedIndex',0);
+        $("#attach-documentation-modal div.modal-title span").first().text("Attach Code repository");
+        // Show hide appropriate fields
+        $("#attach-documentation-modal .doc-repo-field").hide();
+        $("#attach-documentation-modal .code-repo-field").show();
+        $("#attach-documentation-modal .for-repo-text").text("For "+ $(this).attr("data-doc-repo-full-name"));
+        // Open the modal
         $("#attach-documentation-modal").addClass("opened");
+        
+        // Close previous modal
+        $("#code-or-doc-repo-modal").removeClass("opened");
+
+        // $("#code-or-doc-repo-modal").removeClass("opened");
+        // $('select[name="documentation_repo_id"]').val($(this).attr("data-doc-repo-id"));
+
+        // $("#attach-documentation-modal .code-repo-field").show();
+        // $("#attach-documentation-modal .doc-repo-field").hide();
+        // $("#attach-documentation-modal").addClass("opened");
     });
     function getCookie(name) {
         let cookieValue = null;

@@ -45,5 +45,26 @@
 
 
 
+    ],
+    "unmapped_repos_display": [
+        {
+            "id": "id1",
+            "repo_full_name": "Document repository"
+        },
+        {
+            "id": "id2",
+            "repo_full_name": "New repository"
+        },
+        {
+            "id": "id3",
+            "repo_full_name": "PDF repository"
+        },
+        {
+            "id": "id4",
+            "repo_full_name": "Worddoc repository"
+        }
+
+
+
     ]
 }
