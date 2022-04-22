@@ -287,7 +287,7 @@
         return false;
     });
     $(".clickable-row").click(function(){
-        window.location.href = `/{{repo_map.code_repo.repo_full_name}}/pulls`;
+        window.location.href = $(this).find(".clickable-row ").attr("href")
     });
 </script>
 {% else %}
