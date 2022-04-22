@@ -27,8 +27,8 @@
             {% if all_repo_map %}
             Mapped repos
             {% for repo_map in all_repo_map %}
-                <div class="doc-history-row">
-                    <div class="row-left full-width">
+                <div class="doc-history-row clickable-row" style="cursor: pointer;">
+                    <div class="row-left">
                         <div class="cell-group">
                             <a href="{{repo_map.code_repo.get_url}}" class="cell-item item-top main-text"><span class="iconify"
                                     data-icon="octicon:code-16"></span>{{repo_map.code_repo.repo_full_name}}</a>
@@ -36,10 +36,8 @@
                                     data-icon="octicon:note-16"></span>{{repo_map.documentation_repo.repo_full_name}}</a>
                         </div>
                     </div>
-                    <div class="row-right full-width">
-                        <div class="clickable-row" style="cursor: pointer;">
-                            <a href="/{{repo_map.code_repo.repo_full_name}}/pulls" class="cta cta-primary">&gt;</a>
-                        </div>
+                    <div class="row-right">
+                        <a href="/{{repo_map.code_repo.repo_full_name}}/pulls" class="cta cta-primary">&gt;</a>
                     </div>
                 </div>
             {% endfor %}
