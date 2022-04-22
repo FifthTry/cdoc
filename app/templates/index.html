@@ -18,12 +18,14 @@
                     <input type="text" placeholder="search" name="q" value="{{q}}"/>
                 </form>
             </div>
-            <div class="new_connections">
+            <!-- <div class="new_connections">
                  <a id="open-new-repo-connection-modal" class="cta cta-primary">+ New connection</a>
-            </div>
+            </div> -->
         </div>
         <!--search-with-button-->
         <div class="doc-history">
+            {% if all_repo_map %}
+            Mapped repos
             {% for repo_map in all_repo_map %}
                 <div class="doc-history-row">
                     <div class="row-left full-width">
@@ -41,9 +43,50 @@
                     </div>
                 </div>
             {% endfor %}
+            {% endif %}
+
+            {% if unmapped_repos_display %}
+            Available repos
+            {% for repo in unmapped_repos_display %}
+                <div class="doc-history-row">
+                    <div class="row-left full-width">
+                            <a href="{{repo.get_url}}" class="cell-item item-top main-text"><span class="iconify"
+                                    data-icon="octicon:code-16"></span>{{repo.repo_full_name}}</a>
+                    </div>
+                    <div class="row-right full-width">
+                        <a href="javascript: void(0);" class="cta cta-primary open-connect-pr-modal" data-repo-id="{{repo.id}}" data-repo-full-name="{{repo.repo_full_name}}">Connect</a>
+                    </div>
+                </div>
+            {% endfor %}
+            {% endif %}
         </div>
     </div>
 </div>
+
+<div class="modal regular" id="code-or-doc-repo-modal">
+    <div class="modal-parent">
+        <div class="modal-container">
+            <div class="modal-dialog pb0">
+                <div class="modal-title main-text-strong">
+                    <span class="repo_title"></span>
+                    <span class="close"><span class="iconify" data-icon="octicon:x-16"></span></span>
+                </div>
+
+                <div class="modal-body pt12">
+                    <div class="body-row main-text">
+                        This repo is a:
+                    </div>
+
+                    <div class="body-row modal-msg mt27 main-text">
+                        <button class="cta cta-primary" id="code-repo-btn" >Code Repo</button>
+                        <button class="cta cta-primary" id="doc-repo-btn">Documentation Repo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+                        
 
 <div class="modal regular" id="attach-documentation-modal">
     <div class="modal-parent">
@@ -76,6 +119,8 @@
                                         {% endfor %}
                                     </select>
                                 </div>
+                            </div>
+                            <div class="tabled-row">
                                 <div class="row-left">
                                     Documentation Repository:
                                 </div>
@@ -86,6 +131,8 @@
                                     {% endfor %}
                                     </select>
                                 </div>
+                            </div>
+                            <div class="tabled-row">
                                 <div class="row-left">
                                 </div>
                                 <div class="row-right button-row">
@@ -145,7 +192,24 @@
         });
         return data;
     }
-    $("#open-new-repo-connection-modal").click(function(){
+    // $("#open-new-repo-connection-modal").click(function(){
+    //     $("#attach-documentation-modal").addClass("opened");
+    // });
+    $(".open-connect-pr-modal").click(function() {
+        $("#code-or-doc-repo-modal span.repo_title").text($(this).attr("data-repo-full-name"));
+        $("#code-or-doc-repo-modal #code-repo-btn").attr("data-code-repo-full-name", $(this).attr("data-repo-full-name"));
+        $("#code-or-doc-repo-modal #code-repo-btn").attr("data-code-repo-id", $(this).attr("data-repo-id"));
+
+        $("#code-or-doc-repo-modal #doc-repo-btn").attr("data-doc-repo-full-name", $(this).attr("data-repo-full-name"));
+        $("#code-or-doc-repo-modal #doc-repo-btn").attr("data-doc-repo-id", $(this).attr("data-repo-id"));
+        $("#code-or-doc-repo-modal").addClass("opened");
+    })
+    $("#code-or-doc-repo-modal #code-repo-btn").click(function() {
+        $("#code-or-doc-repo-modal").removeClass("opened");
+        $("#attach-documentation-modal").addClass("opened");
+    });
+    $("#code-or-doc-repo-modal #doc-repo-btn").click(function() {
+        $("#code-or-doc-repo-modal").removeClass("opened");
         $("#attach-documentation-modal").addClass("opened");
     });
     function getCookie(name) {
