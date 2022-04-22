@@ -308,7 +308,21 @@ header > div.menu .menu-item:last-child{
 .doc-history-row > .row-right  .username{
     font-weight: 700;
 }
+.horizontal-links{
+    font-size: 14px;
+    line-height: 18px;
+}
 
+.horizontal-links > a{
+    margin-top: 10px !important;
+    display: inline-block;
+}
+
+.horizontal-links .iconify{
+    line-height: 18px;
+    vertical-align: middle;
+    margin-right: 5px;
+}
 
 /*  modal */
 
@@ -602,6 +616,9 @@ header > div.menu .menu-item:last-child{
 .pb45{
     padding-bottom: 45px !important;
 }
+.mb25{
+    margin-bottom: 25px;
+}
 .text-to-bottom{
     display: inline-block;
     border-bottom: 1px solid #966220;
@@ -664,4 +681,14 @@ header > div.menu .menu-item:last-child{
 }
 .tabled-row > .button-row{
     margin-top: 10px !important;
+}
+
+.repo-heading{
+    line-height: 36px;
+    font-size: 24px;
+     grid-column: span 12;
+    grid-column-start: 2;
+    grid-column-end: 12;
+    margin-bottom: 20px;
+   
 }
