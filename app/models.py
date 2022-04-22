@@ -305,7 +305,7 @@ class MonitoredPullRequest(models.Model):
             self.pull_request_status = (
                 MonitoredPullRequest.PullRequestStatus.NOT_CONNECTED
             )
-        super().save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
     def get_display_name(self):
         return f"{self.code_pull_request.repository.repo_full_name}/#{self.code_pull_request.pr_number}: {self.code_pull_request.pr_title}"
@@ -331,6 +331,9 @@ class PrApproval(models.Model):
         MonitoredPullRequest, on_delete=models.CASCADE
     )
     approver = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
 
 
 class GithubCheckRun(models.Model):
