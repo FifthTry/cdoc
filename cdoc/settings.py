@@ -34,6 +34,7 @@ DEPLOYMENT_HOST_NAME = os.environ.get("DEPLOYMENT_HOST_NAME", "localhost")
 ALLOWED_HOSTS = [
     "localhost",
     "0.0.0.0",
+    "fifthtry-cdoc.herokuapp.com",
     DEPLOYMENT_HOST_NAME,
 ]
 
