@@ -495,13 +495,6 @@ class AppIndexPage(TemplateView):
             context["all_repo_map"] = app_models.GithubRepoMap.objects.filter(
                 integration__in=all_installations
             )
-            search_query = self.request.GET.get("q")
-            if search_query:
-                context["all_repo_map"] = context["all_repo_map"].filter(
-                    Q(code_repo__repo_full_name__icontains=search_query)
-                    | Q(documentation_repo__repo_full_name__icontains=search_query)
-                )
-                context["q"] = search_query
             context[
                 "available_repos_for_mapping"
             ] = app_models.GithubRepository.objects.filter(
@@ -509,6 +502,19 @@ class AppIndexPage(TemplateView):
                 code_repos__isnull=True,
                 documentation_repos__isnull=True,
             )
+            context["unmapped_repos_display"] = context["available_repos_for_mapping"]
+            search_query = self.request.GET.get("q")
+            if search_query:
+                context["all_repo_map"] = context["all_repo_map"].filter(
+                    Q(code_repo__repo_full_name__icontains=search_query)
+                    | Q(documentation_repo__repo_full_name__icontains=search_query)
+                )
+                context["unmapped_repos_display"] = context[
+                    "unmapped_repos_display"
+                ].filter(repo_full_name__icontains=search_query)
+                context["q"] = search_query
+            context["all_repo_map"] = context["all_repo_map"][:10]
+            context["unmapped_repos_display"] = context["unmapped_repos_display"][:10]
         else:
             login_state_instance = app_models.GithubLoginState()
             if self.request.GET.get("next"):
