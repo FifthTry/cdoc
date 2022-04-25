@@ -266,3 +266,5 @@ playground
 PRIVATE_KEY.pem
 
 .idea
+
+.python-version
