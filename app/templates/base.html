@@ -38,12 +38,11 @@
         {% endif %}
         {% endcomment %}
         <div class="menu">
-            <a href="#" class="menu-item">
-                <span class="iconify" data-icon="bi:moon"></span>
-            </a>
-            <a href="#" class="menu-item">
+            {% if not request.user.is_authenticated %}
+            <a href="https://github.com/fifthtry/cdoc/" class="menu-item">
                 <span class="iconify" data-icon="akar-icons:github-fill"></span>
             </a>
+            {% endif %}
         </div>
     </header>
     {% block content %} {% endblock content %}
