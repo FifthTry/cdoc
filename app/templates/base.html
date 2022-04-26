@@ -26,6 +26,17 @@
                 <img src="{% static 'images/fifthtry-logo.png' %}">
             </a>
         </div>
+        {% comment %}
+        {% if request.user.is_authenticated %}
+        <div>
+            <select id="org-selector">
+                {% for installation in all_installations %}
+                <option value="{{installation.account_name}}" {% if installation.account_name == current_installation.account_name %}selected="selected"{% endif %}>{{installation.account_name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        {% endcomment %}
         <div class="menu">
             {% if not request.user.is_authenticated %}
             <a href="https://github.com/fifthtry/cdoc/" class="menu-item">
