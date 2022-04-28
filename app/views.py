@@ -408,7 +408,7 @@ class PRView(View):
         matches = self.request.resolver_match.kwargs
         repo = app_models.GithubRepository.objects.get(
             repo_full_name__iexact=f"{matches['account_name']}/{matches['repo_name']}",
-            state=app_models.GithubAppInstallation.InstallationState.INSTALLED,
+            owner__state=app_models.GithubAppInstallation.InstallationState.INSTALLED,
         )
         pr = app_models.GithubPullRequest.objects.get(
             pr_number=matches["pr_number"], repository=repo
