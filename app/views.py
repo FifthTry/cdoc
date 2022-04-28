@@ -15,7 +15,7 @@ from django.contrib.auth import models as auth_models
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.http import Http404, HttpResponseRedirect, JsonResponse
+from django.http import Http404, HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -191,7 +191,15 @@ class AuthCallback(View):
 class WebhookCallback(View):
     def post(self, request, *args, **kwargs):
         headers = request.headers
-        payload = json.loads(request.body)
+        body = request.body
+        is_verified = lib.verify_signature(
+            headers["X-Hub-Signature-256"],
+            body,
+            settings.GITHUB_CREDS["app_signature_secret"],
+        )
+        payload = json.loads(body)
+        if not is_verified:
+            return HttpResponse("Invalid signature", status=403)
         logger.info(
             "Recieved Github webhook",
             extra={"data": {"headers": headers, "payload": payload}},
@@ -202,6 +210,7 @@ class WebhookCallback(View):
             "pull_request",
             "installation_repositories",
             "check_suite",
+            "installation",
         ]
         if EVENT_TYPE in interesting_events:
             get_installation_instance = (
@@ -214,14 +223,33 @@ class WebhookCallback(View):
                 installation_id=installation_instance.installation_id,
                 user_token=installation_instance.creator.get_active_access_token(),
             )
-            if EVENT_TYPE == "pull_request":
+            if EVENT_TYPE == "installation":
+                should_save = False
+                if payload["action"] == "deleted":
+                    installation_instance.state = (
+                        app_models.GithubAppInstallation.InstallationState.UNINSTALLED
+                    )
+                    should_save = True
+                elif payload["action"] == "suspend":
+                    installation_instance.state = (
+                        app_models.GithubAppInstallation.InstallationState.SUSPENDED
+                    )
+                    should_save = True
+                elif payload["action"] == "unsuspend":
+                    installation_instance.state = (
+                        app_models.GithubAppInstallation.InstallationState.INSTALLED
+                    )
+                    should_save = True
+                if should_save:
+                    installation_instance.save()
+            elif EVENT_TYPE == "pull_request":
                 pull_request_data = payload["pull_request"]
                 (github_repo, _) = app_models.GithubRepository.objects.update_or_create(
                     repo_id=payload["repository"]["id"],
+                    owner=installation_instance,
                     defaults={
                         "repo_full_name": payload["repository"]["full_name"],
                         "repo_name": payload["repository"]["name"],
-                        "owner": installation_instance,
                     },
                 )
                 (
@@ -259,11 +287,13 @@ class WebhookCallback(View):
                     (
                         github_repo,
                         _,
-                    ) = app_models.GithubRepository.objects.get_or_create(
+                    ) = app_models.GithubRepository.objects.update_or_create(
                         repo_id=repository_data["id"],
-                        repo_name=repository_data["name"],
-                        repo_full_name=repository_data["full_name"],
                         owner=installation_instance,
+                        defaults={
+                            "repo_name": repository_data["name"],
+                            "repo_full_name": repository_data["full_name"],
+                        },
                     )
                     prs = payload.get("check_suite", {}).get("pull_requests", [])
 
@@ -329,15 +359,17 @@ class AllPRView(TemplateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         matches = self.request.resolver_match.kwargs
+        context["all_installations"] = app_models.GithubAppInstallation.objects.filter(
+            id__in=app_models.GithubAppUser.objects.filter(
+                github_user=self.request.user.github_user,
+            ).values_list("installation_id", flat=True),
+            state=app_models.GithubAppInstallation.InstallationState.INSTALLED,
+        )
         context["repo_mapping"] = app_models.GithubRepoMap.objects.get(
             code_repo__repo_full_name__iexact="{}/{}".format(
                 matches["account_name"], matches["repo_name"]
-            )
-        )
-        context["all_installations"] = app_models.GithubAppInstallation.objects.filter(
-            id__in=app_models.GithubAppUser.objects.filter(
-                github_user=self.request.user.github_user
-            ).values_list("installation_id", flat=True)
+            ),
+            integration__in=context["all_installations"],
         )
         current_installation = context["all_installations"].get(
             account_name=matches["account_name"]
@@ -489,7 +521,8 @@ class AppIndexPage(TemplateView):
             all_installations = app_models.GithubAppInstallation.objects.filter(
                 id__in=app_models.GithubAppUser.objects.filter(
                     github_user=self.request.user.github_user
-                ).values_list("installation_id", flat=True)
+                ).values_list("installation_id", flat=True),
+                state=app_models.GithubAppInstallation.InstallationState.INSTALLED,
             )
             context["all_installations"] = all_installations
             context["all_repo_map"] = app_models.GithubRepoMap.objects.filter(
@@ -562,3 +595,19 @@ class IndexView(TemplateView):
         context = super(IndexView, self).get_context_data(*args, **kwargs)
         context["asd"] = "Message from context"
         return context
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class MarketplaceCallbackView(View):
+    def post(self, request, *args, **kwargs):
+        body = request.body
+        is_verified = lib.verify_signature(
+            request.headers["X-Hub-Signature-256"],
+            body,
+            settings.GITHUB_CREDS["marketplace_signature_secret"],
+        )
+        if not is_verified:
+            return HttpResponse("Invalid signature", status=403)
+        payload = json.loads(body)
+        app_models.GithubMarketplaceEvent.objects.create(payload=payload)
+        return JsonResponse({"status": True})
