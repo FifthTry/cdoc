@@ -1,6 +1,8 @@
 import logging
 import math
 import uuid
+from hmac import HMAC, compare_digest
+from hashlib import sha256
 
 import time
 from typing import Tuple, Optional
@@ -130,3 +132,12 @@ class GithubInstallationManager:
             response = self._get_repository_page(page_no, per_page)
             for repo in response["repositories"]:
                 yield repo
+
+
+def verify_signature(github_signature_256, request_body, secret_string):
+    received_sign = (
+        github_signature_256.split("sha256=")[-1].strip()
+    )
+    secret = secret_string.encode()
+    expected_sign = HMAC(key=secret, msg=request_body, digestmod=sha256).hexdigest()
+    return compare_digest(received_sign, expected_sign)

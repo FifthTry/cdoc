@@ -15,7 +15,7 @@ from django.contrib.auth import models as auth_models
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.http import Http404, HttpResponseRedirect, JsonResponse
+from django.http import Http404, HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -191,7 +191,15 @@ class AuthCallback(View):
 class WebhookCallback(View):
     def post(self, request, *args, **kwargs):
         headers = request.headers
-        payload = json.loads(request.body)
+        body = request.body
+        is_verified = lib.verify_signature(
+            headers["X-Hub-Signature-256"],
+            body,
+            settings.GITHUB_CREDS["app_signature_secret"],
+        )
+        payload = json.loads(body)
+        if not is_verified:
+            return HttpResponse("Invalid signature", status=403)
         logger.info(
             "Recieved Github webhook",
             extra={"data": {"headers": headers, "payload": payload}},
@@ -592,6 +600,14 @@ class IndexView(TemplateView):
 @method_decorator(csrf_exempt, name="dispatch")
 class MarketplaceCallbackView(View):
     def post(self, request, *args, **kwargs):
-        payload = json.loads(request.body)
+        body = request.body
+        is_verified = lib.verify_signature(
+            request.headers["X-Hub-Signature-256"],
+            body,
+            settings.GITHUB_CREDS["marketplace_signature_secret"],
+        )
+        if not is_verified:
+            return HttpResponse("Invalid signature", status=403)
+        payload = json.loads(body)
         app_models.GithubMarketplaceEvent.objects.create(payload=payload)
         return JsonResponse({"status": True})
