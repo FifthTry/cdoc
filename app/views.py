@@ -587,3 +587,11 @@ class IndexView(TemplateView):
         context = super(IndexView, self).get_context_data(*args, **kwargs)
         context["asd"] = "Message from context"
         return context
+
+
+@method_decorator(csrf_exempt, name="dispatch")
+class MarketplaceCallbackView(View):
+    def post(self, request, *args, **kwargs):
+        payload = json.loads(request.body)
+        app_models.GithubMarketplaceEvent.objects.create(payload=payload)
+        return JsonResponse({"status": True})

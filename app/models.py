@@ -1,4 +1,5 @@
 import datetime
+from email.policy import default
 import enum
 import logging
 import uuid
@@ -399,3 +400,8 @@ class GithubLoginState(models.Model):
 
     def __str__(self) -> str:
         return self.state.__str__()
+
+
+class GithubMarketplaceEvent(models.Model):
+    payload = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
