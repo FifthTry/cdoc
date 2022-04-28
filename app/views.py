@@ -407,7 +407,8 @@ class PRView(View):
         # {'account_name': 'fifthtry', 'repo_name': 'cdoc', 'pr_number': 1}
         matches = self.request.resolver_match.kwargs
         repo = app_models.GithubRepository.objects.get(
-            repo_full_name__iexact=f"{matches['account_name']}/{matches['repo_name']}"
+            repo_full_name__iexact=f"{matches['account_name']}/{matches['repo_name']}",
+            state=app_models.GithubAppInstallation.InstallationState.INSTALLED,
         )
         pr = app_models.GithubPullRequest.objects.get(
             pr_number=matches["pr_number"], repository=repo
@@ -498,7 +499,8 @@ class AppIndexPage(TemplateView):
         payload["all_installations"] = app_models.GithubAppInstallation.objects.filter(
             id__in=app_models.GithubAppUser.objects.filter(
                 github_user=self.request.user.github_user
-            ).values_list("installation_id", flat=True)
+            ).values_list("installation_id", flat=True),
+            state=app_models.GithubAppInstallation.InstallationState.INSTALLED,
         )
         code_repo = app_models.GithubRepository.objects.get(id=payload["code_repo_id"])
         (instance, _) = app_models.GithubRepoMap.objects.update_or_create(
