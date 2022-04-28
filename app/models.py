@@ -119,6 +119,7 @@ class GithubAppInstallation(models.Model):
     class InstallationState(models.TextChoices):
         INSTALLED = "INSTALLED", "Installed"
         UNINSTALLED = "UNINSTALLED", "Uninstalled"
+        SUSPENDED = "SUSPENDED", "Suspended"
 
     installation_id = models.BigIntegerField(unique=True, db_index=True)
     creator = models.ForeignKey(GithubUser, on_delete=models.PROTECT)
@@ -183,9 +184,12 @@ class GithubInstallationToken(Token):
 class GithubRepository(models.Model):
     repo_id = models.BigIntegerField()
     repo_name = models.CharField(max_length=150)
-    repo_full_name = models.CharField(max_length=200, unique=True)
+    repo_full_name = models.CharField(max_length=200)
     owner = models.ForeignKey(GithubAppInstallation, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("repo_id", "owner")
 
     def __str__(self) -> str:
         return self.repo_full_name

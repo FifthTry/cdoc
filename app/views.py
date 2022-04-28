@@ -202,6 +202,7 @@ class WebhookCallback(View):
             "pull_request",
             "installation_repositories",
             "check_suite",
+            "installation",
         ]
         if EVENT_TYPE in interesting_events:
             get_installation_instance = (
@@ -214,14 +215,33 @@ class WebhookCallback(View):
                 installation_id=installation_instance.installation_id,
                 user_token=installation_instance.creator.get_active_access_token(),
             )
-            if EVENT_TYPE == "pull_request":
+            if EVENT_TYPE == "installation":
+                should_save = False
+                if payload["action"] == "deleted":
+                    installation_instance.state = (
+                        app_models.GithubAppInstallation.InstallationState.UNINSTALLED
+                    )
+                    should_save = True
+                elif payload["action"] == "suspend":
+                    installation_instance.state = (
+                        app_models.GithubAppInstallation.InstallationState.SUSPENDED
+                    )
+                    should_save = True
+                elif payload["action"] == "unsuspend":
+                    installation_instance.state = (
+                        app_models.GithubAppInstallation.InstallationState.INSTALLED
+                    )
+                    should_save = True
+                if should_save:
+                    installation_instance.save()
+            elif EVENT_TYPE == "pull_request":
                 pull_request_data = payload["pull_request"]
                 (github_repo, _) = app_models.GithubRepository.objects.update_or_create(
                     repo_id=payload["repository"]["id"],
+                    owner=installation_instance,
                     defaults={
                         "repo_full_name": payload["repository"]["full_name"],
                         "repo_name": payload["repository"]["name"],
-                        "owner": installation_instance,
                     },
                 )
                 (
@@ -259,11 +279,13 @@ class WebhookCallback(View):
                     (
                         github_repo,
                         _,
-                    ) = app_models.GithubRepository.objects.get_or_create(
+                    ) = app_models.GithubRepository.objects.update_or_create(
                         repo_id=repository_data["id"],
-                        repo_name=repository_data["name"],
-                        repo_full_name=repository_data["full_name"],
                         owner=installation_instance,
+                        defaults={
+                            "repo_name": repository_data["name"],
+                            "repo_full_name": repository_data["full_name"],
+                        },
                     )
                     prs = payload.get("check_suite", {}).get("pull_requests", [])
 
@@ -329,15 +351,17 @@ class AllPRView(TemplateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         matches = self.request.resolver_match.kwargs
+        context["all_installations"] = app_models.GithubAppInstallation.objects.filter(
+            id__in=app_models.GithubAppUser.objects.filter(
+                github_user=self.request.user.github_user,
+            ).values_list("installation_id", flat=True),
+            state=app_models.GithubAppInstallation.InstallationState.INSTALLED,
+        )
         context["repo_mapping"] = app_models.GithubRepoMap.objects.get(
             code_repo__repo_full_name__iexact="{}/{}".format(
                 matches["account_name"], matches["repo_name"]
-            )
-        )
-        context["all_installations"] = app_models.GithubAppInstallation.objects.filter(
-            id__in=app_models.GithubAppUser.objects.filter(
-                github_user=self.request.user.github_user
-            ).values_list("installation_id", flat=True)
+            ),
+            integration__in=context["all_installations"],
         )
         current_installation = context["all_installations"].get(
             account_name=matches["account_name"]
@@ -489,7 +513,8 @@ class AppIndexPage(TemplateView):
             all_installations = app_models.GithubAppInstallation.objects.filter(
                 id__in=app_models.GithubAppUser.objects.filter(
                     github_user=self.request.user.github_user
-                ).values_list("installation_id", flat=True)
+                ).values_list("installation_id", flat=True),
+                state=app_models.GithubAppInstallation.InstallationState.INSTALLED,
             )
             context["all_installations"] = all_installations
             context["all_repo_map"] = app_models.GithubRepoMap.objects.filter(
