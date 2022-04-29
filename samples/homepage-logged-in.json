@@ -7,11 +7,13 @@
     },
     "all_repo_map":[{
         "code_repo": {
-            "repo_full_name": "PDF documentation",
-            "get_url": "https://github.com/fifthtry"
+            "repo_name": "PDF Repository",
+            "repo_full_name": "#",
+            "get_url": "https://github.com/fifthtry/cdoc"
         },
         "documentation_repo":{
-            "repo_full_name": "Doc repository"
+            "repo_full_name": "#",
+            "get_url": "https://github.com/fifthtry/cdoc"
         }
 
     },
@@ -49,19 +51,20 @@
     "unmapped_repos_display": [
         {
             "id": "id1",
-            "repo_full_name": "Document repository"
+            "repo_full_name": "user-account/document-repository"
         },
         {
             "id": "id2",
-            "repo_full_name": "New repository"
+            "repo_full_name": "user-account/new-repository"
         },
         {
             "id": "id3",
-            "repo_full_name": "PDF repository"
+            "repo_full_name": "user-account/pdf-repository",
+            "repo_name": "PDF Repository"
         },
         {
             "id": "id4",
-            "repo_full_name": "Worddoc repository"
+            "repo_full_name": "user-account/worddoc-repository"
         }
 
 

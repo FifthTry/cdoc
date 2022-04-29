@@ -408,7 +408,7 @@ class PRView(View):
         matches = self.request.resolver_match.kwargs
         repo = app_models.GithubRepository.objects.get(
             repo_full_name__iexact=f"{matches['account_name']}/{matches['repo_name']}",
-            state=app_models.GithubAppInstallation.InstallationState.INSTALLED,
+            owner__state=app_models.GithubAppInstallation.InstallationState.INSTALLED,
         )
         pr = app_models.GithubPullRequest.objects.get(
             pr_number=matches["pr_number"], repository=repo
@@ -474,10 +474,20 @@ class PRView(View):
             ):
                 # Documentation PR is connected
                 # Send a comment to the code PR that PR has been attached
-                comment_msg = "Documentation PR connected"
-            elif instance.is_approved:
+                comment_msg = f"The [documentation pull request]({instance.documentation_pull_request.get_url()}) has been attached sucessfully."
+            elif (
+                new_status
+                == app_models.MonitoredPullRequest.PullRequestStatus.MANUAL_APPROVAL
+            ):
                 # Send a comment to the code PR that PR has been approved
-                comment_msg = "Documentation PR approved"
+                comment_msg = (
+                    "This pull request does not require any documentation changes."
+                )
+            elif (
+                new_status == app_models.MonitoredPullRequest.PullRequestStatus.APPROVED
+            ):
+                # Send a comment to the code PR that PR has been approved
+                comment_msg = f"Approved! Code is up to date with the [documentation]({instance.documentation_pull_request.get_url()})"
 
             if comment_msg is not None:
                 github_instance = github.Github(
