@@ -34,6 +34,7 @@ DEPLOYMENT_HOST_NAME = os.environ.get("DEPLOYMENT_HOST_NAME", "localhost")
 ALLOWED_HOSTS = [
     "localhost",
     "0.0.0.0",
+    "fifthtry-cdoc.herokuapp.com",
     DEPLOYMENT_HOST_NAME,
 ]
 
@@ -256,6 +257,10 @@ except ModuleNotFoundError:
         "client_secret": os.environ["CDOC_GITHUB_CLIENT_SECRET"],
         "app_id": int(os.environ["CDOC_GITHUB_APP_ID"]),
         "app_name": "Continuous Documentation",
+        "marketplace_signature_secret": os.environ[
+            "CDOC_GITHUB_MARKETPLACE_SIGNATURE_SECRET"
+        ],
+        "app_signature_secret": os.environ["CDOC_GITHUB_APP_SIGNATURE_SECRET"],
     }
 
     if "CDOC_SENTRY_DSN" in os.environ:

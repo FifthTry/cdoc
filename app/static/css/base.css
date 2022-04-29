@@ -120,7 +120,7 @@ header > div.menu .menu-item:last-child{
     margin-bottom: 17px;
 }
 
-.search > input{
+.search input{
     padding: 14px 28px;
     border: 1px solid #919192;
     color: #A8A29E;
@@ -131,7 +131,7 @@ header > div.menu .menu-item:last-child{
     border-radius: 8px;
     box-sizing: border-box;
 }
-.search > input:focus{
+.search input:focus{
     border: 1px solid #919192;
 }
 
@@ -189,7 +189,7 @@ header > div.menu .menu-item:last-child{
 .doc-history-row > .row-left,
 .dialog-history-row > .row-left{
     grid-column-start: 1;
-    grid-column-end: 8;
+    grid-column-end: 11;
     justify-self: start;
     padding: 20px 0;
 } 
@@ -265,14 +265,27 @@ header > div.menu .menu-item:last-child{
 
 .doc-history-row > .row-right,
 .dialog-history-row > .row-right{
-    grid-column-start: 8;
+    grid-column-start: 11;
     grid-column-end: 13;
     justify-self: end;
     text-align: right;
     padding: 20px 0;
 } 
 
+.doc-history-row > .row-left.full-width,
+.dialog-history-row > .row-left.full-width{
+    grid-column-start: 1;
+    grid-column-end: 4;
+    justify-self: start;
+}
 
+.doc-history-row > .row-right.full-width,
+.dialog-history-row > .row-right.full-width{
+    justify-self: start;
+    grid-column-start: 4;
+    grid-column-end: 13;
+    width: 100%;
+}
 
 
 .doc-history-row > .row-right  .approved{
@@ -295,7 +308,21 @@ header > div.menu .menu-item:last-child{
 .doc-history-row > .row-right  .username{
     font-weight: 700;
 }
+.horizontal-links{
+    font-size: 14px;
+    line-height: 18px;
+}
 
+.horizontal-links > a{
+    margin-top: 10px !important;
+    display: inline-block;
+}
+
+.horizontal-links .iconify{
+    line-height: 18px;
+    vertical-align: middle;
+    margin-right: 5px;
+}
 
 /*  modal */
 
@@ -589,6 +616,9 @@ header > div.menu .menu-item:last-child{
 .pb45{
     padding-bottom: 45px !important;
 }
+.mb25{
+    margin-bottom: 25px;
+}
 .text-to-bottom{
     display: inline-block;
     border-bottom: 1px solid #966220;
@@ -651,4 +681,14 @@ header > div.menu .menu-item:last-child{
 }
 .tabled-row > .button-row{
     margin-top: 10px !important;
+}
+
+.repo-heading{
+    line-height: 36px;
+    font-size: 24px;
+     grid-column: span 12;
+    grid-column-start: 2;
+    grid-column-end: 12;
+    margin-bottom: 20px;
+   
 }

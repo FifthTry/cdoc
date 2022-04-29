@@ -1,4 +1,5 @@
 import datetime
+from email.policy import default
 import enum
 import logging
 import uuid
@@ -119,6 +120,7 @@ class GithubAppInstallation(models.Model):
     class InstallationState(models.TextChoices):
         INSTALLED = "INSTALLED", "Installed"
         UNINSTALLED = "UNINSTALLED", "Uninstalled"
+        SUSPENDED = "SUSPENDED", "Suspended"
 
     installation_id = models.BigIntegerField(unique=True, db_index=True)
     creator = models.ForeignKey(GithubUser, on_delete=models.PROTECT)
@@ -183,9 +185,12 @@ class GithubInstallationToken(Token):
 class GithubRepository(models.Model):
     repo_id = models.BigIntegerField()
     repo_name = models.CharField(max_length=150)
-    repo_full_name = models.CharField(max_length=200, unique=True)
+    repo_full_name = models.CharField(max_length=200)
     owner = models.ForeignKey(GithubAppInstallation, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("repo_id", "owner")
 
     def __str__(self) -> str:
         return self.repo_full_name
@@ -305,7 +310,7 @@ class MonitoredPullRequest(models.Model):
             self.pull_request_status = (
                 MonitoredPullRequest.PullRequestStatus.NOT_CONNECTED
             )
-        super().save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
     def get_display_name(self):
         return f"{self.code_pull_request.repository.repo_full_name}/#{self.code_pull_request.pr_number}: {self.code_pull_request.pr_title}"
@@ -331,6 +336,9 @@ class PrApproval(models.Model):
         MonitoredPullRequest, on_delete=models.CASCADE
     )
     approver = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
 
 
 class GithubCheckRun(models.Model):
@@ -392,3 +400,8 @@ class GithubLoginState(models.Model):
 
     def __str__(self) -> str:
         return self.state.__str__()
+
+
+class GithubMarketplaceEvent(models.Model):
+    payload = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
