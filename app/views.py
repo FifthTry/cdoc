@@ -219,10 +219,6 @@ class WebhookCallback(View):
                 )
             )
             installation_instance = get_installation_instance(payload)
-            github_data_manager_instance = app_lib.GithubDataManager(
-                installation_id=installation_instance.installation_id,
-                user_token=installation_instance.creator.get_active_access_token(),
-            )
             if EVENT_TYPE == "installation":
                 should_save = False
                 if payload["action"] == "deleted":
@@ -275,7 +271,6 @@ class WebhookCallback(View):
                 django_rq.enqueue(app_jobs.on_pr_update, pr_instance.id)
             elif EVENT_TYPE == "installation_repositories":
                 # Repositories changed. Sync again.
-                # github_data_manager_instance.sync_repositories()
                 django_rq.enqueue(
                     app_jobs.sync_repositories_for_installation,
                     installation_instance,
