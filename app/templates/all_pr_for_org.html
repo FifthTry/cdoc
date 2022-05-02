@@ -60,7 +60,7 @@
                 <div class="row-right">
                     <span class="approved main-success-text">Documentation Not Required</span>
                     <div class="user main-text">
-                        by <a href="#" class="username main-text">{{monitored_pr.get_latest_approval.approver.github_user.account_name}}</a> {{monitored_pr.get_latest_approval.created_on|timesince}} ago
+                        by <a href="#" class="username main-text">{{monitored_pr.get_latest_approval.approver.github_user.account_name}}</a> {{monitored_pr.get_latest_approval.created_on}} ago
                     </div>
                 </div>
                 {% else %}
@@ -69,9 +69,8 @@
                 {% if monitored_pr.pull_request_status == "APPROVED" %}
                 <div class="row-left">
                     <div class="cell-group">
-                        <a href="javascript:void(0);" class="unlink-pr-btn" data-monitored-pr-id="{{monitored_pr.id}}" data-post-url="/{{repo_mapping.code_repo.repo_full_name}}/pull/{{monitored_pr.code_pull_request.pr_number}}/"><span class="iconify main-cta-secondary-base" data-icon="octicon:link-16"></span></a>
-                        <a href="{{monitored_pr.code_pull_request.get_url}}" class="cell-item item-top main-text"><span class="iconify"
-                                data-icon="octicon:code-16"></span>{{code_pr_name}}</a>
+                        <a href="{{monitored_pr.code_pull_request.get_url}}" class="cell-item unlink-pr-btn main-text" data-monitored-pr-id="{{monitored_pr.id}}" data-post-url="/{{repo_mapping.code_repo.repo_full_name}}/pull/{{monitored_pr.code_pull_request.pr_number}}/"><span class="iconify main-cta-secondary-base" data-icon="octicon:link-16"></span>{{code_pr_name}}</a>
+                        
                         <a href="{{monitored_pr.documentation_pull_request.get_url}}" class="cell-item main-text-strong"><span class="iconify"
                                 data-icon="octicon:note-16"></span>{{documentation_pr_name}}</a>
                     </div>
@@ -79,16 +78,14 @@
                 <div class="row-right">
                     <span  class="approved main-success-text">Approved</span>
                     <div class="user main-text">
-                        by <a href="#" class="username main-text">{{monitored_pr.get_latest_approval.approver.github_user.account_name}}</a> {{monitored_pr.get_latest_approval.created_on|timesince}} ago
+                        by <a href="#" class="username main-text">{{monitored_pr.get_latest_approval.approver.github_user.account_name}}</a> {{monitored_pr.get_latest_approval.created_on}} ago
                     </div>
                 </div>
                 {% else %}
                 {% comment %}Expected states `APPROVAL_PENDING`, `STALE_CODE` or `STALE_APPROVAL`{% endcomment %}
                 <div class="row-left">
                     <div class="cell-group">
-                        <a href="javascript:void(0);" class="unlink-pr-btn" data-monitored-pr-id="{{monitored_pr.id}}" data-post-url="/{{repo_mapping.code_repo.repo_full_name}}/pull/{{monitored_pr.code_pull_request.pr_number}}/"><span class="iconify main-cta-secondary-base" data-icon="octicon:link-16"></span></a>
-                        <a href="{{monitored_pr.code_pull_request.get_url}}" class="cell-item item-top main-text"><span class="iconify"
-                                data-icon="octicon:code-16"></span>{{code_pr_name}}</a>
+                        <a href="{{monitored_pr.code_pull_request.get_url}}" class="cell-item item-top main-text unlink-pr-btn" data-monitored-pr-id="{{monitored_pr.id}}" data-post-url="/{{repo_mapping.code_repo.repo_full_name}}/pull/{{monitored_pr.code_pull_request.pr_number}}/"><span class="iconify main-cta-secondary-base" data-icon="octicon:link-16"></span>{{code_pr_name}}</a>
                         <a href="{{monitored_pr.documentation_pull_request.get_url}}" class="cell-item main-text-strong"><span class="iconify"
                                 data-icon="octicon:note-16"></span>{{documentation_pr_name}}</a>
                     </div>
