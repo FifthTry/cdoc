@@ -219,10 +219,6 @@ class WebhookCallback(View):
                 )
             )
             installation_instance = get_installation_instance(payload)
-            github_data_manager_instance = app_lib.GithubDataManager(
-                installation_id=installation_instance.installation_id,
-                user_token=installation_instance.creator.get_active_access_token(),
-            )
             if EVENT_TYPE == "installation":
                 should_save = False
                 if payload["action"] == "deleted":
@@ -275,7 +271,6 @@ class WebhookCallback(View):
                 django_rq.enqueue(app_jobs.on_pr_update, pr_instance.id)
             elif EVENT_TYPE == "installation_repositories":
                 # Repositories changed. Sync again.
-                # github_data_manager_instance.sync_repositories()
                 django_rq.enqueue(
                     app_jobs.sync_repositories_for_installation,
                     installation_instance,
@@ -407,7 +402,8 @@ class PRView(View):
         # {'account_name': 'fifthtry', 'repo_name': 'cdoc', 'pr_number': 1}
         matches = self.request.resolver_match.kwargs
         repo = app_models.GithubRepository.objects.get(
-            repo_full_name__iexact=f"{matches['account_name']}/{matches['repo_name']}"
+            repo_full_name__iexact=f"{matches['account_name']}/{matches['repo_name']}",
+            owner__state=app_models.GithubAppInstallation.InstallationState.INSTALLED,
         )
         pr = app_models.GithubPullRequest.objects.get(
             pr_number=matches["pr_number"], repository=repo
@@ -473,10 +469,20 @@ class PRView(View):
             ):
                 # Documentation PR is connected
                 # Send a comment to the code PR that PR has been attached
-                comment_msg = "Documentation PR connected"
-            elif instance.is_approved:
+                comment_msg = f"The [documentation pull request]({instance.documentation_pull_request.get_url()}) has been attached sucessfully."
+            elif (
+                new_status
+                == app_models.MonitoredPullRequest.PullRequestStatus.MANUAL_APPROVAL
+            ):
                 # Send a comment to the code PR that PR has been approved
-                comment_msg = "Documentation PR approved"
+                comment_msg = (
+                    "This pull request does not require any documentation changes."
+                )
+            elif (
+                new_status == app_models.MonitoredPullRequest.PullRequestStatus.APPROVED
+            ):
+                # Send a comment to the code PR that PR has been approved
+                comment_msg = f"Approved! Code is up to date with the [documentation]({instance.documentation_pull_request.get_url()})"
 
             if comment_msg is not None:
                 github_instance = github.Github(
@@ -498,7 +504,8 @@ class AppIndexPage(TemplateView):
         payload["all_installations"] = app_models.GithubAppInstallation.objects.filter(
             id__in=app_models.GithubAppUser.objects.filter(
                 github_user=self.request.user.github_user
-            ).values_list("installation_id", flat=True)
+            ).values_list("installation_id", flat=True),
+            state=app_models.GithubAppInstallation.InstallationState.INSTALLED,
         )
         code_repo = app_models.GithubRepository.objects.get(id=payload["code_repo_id"])
         (instance, _) = app_models.GithubRepoMap.objects.update_or_create(
