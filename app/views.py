@@ -23,7 +23,8 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import FormView, TemplateView
 from requests.models import PreparedRequest
-
+from analytics.decorators import log_http_event
+from analytics import events as analytics_events
 import lib
 
 from . import forms as app_forms
@@ -36,6 +37,21 @@ logger = logging.getLogger(__name__)
 
 @method_decorator(csrf_exempt, name="dispatch")
 class AuthCallback(View):
+    def get_okind_ekind(view, request, *args, **kwargs):
+        if "installation_id" in request.GET:
+            if request.GET.get("setup_action") == "update":
+                return (
+                    analytics_events.OKind.INSTALLATION,
+                    analytics_events.EKind.UPDATED,
+                )
+            else:
+                return (
+                    analytics_events.OKind.INSTALLATION,
+                    analytics_events.EKind.CREATED,
+                )
+        return (analytics_events.OKind.USER, analytics_events.EKind.LOGIN)
+
+    @log_http_event(oid=1, okind_ekind=get_okind_ekind)
     def get(self, request, *args, **kwargs):
         """
         This method is invoked when the user installs the application and
@@ -338,6 +354,10 @@ class OauthCallback(View):
 class AllPRView(TemplateView):
     template_name = "all_pr_for_org.html"
 
+    @log_http_event(
+        oid=1,
+        okind_ekind=(analytics_events.OKind.REPOSITORY, analytics_events.EKind.GET),
+    )
     def get(self, request, *args: Any, **kwargs: Any):
         github_user = request.user.github_user
 
@@ -410,6 +430,19 @@ class PRView(View):
         )
         return app_models.MonitoredPullRequest.objects.get(code_pull_request=pr)
 
+    def get_okind_ekind(view, request, *args, **kwargs):
+        payload = json.loads(request.body)
+        action = payload["action"]
+        ekind = None
+        if action == "connect_documentation_pr":
+            ekind = analytics_events.EKind.CONNECT
+        elif action == "unlink":
+            ekind = analytics_events.EKind.DISCONNECT
+        elif action in ["manual_pr_approval", "approve_pr"]:
+            ekind = analytics_events.EKind.APPROVE
+        return (analytics_events.OKind.PULL_REQUEST, ekind)
+
+    @log_http_event(oid=1, okind_ekind=get_okind_ekind)
     def post(self, request, *args, **kwargs):
         payload = json.loads(request.body)
         instance = self.get_instance()
@@ -499,6 +532,16 @@ class PRView(View):
 class AppIndexPage(TemplateView):
     template_name = "index.html"
 
+    def get_okind_ekind(view, request, *args, **kwargs):
+        if request.method == "GET":
+            if request.user.is_authenticated:
+                return (analytics_events.OKind.ORGANIZATION, analytics_events.EKind.GET)
+            else:
+                return (analytics_events.OKind.VISIT, analytics_events.EKind.CREATE)
+        else:
+            return (analytics_events.OKind.REPOSITORY, analytics_events.EKind.CONNECT)
+
+    @log_http_event(oid=1, okind_ekind=get_okind_ekind)
     def post(self, request, *args, **kwargs):
         payload = json.loads(request.body)
         payload["all_installations"] = app_models.GithubAppInstallation.objects.filter(
@@ -521,6 +564,10 @@ class AppIndexPage(TemplateView):
             app_jobs.sync_prs_for_repository, payload["documentation_repo_id"]
         )
         return JsonResponse({"success": True})
+
+    @log_http_event(oid=1, okind_ekind=get_okind_ekind)
+    def get(self, request, *args, **kwargs) -> HttpResponse:
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -574,6 +621,13 @@ class AppIndexPage(TemplateView):
 
 
 class InitializeGithubLogin(View):
+    @log_http_event(
+        oid=1,
+        okind_ekind=(
+            analytics_events.OKind.USER,
+            analytics_events.EKind.GITHUB_HANDOVER,
+        ),
+    )
     def get(self, request, *args, **kwargs):
         if self.request.user.is_authenticated:
             if request.GET.get("next"):
