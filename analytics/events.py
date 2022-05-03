@@ -15,6 +15,7 @@ class OKind(Enum):
 class EKind(Enum):
     GET = "GET"
     CREATE = "CREATE"
+    APPROVE = "APPROVE"
     UPDATE = "UPDATE"
     LOGIN = "LOGIN"
     GITHUB_HANDOVER = "GITHUB_HANDOVER"

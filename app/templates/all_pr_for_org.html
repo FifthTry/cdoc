@@ -69,7 +69,7 @@
                 {% if monitored_pr.pull_request_status == "APPROVED" %}
                 <div class="row-left">
                     <div class="cell-group">
-                        <a href="javascript:void(0);" class="unlink-pr-btn" data-monitored-pr-id="{{monitored_pr.id}}" data-post-url="/{{repo_mapping.code_repo.repo_full_name}}/pull/{{monitored_pr.code_pull_request.pr_number}}/"><span class="iconify main-cta-secondary-base" data-icon="octicon:link-16"></span></a>
+                        <a href="javascript:void(0);" class="iconify unlink-pr-btn" data-monitored-pr-id="{{monitored_pr.id}}" data-post-url="/{{repo_mapping.code_repo.repo_full_name}}/pull/{{monitored_pr.code_pull_request.pr_number}}/"><span class="iconify main-cta-secondary-base" data-icon="octicon:link-16"></span></a>
                         <a href="{{monitored_pr.code_pull_request.get_url}}" class="cell-item item-top main-text"><span class="iconify"
                                 data-icon="octicon:code-16"></span>{{code_pr_name}}</a>
                         <a href="{{monitored_pr.documentation_pull_request.get_url}}" class="cell-item main-text-strong"><span class="iconify"
@@ -86,7 +86,7 @@
                 {% comment %}Expected states `APPROVAL_PENDING`, `STALE_CODE` or `STALE_APPROVAL`{% endcomment %}
                 <div class="row-left">
                     <div class="cell-group">
-                        <a href="javascript:void(0);" class="unlink-pr-btn" data-monitored-pr-id="{{monitored_pr.id}}" data-post-url="/{{repo_mapping.code_repo.repo_full_name}}/pull/{{monitored_pr.code_pull_request.pr_number}}/"><span class="iconify main-cta-secondary-base" data-icon="octicon:link-16"></span></a>
+                        <a href="javascript:void(0);" class="iconify unlink-pr-btn" data-monitored-pr-id="{{monitored_pr.id}}" data-post-url="/{{repo_mapping.code_repo.repo_full_name}}/pull/{{monitored_pr.code_pull_request.pr_number}}/"><span class="iconify main-cta-secondary-base" data-icon="octicon:link-16"></span></a>
                         <a href="{{monitored_pr.code_pull_request.get_url}}" class="cell-item item-top main-text"><span class="iconify"
                                 data-icon="octicon:code-16"></span>{{code_pr_name}}</a>
                         <a href="{{monitored_pr.documentation_pull_request.get_url}}" class="cell-item main-text-strong"><span class="iconify"
