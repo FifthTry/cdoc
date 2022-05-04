@@ -6,6 +6,7 @@ from distutils.command.clean import clean
 from typing import Any, Dict
 from urllib.parse import parse_qs
 from django.db.models import Q
+from django.urls import reverse
 import django_rq
 import github
 import requests
@@ -190,8 +191,8 @@ class AuthCallback(View):
                             installation=installation_instance,
                         )
         else:
-            logger.error(resp.text)
-            return Http404("Something went wrong")
+            logger.error(f"Unable to get token from the code: {resp.text}")
+            return HttpResponseRedirect(reverse("initiate_github_login"))
         redirect_url = None
 
         if "state" in request.GET:
