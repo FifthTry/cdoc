@@ -1,7 +1,7 @@
 
 # cdoc
 
-Website: https://fifthtry.com/
+Website: [FifthTry.com/](https://FifthTry.com/)  
 Github App: https://github.com/apps/continuous-documentation
 
 Start by installing [Github App](https://github.com/apps/continuous-documentation).
