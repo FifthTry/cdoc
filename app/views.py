@@ -43,12 +43,12 @@ class AuthCallback(View):
             if request.GET.get("setup_action") == "update":
                 return (
                     analytics_events.OKind.INSTALLATION,
-                    analytics_events.EKind.UPDATED,
+                    analytics_events.EKind.UPDATE,
                 )
             else:
                 return (
                     analytics_events.OKind.INSTALLATION,
-                    analytics_events.EKind.CREATED,
+                    analytics_events.EKind.CREATE,
                 )
         return (analytics_events.OKind.USER, analytics_events.EKind.LOGIN)
 
