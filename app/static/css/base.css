@@ -692,3 +692,10 @@ header > div.menu .menu-item:last-child{
     margin-bottom: 20px;
    
 }
+
+.max-500 {
+    max-height: 500px;
+}
+.scroll {
+    overflow-x: auto;
+}

@@ -103,44 +103,59 @@
 
                     <div class="body-row modal-msg mt27 main-text">
                         <!--search:start-->
-                        <form method="POST" action="" id="attach-repos-form">
+                        <!-- <form method="POST" action="" id="attach-repos-form"> -->
                             <!--tabled-row-->
-                            <div class="tabled-row code-repo-field">
-                                <div class="row-left">
-                                    Code Repository:
-                                </div>
-                                <div class="row-right">
-                                    <select name="code_repo_id" class="combo_black">
-                                        {% for repo in available_repos_for_mapping %}
-                                        <option value="{{repo.id}}">{{repo.repo_full_name}}</option>
-                                        {% endfor %}
-                                    </select>
+                            <div class="tabled-row">
+                                <div class="search" method="GET">
+                                    <input type="text" placeholder="Search" class="modal-repo-filter" name="q" value="{{q}}"/>
                                 </div>
                             </div>
-                            <div class="tabled-row doc-repo-field">
-                                <div class="row-left">
-                                    Documentation Repository:
+                            <div class="tabled-row code-repo-field repo-connection-list max-500 scroll">
+                                {% for repo in available_repos_for_mapping %}
+                                <div class="doc-history repo-connection-list-item" data-repo-full-name="{{repo.repo_full_name}}">
+                                    <form method="POST" action="" class="attach-repos-form doc-history-row">
+                                        <div class="row-left">
+                                            <div class="cell-group">{{repo.repo_full_name}}</div>
+                                        </div>
+                                        <div class="row-right">
+                                            <input type="hidden" name="integration_id" value="{{current_installation.id}}" />
+                                            <input type="hidden" name="code_repo_id" value="{{repo.id}}" />
+                                            <input type="hidden" name="documentation_repo_id" />
+                                            <input type="hidden" name="integration_type" value="FULL" />
+                                            <button type="submit" class="cta cta-primary">Attach</button>
+                                        </div>
+                                    </form>
                                 </div>
-                                <div class="row-right">
-                                    <select name="documentation_repo_id" class="combo_black">
-                                    {% for repo in available_repos_for_mapping %}
-                                    <option value="{{repo.id}}">{{repo.repo_full_name}}</option>
-                                    {% endfor %}
-                                    </select>
+                                {% endfor %}
+                            </div>
+                            <div class="tabled-row doc-repo-field repo-connection-list max-500 scroll">
+                                {% for repo in available_repos_for_mapping %}
+                                <div class="doc-history repo-connection-list-item" data-repo-full-name="{{repo.repo_full_name}}">
+                                    <form method="POST" action="" class="attach-repos-form doc-history-row">
+                                        <div class="row-left">
+                                            <div class="cell-group">{{repo.repo_full_name}}</div>
+                                        </div>
+                                        <div class="row-right">
+                                            <input type="hidden" name="integration_id" value="{{current_installation.id}}" />
+                                            <input type="hidden" name="code_repo_id" />
+                                            <input type="hidden" name="documentation_repo_id" value="{{repo.id}}" />
+                                            <input type="hidden" name="integration_type" value="FULL" />
+                                            <button type="submit" class="cta cta-primary">Attach</button>
+                                        </div>
+                                    </form>
                                 </div>
+                                {% endfor %}
                             </div>
                             <div class="tabled-row">
                                 <div class="row-left">
                                 </div>
                                 <div class="row-right button-row">
-                                    <input type="hidden" name="integration_id" value="{{current_installation.id}}" />
-                                    <input type="hidden" name="integration_type" value="FULL" />
-                                    <button type="submit" class="cta cta-primary">Attach</button>
+                                    
                                 </div>
                             </div>
                             <!--tabled-row-->
                             
-                        </form>
+                        <!-- </form> -->
                         
                     </div>
                     
@@ -205,10 +220,12 @@
     $("#code-or-doc-repo-modal #code-repo-btn").click(function() {
         
         // Set code repo val and reset doc repo val
-        $('select[name="code_repo_id"]').val($(this).attr("data-code-repo-id"));
-        $('select[name="documentation_repo_id"]').prop('selectedIndex',0);
+        // $('select[name="documentation_repo_id"]').prop('selectedIndex',0);
         $("#attach-documentation-modal div.modal-title span").first().text("Attach Documentation repository");
         $("#attach-documentation-modal .for-repo-text").text("For "+ $(this).attr("data-code-repo-full-name"));
+        $("#attach-documentation-modal .doc-repo-field input[name='code_repo_id']").val($(this).attr("data-code-repo-id"));
+
+
         // Show hide appropriate fields
         $("#attach-documentation-modal .code-repo-field").hide();
         $("#attach-documentation-modal .doc-repo-field").show();
@@ -223,13 +240,16 @@
 
 
         // Set code repo val and reset doc repo val
-        $('select[name="documentation_repo_id"]').val($(this).attr("data-doc-repo-id"));
-        $('select[name="code_repo_id"]').prop('selectedIndex',0);
+        // $('select[name="documentation_repo_id"]').val($(this).attr("data-doc-repo-id"));
+        // $('select[name="code_repo_id"]').prop('selectedIndex',0);
         $("#attach-documentation-modal div.modal-title span").first().text("Attach Code repository");
         // Show hide appropriate fields
         $("#attach-documentation-modal .doc-repo-field").hide();
         $("#attach-documentation-modal .code-repo-field").show();
         $("#attach-documentation-modal .for-repo-text").text("For "+ $(this).attr("data-doc-repo-full-name"));
+
+        $("#attach-documentation-modal .code-repo-field input[name='documentation_repo_id']").val($(this).attr("data-doc-repo-id"));
+
         // Open the modal
         $("#attach-documentation-modal").addClass("opened");
         
@@ -269,7 +289,7 @@
     });
     
 
-    $("#attach-repos-form").submit(function() {
+    $("form.attach-repos-form").submit(function() {
         data = objectifyForm($(this).serializeArray());
         if (data["documentation_repo_id"] == data["code_repo_id"]){
             alert("Documentation and Code Repository cannot be same");
@@ -289,6 +309,13 @@
     });
     $(".clickable-row").click(function(){
         window.location.href = $(this).find("a.cta").attr("href")
+    });
+    $(".search .modal-repo-filter").on("keyup change", function() {
+        search_query = $(this).val();
+        $(".repo-connection-list .repo-connection-list-item").hide().filter(function( index ) {
+            return $( this ).attr("data-repo-full-name").toLowerCase().includes(search_query.toLowerCase());
+        })
+        .show();
     });
 </script>
 {% else %}
