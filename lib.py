@@ -108,6 +108,7 @@ class GithubInstallationManager:
             f"https://api.github.com/user/installations/{self.installation_id}/repositories?per_page={per_page}&page={page}",
             headers=headers,
         )
+        print("_get_repository_page response::", response.text)
         if response.ok:
             response_data = response.json()
             logger.info(response.content.decode())

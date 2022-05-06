@@ -1,0 +1,796 @@
+-- import: fpm
+-- import: templates-ftd/assets
+-- import: fifthtry.github.io/inter/assets as font-assets
+-- import: templates-ftd/custom-typo as font
+-- fpm.font-display: $font-assets.fonts.Inter
+
+-- import: templates-ftd/popup as popup
+
+
+
+-- record tc:
+caption title:
+integer index:
+ftd.image-src icon-theme-mode: $assets.files.assets.images.icon-moon.png
+
+
+-- tc list list-tc:
+
+-- list-tc: Commit to the process
+index: 1
+icon-theme-mode: $assets.files.assets.images.icon-moon.png
+
+
+-- list-tc: Own the changes
+index:2
+icon-theme-mode: $assets.files.assets.images.icon-moon.png
+
+
+
+-- record section-data:
+caption title:
+string value:
+string button-name: jkkk
+string icon-1-text:
+string icon-2-text:
+ftd.image-src icon-2-mode: 
+ftd.image-src icon-3-mode:
+tc list tc-var:
+integer index:
+
+-- section-data list section-list:
+
+-- section-list: #123
+value: hello
+icon-2-mode: $assets.files.assets.images.icon-moon.png
+icon-3-mode: $assets.files.assets.images.icon-moon.png
+button-name: connect
+icon-1-text: Add a Code PR to complete this pair
+icon-2-text: Doc PR name
+tc-var: $list-tc
+index: 1
+
+-- section-list: #124
+value: hello again
+icon-2-mode: $assets.files.assets.images.icon-moon.png
+icon-3-mode: $assets.files.assets.images.icon-moon.png
+button-name: connect
+icon-1-text: #203 Code PR name
+icon-2-text: Add a Documentation PR to complete this pair
+tc-var: $list-tc
+index: 2
+
+-- section-list: #124
+value: hello again
+icon-2-mode: $assets.files.assets.images.icon-moon.png
+icon-3-mode: $assets.files.assets.images.icon-moon.png
+icon-1-text: #203 Code PR name
+icon-2-text: #404 Doc PR name
+button-name: connect
+tc-var: $list-tc
+index: 3
+
+-- section-list: #124
+value: hello again
+icon-2-mode: $assets.files.assets.images.icon-moon.png
+icon-3-mode: $assets.files.assets.images.icon-moon.png
+icon-1-text:Doc PR name
+icon-2-text:Add a Code PR to complete this pair
+button-name: connect
+tc-var: $list-tc
+index: 4
+
+-- section-list: #124
+value: hello again
+icon-2-mode: $assets.files.assets.images.icon-moon.png
+icon-3-mode: $assets.files.assets.images.icon-moon.png
+icon-1-text: #203 Code PR name
+icon-2-text: #404 Doc PR name
+button-name: approve
+tc-var: $list-tc
+index: 5
+
+
+
+-- section-list: #124
+value: hello again
+icon-2-mode: $assets.files.assets.images.icon-moon.png
+icon-3-mode: $assets.files.assets.images.icon-moon.png
+icon-1-text: #203 Code PR name
+icon-2-text: #404 Doc PR name
+button-name: approve
+tc-var: $list-tc
+index: 6
+
+-- section-list: #124
+value: hello again
+icon-2-mode: $assets.files.assets.images.icon-moon.png
+icon-3-mode: $assets.files.assets.images.icon-moon.png
+icon-1-text: #203 Code PR name
+icon-2-text: #404 Doc PR name
+button-name: approve
+tc-var: $list-tc
+index: 7
+
+
+
+
+
+
+
+-- homepage:
+
+
+
+
+-- ftd.column homepage:
+optional ftd.color bg-color: $fpm.color.main.background.base
+background-color: $bg-color
+width: fill
+id: kk
+
+
+--- container: ftd.main
+
+--- header:
+background:$fpm.color.glass.background.step-2
+
+
+
+
+--- ftd.column:
+width: fill
+padding-horizontal:155
+padding-vertical: 36
+id:main-section
+
+--- navbar:
+title: abd
+
+--- ftd.row:
+padding-top:32
+width:fill
+
+--- ftd.row:
+width: fill
+--- search-btn:
+title: search
+
+--- ftd.row:
+padding-horizontal:64
+
+--- container: main-section
+
+--- ftd.column:
+margin-top:17
+width:fill
+margin-bottom:84
+border-width: 1
+border-radius: 8
+border-color: $fpm.color.main.border-strong 
+
+--- sectiodn:
+icon-2-mode: $section-items.icon-2-mode
+icon-3-mode: $section-items.icon-3-mode
+icon-1-text:$section-items.icon-1-text
+icon-2-text:$section-items.icon-2-text
+index: $section-items.index
+button-name: $section-items.button-name
+list-item: $section-items.tc-var
+$loop$: $section-list as $section-items
+
+
+
+
+
+
+
+
+-- ftd.column header:
+optional ftd.image-src site-logo: $assets.files.assets.images.fifthtry-logo.png
+optional ftd.image-src icon-theme-mode: $assets.files.assets.images.icon-moon.png
+optional ftd.image-src icon-github: $assets.files.assets.images.icon-github.png
+string site-url: /
+width:fill
+ftd.color background: $fpm.color.main.background.base 
+background-color: $background
+id:header-item
+padding-horizontal:32
+
+
+--- ftd.row:
+width:fill
+id:main-row
+
+
+--- ftd.row: 
+width:fill
+padding-vertical:24
+
+
+--- ftd.image: 
+src:$site-logo
+
+
+
+--- container: main-row
+
+--- ftd.row:
+id:right-side-header
+padding-vertical:28
+spacing:32
+
+
+--- ftd.image: 
+src:$icon-theme-mode
+
+
+
+
+--- ftd.image: 
+src:$icon-github
+
+
+
+
+
+
+-- ftd.column navbar:
+caption title:
+optional ftd.image-src orgname-logo: $assets.files.assets.images.orgname.png
+string site-url: /
+optional ftd.image-src code-repo-logo:$assets.files.assets.images.repo-code.png
+optional ftd.image-src pull-logo:$assets.files.assets.images.pull-request.png
+optional ftd.image-src site-logo:
+width:fill
+
+
+--- ftd.row:
+width:fill
+
+--- ftd.row:
+width:fill
+id:nav-right
+
+
+--- ftd.image: 
+src:$orgname-logo
+margin-top:5
+margin-right:13
+
+
+--- ftd.text: Orgname
+color: $font.cta_primary_base
+role: $fpm.type.title-large
+
+
+--- ftd.column:
+
+--- ftd.row:
+spacing: 10
+
+--- ftd.image: 
+src:$code-repo-logo
+margin-top:8
+
+
+--- ftd.row:
+
+--- ftd.column:
+spacing:7
+
+--- logo-text: code-repo
+
+
+
+--- logo-text: doc-repo
+
+
+
+--- container: nav-right
+
+
+--- ftd.image: 
+src:$pull-logo
+margin-top:12
+padding-left:10
+
+
+--- ftd.text: Pull Request
+color: $fpm.color.main.text-strong
+role: $fpm.type.title-large
+padding:5
+
+
+-- ftd.text logo-text:
+caption title:
+text: $title
+ftd.color text-color: $fpm.color.glass.text-strong
+color: $text-color
+
+
+
+
+
+
+
+
+-- ftd.input search-btn:search
+caption title:
+cursor: pointer
+width:fill
+color: $fpm.color.main.error.base
+border-radius: 8
+padding-vertical: 14
+padding-horizontal: 28
+border-width: 1
+align:left
+placeholder: $title
+background-color: $fpm.color.main.background.base
+color: $fpm.color.main.error.base
+border-color: $fpm.color.main.error.base 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- ftd.column sectiodn:
+string button-name:
+string icon-1-text:
+ftd.image-src icon-2-mode: 
+ftd.image-src icon-3-mode: 
+string icon-2-text:
+integer index:
+tc list list-item:
+width: fill
+border-bottom: 1
+border-color:  $fpm.color.main.text
+padding-horizontal:30
+padding-vertical: 20
+
+--- ftd.row:
+width:fill
+id:jj
+
+---ftd.row:
+width: fill
+
+--- leftside:
+ button-name: $button-name
+ icon-1-text: $icon-1-text
+ icon-2-text: $icon-2-text
+ list-title-copy: $list-item
+ index: $index
+
+
+--- container:jj
+
+--- ftd.row:
+
+
+--- rightside:
+ button-name: $button-name
+ index: $index
+
+
+-- ftd.column leftside:
+optional ftd.image-src moon-logo: $assets.files.assets.images.repo-code.png
+optional ftd.image-src rectangle-logo: $assets.files.assets.images.rectangle.png
+optional ftd.image-src open-close-logo: $assets.files.assets.images.icon9.png
+optional ftd.image-src upper-rect-logo: $assets.files.assets.images.lower-rectangle.png
+optional ftd.image-src lower-rect-logo: $assets.files.assets.images.lower-rect.png
+optional ftd.image-src vector-logo: $assets.files.assets.images.Vector.png
+optional string button-name:
+string icon-1-text:
+string icon-2-text:
+tc list list-title-copy:
+width: fill
+padding-vertical: 20
+integer index:
+
+
+
+--- ftd.row:
+if: $index == 3
+anchor:parent
+top:35
+left:-2
+
+--- ftd.image: 
+src: $vector-logo
+--- container:ftd.main
+--- ftd.row:
+if: $index == 4
+anchor:parent
+top:35
+left:-2
+
+--- ftd.image: 
+src: $vector-logo
+--- container:ftd.main
+--- ftd.row:
+if: $index == 5
+anchor:parent
+top:35
+left:-2
+
+--- ftd.image: 
+src: $vector-logo
+
+--- container:ftd.main
+--- ftd.row:
+width:fill
+align: center
+id:jkkk
+spacing:10
+
+--- ftd.row:
+align: center
+spacing:5
+
+
+--- ftd.column:
+align: center
+
+--- ftd.image: 
+src: $upper-rect-logo
+
+
+--- container: jkkk
+
+--- ftd.column:
+align: center
+
+--- ftd.image: 
+src: $open-close-logo
+
+--- container: jkkk
+
+
+
+
+--- ftd.text: $icon-1-text
+role: $font.copy-tight
+color:  $fpm.color.main.text
+color if $index == 1: $fpm.color.main.error.text
+color if $index == 2: $fpm.color.main.warning.base
+
+--- container: ftd.main
+
+--- ftd.row:
+width:fill
+align: center
+spacing: 10
+id:jkkk
+
+--- ftd.row:
+align: center
+spacing: 10
+id:jkkkl
+
+--- ftd.column:
+align: center
+
+--- ftd.image: 
+src: $lower-rect-logo
+
+--- container: jkkkl
+
+--- ftd.column:
+align: center
+
+--- ftd.image: 
+src: $rectangle-logo
+
+--- container: jkkkl
+
+
+--- ftd.text: $icon-2-text
+role: $font.copy-tight
+color: $fpm.color.main.text-strong
+color if $index == 1: $fpm.color.main.warning.base
+color if $index == 2: $fpm.color.main.warning.base
+
+
+
+
+
+
+
+
+
+-- ftd.column rightside:
+optional ftd.image-src site-logo: $assets.files.assets.images.repo-code.png
+optional ftd.image-src back-logo: $assets.files.assets.images.back-logo.png
+optional ftd.image-src cross-logo: $assets.files.assets.images.Union.png
+optional ftd.color bg-color: $fpm.color.glass.background.base
+optional string button-name:
+boolean mouse-in: false
+integer index:
+
+
+
+
+--- ftd.row:
+if: $index == 1
+
+--- overview:
+index: $index
+model-title:Attach Documentation
+text-align: left
+width:916
+border-wi:0
+outlines: $font.cta_primary_base
+button-name: $button-name
+
+--- popup.model-body:
+sub-heading-main:  A healthy code always carry good Documentation
+sub-heading-secondary: Attach one for:
+code-logo: $assets.files.assets.images.rectangle.png
+code-text: #222  Code PR Name
+footer-text: My PR doesnt need a connection
+
+
+--- container: ftd.main
+
+
+--- ftd.row:
+if: $index == 2
+
+--- overview:
+index: $index
+text-align: left
+model-title:Attach Code PR
+border-wi:8
+width:916
+outlines: $font.cta_primary_base
+button-name: $button-name
+
+--- popup.model-body:
+sub-heading-main:  A healthy code always carry good Documentation
+sub-heading-secondary:Attach one for:
+code-logo: $assets.files.assets.images.rectangle.png
+code-text: #222  Code PR Name
+
+
+
+--- container: ftd.main
+--- ftd.row:
+if: $index == 3
+width:fill
+
+--- verified-text:
+status: Approved
+
+Approved by @{white:sharmashobit}20 min ago
+
+
+--- container: ftd.main
+
+--- ftd.row:
+if: $index == 4
+
+--- overview:
+open-1: false
+text-align: center
+model-title: Are you sure?
+index: $index
+width:614
+outlines: $font.shadow-box
+button-name: $button-name
+
+--- popup.model-content:
+sub-heading-main: A healthy code always carry good Documentation
+cta-text: search
+logo-text: #222  Code PR Name
+moon-logo: $assets.files.assets.images.rectangle.png
+
+does not need any associated documentation.
+
+This action should be used sparingly. It may be reviewed by your Manager,and will affect your organizations’ dev statistics
+
+
+
+--- container: ftd.main
+--- ftd.row:
+if: $index == 5
+width:fill
+
+
+--- verified-text:
+status: Approved
+
+Approved by @{white:sharmashobit}20 min ago
+
+
+--- container: ftd.main
+
+--- ftd.row:
+if: $index == 6
+
+--- overview:
+open-1: false
+text-align: center
+model-title: Approve Changes
+index: $index
+outlines: $font.shadow-box
+width:614
+button-name: $button-name
+
+--- popup.model-content:
+sub-heading-main: A healthy code always carry good Documentation
+logo-text: #222  Code PR Name
+moon-logo: $assets.files.assets.images.icon-github.png
+does not need any associated documentation
+
+
+This action should be used sparingly. It may be reviewed by your Manager,and will affect your organizations’ dev statistics
+
+
+
+--- container: ftd.main
+
+--- ftd.row:
+if: $index == 7
+
+--- overview:
+open-1: false
+text-align: center
+model-title: Are you sure
+index: $index
+outlines: $font.shadow-box
+width:614
+button-name: $button-name
+
+--- popup.model-content:
+cta-text: search
+logo-text: #222  Code PR Name
+moon-logo: $assets.files.assets.images.icon-github.png
+moon-logos-text:#203 Code PR name
+moon-logo: $assets.files.assets.images.rectangle.png
+repo-code-logo: $assets.files.assets.images.repo-code.png
+footer-text:Note: Please ask the Dev/Documentor to come in sync if this is not the case
+
+does not need any associated documentation.
+
+This action should be used sparingly. It may be reviewed by your Manager,and will affect your organizations’ dev statistics
+
+
+
+
+-- ftd.text white: yo
+color: $fpm.color.main.text-strong
+role: $font.copy-tight
+
+-- ftd.column verified-text:
+optional string status:
+body body:
+
+--- ftd.column:
+width: fill
+align: right
+
+--- ftd.row:
+align: right
+
+--- ftd.text:$status
+color:  $fpm.color.main.text
+text-align: right
+role: $font.copy
+
+--- container: ftd.main
+
+--- ftd.row:
+width:fill
+
+--- ftd.text: 
+text: $body
+white-space: nowrap
+role: $font.copy
+color: $fpm.color.main.text
+
+
+
+-- ftd.column overview:
+optional string button-name:
+boolean open-1: false 
+integer index:
+string width:
+string text-align:
+optional integer border-wi: 0
+ftd.color outlines: 
+string model-title:
+optional ftd.image-src cross-logo: $assets.files.assets.images.Union.png
+open: true
+append-at: col-id
+
+
+--- ftd.text : $button-name
+text: $button-name
+role: $fpm.type.label-large
+ftd.color button-bg: $fpm.color.main.background.base
+ftd.color button-color: $fpm.color.main.error.base
+background-color: $font.cta_primary_base
+color: $fpm.color.main.background.base
+background-color if $MOUSE-IN: $font.cta_hover
+color if $MOUSE-IN: $fpm.color.main.error.base 
+border-radius: 8
+padding-vertical: 8
+padding-horizontal: 16
+border-width: 1
+border-color: $fpm.color.main.border-strong 
+margin-top:20
+$on-click$: $open-1 = true
+
+
+--- ftd.column :
+z-index: 100
+anchor: window
+top: 0
+left: 0
+width: percent 100
+height: percent 100
+background-color: $font.backkk
+id: kjlk
+if: $open-1
+
+
+
+--- ftd.column:
+background-color: $fpm.color.main.background.base
+width: $width
+move-right:275
+move-down: 100
+border-width: 1
+padding-vertical: 35
+padding-horizontal: 24
+boolean mouse-in: false
+border-color: $fpm.color.main.border-strong 
+id: col-id
+shadow-offset-x: 3
+shadow-offset-y: 4
+shadow-size: 1
+shadow-blur: 4
+border-top: $border-wi
+border-radius: 8
+border-color: $outlines
+shadow-color: $outlines
+id: model-contete
+
+--- ftd.row:
+width:fill
+
+--- ftd.row:
+width: fill
+padding-bottom: 24
+
+--- ftd.text: $model-title
+text-align: $text-align
+role: $font.heading-medium
+color: $fpm.color.main.text-strong
+width: fill
+
+--- ftd.image:
+src: $cross-logo
+/$on-click-outside$: $open-1 = true
+$on-click$: $open-1 = false
+
+--- container: model-contete
+
+--- ftd.column:
+width: fill
+id: col-id
+

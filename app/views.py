@@ -218,7 +218,7 @@ class WebhookCallback(View):
         if not is_verified:
             return HttpResponse("Invalid signature", status=403)
         logger.info(
-            "Recieved Github webhook",
+            "Received Github webhook",
             extra={"data": {"headers": headers, "payload": payload}},
         )
         EVENT_TYPE = headers.get("X-Github-Event", None)
@@ -353,6 +353,11 @@ class OauthCallback(View):
 
 @method_decorator(login_required, name="dispatch")
 class AllPRView(TemplateView):
+    # if settings.USING_FTD:
+    #     template_name = '/'
+    # else:
+    #     template_name = "all_pr_for_org.html"
+
     template_name = "all_pr_for_org.html"
 
     @log_http_event(
@@ -370,9 +375,62 @@ class AllPRView(TemplateView):
             github_user=github_user,
             installation=context["repo_mapping"].integration,
         )
+        context.pop('repo_mapping')
         return self.render_to_response(context)
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        def queryset_to_value(data):
+            import django
+            from datetime import date, datetime
+            print("get_context_data:", isinstance(data, django.db.models.query.QuerySet), isinstance(data, (datetime, date)), type(data))
+            if settings.USING_FTD and isinstance(data, django.db.models.query.QuerySet):
+                value = list(data.values())
+                for idx, val in enumerate(value):
+                    print("isinstance(val, Dict):::", isinstance(val, Dict))
+                    if not isinstance(val, Dict):
+                        continue
+                    for k, v in val.items():
+                        value[idx][k] = queryset_to_value(v)
+                return value
+            elif settings.USING_FTD and isinstance(data, (datetime, date)):
+                return data.isoformat()
+            else:
+                return data
+
+        def ftd_context(context):
+            # for key, value in context.items():
+            #     print("key:", key)
+            #     context[key] = queryset_to_value(value)
+            new_context = {
+                "owner_account_name": context["repo_mapping"].code_repo.owner.account_name,
+                "code_repo_full_name": context["repo_mapping"].code_repo.repo_full_name,
+                "documentation_repo_full_name": context["repo_mapping"].documentation_repo.repo_full_name,
+                "open_prs": [],
+            }
+            for open_pr in context["open_prs"]:
+                code_pull_request = {
+                    "pr_number": open_pr.code_pull_request.pr_number,
+                    "pr_title": open_pr.code_pull_request.pr_title
+                }
+                documentation_pull_request = {
+                    "pr_number": open_pr.documentation_pull_request.pr_number,
+                    "pr_title": open_pr.documentation_pull_request.pr_title
+                } if open_pr.documentation_pull_request else None
+                approver_info = {
+                    "approver": open_pr.get_latest_approval().approver.github_user.account_name if open_pr.get_latest_approval().approver else None,
+                    "created_on": open_pr.get_latest_approval().created_on
+                } if open_pr.get_latest_approval() else None
+                open_pr_data = {
+                    "pull_request_status": open_pr.pull_request_status,
+                    "code_pull_request": code_pull_request,
+                    "documentation_pull_request": documentation_pull_request,
+                    "pull_request_status_display": open_pr.get_pull_request_status_display(),
+                    "approver_info": approver_info
+                }
+                new_context["open_prs"].append(open_pr_data)
+
+            return new_context
+
         context = super().get_context_data(**kwargs)
         matches = self.request.resolver_match.kwargs
         context["all_installations"] = app_models.GithubAppInstallation.objects.filter(
@@ -410,6 +468,15 @@ class AllPRView(TemplateView):
         context["all_documentation_prs"] = app_models.GithubPullRequest.objects.filter(
             repository=context["repo_mapping"].documentation_repo, pr_state="open"
         )
+
+        # if settings.USING_FTD:
+        #     new_context = ftd_context(context)
+        #     new_context["repo_mapping"] = context["repo_mapping"]
+        #     new_context["view"] = context["view"]
+        #     context = new_context
+
+        print("context::::",context)
+
         return context
 
 
@@ -531,6 +598,10 @@ class PRView(View):
 
 
 class AppIndexPage(TemplateView):
+    # if not settings.USING_FTD:
+    #     template_name = "index.html"
+    # else:
+    #     template_name = "/"
     template_name = "index.html"
 
     def get_okind_ekind(view, request, *args, **kwargs):
@@ -571,6 +642,30 @@ class AppIndexPage(TemplateView):
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+
+        # def serialize(data):
+        #     from django.core import serializers
+        #     if settings.USING_FTD:
+        #         from django.core import serializers
+        #         try:
+        #             return serializers.serialize('json', data)
+        #         except:
+        #             return None
+        #     else:
+        #         return data
+        #
+        #
+        # def ftd_context(context):
+        #     import django
+        #     for key, value in context.items():
+        #         print("ftd_context",type(value), isinstance(value, django.db.models.query.QuerySet))
+        #         value = serialize(value)
+        #         if value:
+        #             context[key] = value
+        #     context["is_authenticated"] = self.request.user.is_authenticated
+        #     return context
+        #
+
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
             all_installations = app_models.GithubAppInstallation.objects.filter(
@@ -617,6 +712,12 @@ class AppIndexPage(TemplateView):
             req = PreparedRequest()
             req.prepare_url(url, params)
             context["github_login_url"] = req.url
+
+
+        # if settings.USING_FTD:
+        #     context = ftd_context(context)
+
+        print("context::::", context)
 
         return context
 

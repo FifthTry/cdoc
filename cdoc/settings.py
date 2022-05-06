@@ -35,6 +35,7 @@ ALLOWED_HOSTS = [
     "localhost",
     "0.0.0.0",
     "fifthtry-cdoc.herokuapp.com",
+    "a51f-14-141-47-2.in.ngrok.io",
     DEPLOYMENT_HOST_NAME,
 ]
 
@@ -85,10 +86,10 @@ TEMPLATES = [
             ],
         },
     },
-    # {
-    #     "BACKEND": "ftd_django.TemplateBackend",
-    #     "DIRS": ["cdoc-doc"],
-    # },
+    {
+        "BACKEND": "ftd_django.TemplateBackend",
+        "DIRS": ["templates_ftd"],
+    },
 ]
 
 WSGI_APPLICATION = "cdoc.wsgi.application"
@@ -246,6 +247,8 @@ else:
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
     }
+
+USING_FTD = False
 
 try:
     from .local_settings import *  # noqa

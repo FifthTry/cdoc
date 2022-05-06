@@ -1,0 +1,405 @@
+
+-- import: fpm
+-- import: templates-ftd/assets
+-- import: fifthtry.github.io/inter/assets as font-assets
+-- import: templates-ftd/custom-typo as font
+-- fpm.font-display: $font-assets.fonts.Inter
+
+-- import:  templates-ftd/config as datas
+
+
+-- record tc:
+caption title:
+ftd.image-src icon-theme-mode: $assets.files.assets.images.icon-moon.png
+
+
+-- tc list list-tc:
+
+-- list-tc: Commit to the process
+icon-theme-mode: $assets.files.assets.images.icon-moon.png
+
+
+
+
+
+
+-- record section-data:
+caption title:
+string value:
+string button-name:connect
+string logo-text:
+optional ftd.image-src icon-theme-mode: $assets.files.assets.images.icon-moon.png
+
+
+-- section-data list section-list:
+
+-- section-list: #123
+value: hello
+logo-text:#123 Some Doc PR
+icon-theme-mode: $assets.files.assets.images.icon-moon.png
+button-name: connect
+
+-- section-list: #123
+value: hello
+logo-text:#123 Some Doc PR
+icon-theme-mode: $assets.files.assets.images.icon-moon.png
+button-name: connect
+
+-- section-list: #123
+value: hello
+icon-theme-mode: $assets.files.assets.images.icon-moon.png
+logo-text:#123 Some Doc PR
+button-name: connect
+
+
+-- ftd.color red: red
+dark: red
+
+
+-- ftd.color backkk:
+light: rgba(0, 0, 0, 0.9)
+dark: rgba(0, 0, 0, 0.9)
+
+
+--- container: col-id
+
+--- model-body:
+sub-heading-main: $sub-heading-main
+sub-heading-secondary: $sub-heading-secondary
+git-name: $git-name
+code-logo: $code-logo
+code-text: $code-text
+footer-text: $footer-text
+
+
+--- model-content:
+sub-heading-main: $sub-heading-main
+sub-heading-secondary: $sub-heading-secondary
+body: $body
+
+
+
+
+-- ftd.column model-body:
+optional string sub-heading-main:
+optional string sub-heading-secondary:
+optional ftd.image-src code-logo:
+optional string code-text:
+optional string footer-text:
+optional string git-name:
+width:fill
+
+--- ftd.text: $sub-heading-main
+width: fill
+role: $font.copy-relaxed
+color: $fpm.color.main.text
+padding-top:12
+
+--- ftd.text: $sub-heading-secondary
+width: fill
+role: $font.copy-relaxed
+color: $fpm.color.main.text
+padding-top:7
+margin-bottom: 27
+
+--- ftd.row:
+margin-bottom: 27
+
+--- logo-with-text:
+moon-logo: $code-logo
+logo-text: $code-text
+ 
+
+--- container: ftd.main
+
+---ftd.row:
+margin-bottom: 27
+
+
+--- search-btn:
+cta-text:search
+width: fill
+
+--- container: ftd.main
+
+--- ftd.column:
+margin-top: 20
+width: fill
+
+--- model-pr-items:
+icon-theme-mode: $section-items.icon-theme-mode
+logo-text: $section-items.logo-text
+button-name: $section-items.button-name
+$loop$: $section-list as $section-items
+
+--- container: ftd.main
+
+--- ftd.row:
+align:center
+border-bottom: 1
+border-color: $font.warning-text_base
+margin-top:20
+
+--- ftd.text:
+text: $footer-text
+text-align: center
+color: $fpm.color.main.warning.base
+
+
+-- ftd.row model-pr-items:
+optional ftd.image-src icon-theme-mode: $assets.files.assets.images.rectangle.png
+string button-name:
+string logo-text:
+boolean mouse-in: false
+width: fill
+border-bottom: 1
+padding-horizontal:30
+padding-vertical:10
+$on-mouse-enter$: $mouse-in = true
+$on-mouse-leave$: $mouse-in = false
+
+
+--- ftd.row:
+width:fill
+padding-vertical: 20
+
+--- logo-with-text:
+moon-logo: $icon-theme-mode
+logo-text: $logo-text
+ 
+
+
+--- container:ftd.main
+
+--- ftd.row:
+if: $mouse-in
+padding-vertical:10
+
+--- button: connect
+button-bg: $font.cta_primary_base
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- ftd.input search-btn:
+caption cta-text:
+optional string cta-placeholder:
+cursor: pointer
+optional string width: 1
+width: $width
+border-radius: 8
+padding-vertical: 14
+padding-horizontal: 28
+border-width: 1
+align:left
+placeholder: $cta-text
+background-color: $fpm.color.main.background.base
+color: $fpm.color.main.error.base
+border-color: $fpm.color.main.border-strong 
+
+
+--- ftd.text:
+text: $cta-text
+role: $fpm.type.label-large
+color: $fpm.color.main.error.base
+
+
+
+
+
+-- ftd.text button:
+caption title:
+text: $title
+role: $font.button
+ftd.color button-bg: $fpm.color.main.background.base
+ftd.color button-color: $fpm.color.main.error.base
+background-color:$button-bg
+color: $fpm.color.main.background.base
+background-color if $MOUSE-IN: $font.cta_hover
+color if $MOUSE-IN: $fpm.color.main.error.base 
+border-radius: 8
+padding-vertical: 8
+padding-horizontal: 16
+border-width: 1
+border-color: $fpm.color.main.border-strong 
+
+
+
+-- ftd.column model-content:
+optional string cta-placeholder:
+optional string sub-heading-main:
+optional string sub-heading-secondary:
+optional ftd.image-src repo-code-logo: $assets.files.assets.images.repo-code.png
+optional ftd.image-src moon-logo: $assets.files.assets.images.icon9.png
+optional ftd.image-src moon-logos: $assets.files.assets.images.rectangle.png
+optional string logo-text: 
+optional string moon-logos-text: 
+optional string cta-text:
+optional string footer-text:
+body body:
+width:fill
+padding-horizontal: 42
+
+--- ftd.text: $sub-heading-main
+if: $sub-heading-main is not null
+text-align: center
+width: fill
+role: $font.copy-relaxed
+color: $fpm.color.main.text
+padding-top:12
+
+
+--- ftd.column:
+if: $sub-heading-main is not null
+width: fill
+align: center
+padding-top:32
+padding-bottom:11
+
+--- ftd.row:
+align: center
+
+--- logo-with-text:
+moon-logo: $moon-logo
+logo-text: $logo-text
+
+--- container: ftd.main
+
+--- ftd.row:
+align: center
+
+
+--- ftd.row:
+if: $sub-heading-main is  null
+width: fill
+id: section-container
+spacing: 10
+align: center
+
+
+--- ftd.column:
+align:center
+
+--- ftd.image: 
+src: $repo-code-logo
+
+--- container: section-container
+
+--- ftd.column:
+align: center
+id: image-text-container
+spacing: 10
+
+--- ftd.row:
+width:fill
+align: center
+spacing: 10
+
+
+--- logo-with-text:
+moon-logo: $moon-logo
+logo-text: $logo-text
+
+--- container: image-text-container
+
+--- ftd.row:
+width:fill
+align: center
+spacing: 10
+id:jkkk
+
+--- logo-with-text:
+moon-logo: $moon-logo
+logo-text: $logo-text
+
+
+--- container: ftd.main
+
+
+--- ftd.row:
+padding-vertical:12
+
+--- ftd.text: $sub-heading-secondary
+color: $fpm.color.main.text-strong
+role: $font.copyies
+
+--- container: ftd.main
+--- ftd.row:
+padding-vertical:12
+
+--- ftd.text:
+text: $body
+color: $fpm.color.main.text
+text-align: center
+
+--- container: ftd.main
+
+--- ftd.row:
+width: fill
+padding-horizontal: 32
+margin-top:15
+
+--- search-btn:
+if: $cta-text is not null
+cta-text:search
+width:fill
+
+
+
+--- container: ftd.main
+
+--- ftd.row:
+margin-top: 20
+align: center
+
+--- button: confirm
+button-bg: $font.warning-text_base
+
+
+
+--- container: ftd.main
+
+--- ftd.text:
+padding-top: 24
+if: $footer-text is not null
+text: $footer-text
+color: $fpm.color.main.text
+align: center
+white-space: nowrap
+
+
+
+
+
+
+
+-- ftd.row logo-with-text:
+width:fill
+optional ftd.image-src moon-logo:
+optional string logo-text:
+spacing: 10
+
+
+--- ftd.image: 
+src: $moon-logo
+height: 15
+width: 15
+
+
+--- ftd.text: $logo-text
+color: $fpm.color.main.text-strong
+role: $font.footer-font
