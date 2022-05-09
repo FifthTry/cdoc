@@ -41,11 +41,11 @@ django-extensions==3.1.5
     # via -r requirements.in
 django-rq==2.5.1
     # via -r requirements.in
-ftd==0.1.2
+ftd==0.1.3
     # via ftd-django
-ftd-django==0.1.1
+ftd-django==0.1.3
     # via -r requirements.in
-ftd-sys==0.1.0
+ftd-sys==0.1.1
     # via ftd
 gunicorn==20.1.0
     # via -r requirements.in

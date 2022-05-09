@@ -45,6 +45,7 @@ $processor$: get-data
 -- optional string github-login-url:
 $processor$: get-data
 
+null
 
 -- record available-repos-for-mapping-data:
 integer id:
