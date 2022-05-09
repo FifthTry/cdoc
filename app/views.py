@@ -649,8 +649,8 @@ class AppIndexPage(TemplateView):
                 "github-login-url": context.get("github_login_url"),
                 "is-authenticated": self.request.user.is_authenticated,
                 "all-repo-map": [],
-                "unmapped_repos_display": [],
-                "available_repos_for_mapping": []
+                "unmapped-repos-display": [],
+                "available-repos-for-mapping": []
             }
 
             for repo_map in (context.get("all_repo_map") or []):
@@ -670,14 +670,14 @@ class AppIndexPage(TemplateView):
                 })
 
             for repo in (context.get("unmapped_repos_display") or []):
-                new_context["unmapped_repos_display"].append({
+                new_context["unmapped-repos-display"].append({
                     "get-url": repo.get_url(),
                     "repo-full-name": repo.repo_full_name,
                     "id": repo.id,
                 })
 
             for repo in (context.get("available_repos_for_mapping") or []):
-                new_context["available_repos_for_mapping"].append({
+                new_context["available-repos-for-mapping"].append({
                     "get-url": repo.get_url(),
                     "repo-full-name": repo.repo_full_name,
                     "id": repo.id,

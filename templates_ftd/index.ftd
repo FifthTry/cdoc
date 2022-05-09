@@ -18,7 +18,7 @@
 -- fpm.toc-item list sub-sections:
 $processor$: toc
 
-- Home: 
+- Home:
   - Home Index: /index/
   - Docs: /index/
   - Articles: /index/
@@ -55,49 +55,7 @@ string get-url:
 -- available-repos-for-mapping-data list available-repos-for-mapping:
 $processor$: get-data
 
-[
-  {
-    "get-url": "https://github.com/Arpita-Jaiswal/fpm-sample/pulls/",
-    "repo-full-name": "Arpita-Jaiswal/fpm-sample",
-    "id": 3
-  },
-  {
-    "get-url": "https://github.com/Arpita-Jaiswal/fpm-version-app/pulls/",
-    "repo-full-name": "Arpita-Jaiswal/fpm-version-app",
-    "id": 4
-  },
-  {
-    "get-url": "https://github.com/Arpita-Jaiswal/ftd-play/pulls/",
-    "repo-full-name": "Arpita-Jaiswal/ftd-play",
-    "id": 5
-  },
-  {
-    "get-url": "https://github.com/Arpita-Jaiswal/ftd.dev/pulls/",
-    "repo-full-name": "Arpita-Jaiswal/ftd.dev",
-    "id": 6
-  },
-  {
-    "get-url": "https://github.com/Arpita-Jaiswal/hindi-dictionary/pulls/",
-    "repo-full-name": "Arpita-Jaiswal/hindi-dictionary",
-    "id": 7
-  },
-  {
-    "get-url": "https://github.com/Arpita-Jaiswal/vivekanand/pulls/",
-    "repo-full-name": "Arpita-Jaiswal/vivekanand",
-    "id": 8
-  },
-  {
-    "get-url": "https://github.com/Arpita-Jaiswal/vivekanand-gu/pulls/",
-    "repo-full-name": "Arpita-Jaiswal/vivekanand-gu",
-    "id": 9
-  },
-  {
-    "get-url": "https://github.com/Arpita-Jaiswal/vivekanand-hi/pulls/",
-    "repo-full-name": "Arpita-Jaiswal/vivekanand-hi",
-    "id": 10
-  }
-]
-
+[]
 
 
 -- record code-repo-data:
@@ -109,25 +67,14 @@ optional string get-url:
 optional string repo-full-name:
 optional string get-url:
 
--- record all-repo-map:
+-- record all-repo-map-data:
 code-repo-data code-repo:
 documentation-repo-data documentation-repo:
 
--- all-repo-map list kkk:
+-- all-repo-map-data list all-repo-map:
 $processor$: get-data
 
-[
-  {
-    "code-repo": {
-      "get-url": "https://github.com/Arpita-Jaiswal/django-on-heroku/pulls/",
-      "repo-full-name": "Arpita-Jaiswal/django-on-heroku"
-    },
-    "documentation-repo": {
-      "get-url": "https://github.com/Arpita-Jaiswal/blog/pulls/",
-      "repo-full-name": "Arpita-Jaiswal/blog"
-    }
-  }
-]
+[]
 
 
 
@@ -180,25 +127,25 @@ id: section-conatiner
 --- popup.logo-with-text:
 logo: $assets.files.assets.images.pull-request.png
 logo-text: Connections
- 
+
 --- pull.search-btn:
 title: search
 
 --- ftd.text: Mapping
 padding-bottom: $fpm.space.space-3
 role: $fpm.type.heading-small
-color: $fpm.color.main.text-strong 
+color: $fpm.color.main.text-strong
 
 --- ftd.column:
 width:fill
 border-width: 1
 border-radius: 8
-border-color: $fpm.color.main.border-strong 
+border-color: $fpm.color.main.border-strong
 
 --- mapping-loop:
 documentation-repo: $obj.documentation-repo
 code-repo: $obj.code-repo
-$loop$:$kkk as $obj
+$loop$: $all-repo-map as $obj
 
 --- container: section-conatiner
 
@@ -211,7 +158,7 @@ color: $fpm.color.main.text-strong
 width:fill
 border-width: 1
 border-radius: 8
-border-color: $fpm.color.main.border-strong 
+border-color: $fpm.color.main.border-strong
 
 --- available-loop:
 index: $obj.id
@@ -227,8 +174,8 @@ $loop$: $available-repos-for-mapping as $obj
 
 -- ftd.row mapping-loop:
 optional ftd.image-src button-name:
-optional ftd.image-src doc-logo: 
-optional ftd.image-src code-logo: 
+optional ftd.image-src doc-logo:
+optional ftd.image-src code-logo:
 width: fill
 border-bottom: 1
 border-color:  $fpm.color.main.text
@@ -246,13 +193,13 @@ spacing: 4
 padding-top: 4
 
 
---- ftd.image: 
+--- ftd.image:
 padding-top: 8
 src: $assets.files.assets.images.lower-rectangle.png
 
 
 
---- ftd.image: 
+--- ftd.image:
 padding-top: 4
 src: $assets.files.assets.images.icon9.png
 
@@ -270,13 +217,13 @@ role: $fpm.type.label-small
 spacing: 4
 padding-top: 4
 
---- ftd.image: 
+--- ftd.image:
 padding-top: 8
 src: $assets.files.assets.images.lower-rect.png
 
 
 
---- ftd.image: 
+--- ftd.image:
 padding-top: 4
 src: $assets.files.assets.images.rectangle-white.png
 
@@ -299,7 +246,7 @@ background-color: $fpm.color.main.cta-primary.base
 
 
 -- ftd.row available-loop:
-optional ftd.image-src button-name: 
+optional ftd.image-src button-name:
 optional ftd.image-src doc-logo: $assets.files.assets.images.orgname.png
 width: fill
 border-bottom: 1
@@ -315,7 +262,7 @@ width:fill
 margin-top: 8
 spacing: 4
 
---- ftd.image: 
+--- ftd.image:
 src: $doc-logo
 
 
@@ -331,7 +278,7 @@ role: $fpm.type.label-small
 --- overview: connect
 heading-name: $children
 
---- both-buttonn: 
+--- both-buttonn:
 repo-name: $children
 title-right: code-repo
 title-left: documentation-repo
@@ -372,7 +319,7 @@ heading-name: $heading-name-right
 -- ftd.column overview:
 caption title:
 optional string heading-name:
-boolean open-1: false 
+boolean open-1: false
 optional integer border-wi: 0
 optional ftd.image-src cross-logo: $assets.files.assets.images.Union.png
 open: true
@@ -383,12 +330,12 @@ role: $font.button
 background-color: $fpm.color.main.cta-primary.base
 color: $fpm.color.main.background.base
 background-color if $MOUSE-IN: $font.cta_hover
-color if $MOUSE-IN: $fpm.color.main.error.base 
+color if $MOUSE-IN: $fpm.color.main.error.base
 border-radius: 8
 padding-vertical: 12
 padding-horizontal: 16
 border-width: 1
-border-color: $fpm.color.main.border-strong 
+border-color: $fpm.color.main.border-strong
 $on-click$: $open-1 = true
 
 --- ftd.column :
@@ -413,7 +360,7 @@ padding-top: $fpm.space.space-3
 padding-bottom: $fpm.space.space-8
 padding-horizontal: $fpm.space.space-8
 boolean mouse-in: false
-border-color: $fpm.color.main.border-strong 
+border-color: $fpm.color.main.border-strong
 id: col-id
 shadow-offset-x: 3
 shadow-offset-y: 4
@@ -461,7 +408,7 @@ caption button-name:
 string about-repo:
 string heading-name:
 string repo-name:
-boolean open-1: false 
+boolean open-1: false
 optional integer border-wi: 0
 string heading-name:
 optional ftd.image-src cross-logo: $assets.files.assets.images.Union.png
@@ -476,12 +423,12 @@ ftd.color button-color: $fpm.color.main.error.base
 background-color: $font.cta_primary_base
 color: $fpm.color.main.background.base
 background-color if $MOUSE-IN: $font.cta_hover
-color if $MOUSE-IN: $fpm.color.main.error.base 
+color if $MOUSE-IN: $fpm.color.main.error.base
 border-radius: 8
 padding-vertical: 8
 padding-horizontal: 16
 border-width: 1
-border-color: $fpm.color.main.border-strong 
+border-color: $fpm.color.main.border-strong
 margin-top:20
 $on-click$: $open-1 = true
 

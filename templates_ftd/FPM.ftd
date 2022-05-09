@@ -1,7 +1,6 @@
 -- import: fpm
 
 -- fpm.package: templates-ftd
-zip: github.com/priyanka9634/firsttry-ftd/archive/refs/heads/main.zip
 
 -- fpm.auto-import: templates-ftd/assets
 
