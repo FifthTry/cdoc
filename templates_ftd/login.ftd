@@ -1,0 +1,128 @@
+-- import: fpm
+-- import: templates-ftd/assets
+-- import: fifthtry.github.io/inter/assets as font-assets
+-- import: templates-ftd/custom-typo as font
+-- fpm.font-display: $font-assets.fonts.Inter
+
+/-- boolean is-authenticated: true
+
+/-- boolean verify: false
+
+/-- is-authenticated: false
+if: $verify == true
+
+
+
+
+
+/-- login-content: Login to Github
+sub-heading-main:  click below to login with github
+cta-text: sign up with
+url: https://github.com/apps/continuous-documentation
+
+
+-- ftd.column login-content :
+optional caption title:
+optional string sub-heading-main: 
+optional string cta-text:
+string url:
+z-index: 100
+anchor: parent
+top: 0
+left: 0
+width: percent 100
+height: percent 100
+background-color: $font.backkk
+
+
+--- ftd.column:
+optional caption title:
+optional string sub-heading-main: 
+optional string cta-text:
+background-color: $fpm.color.main.background.base
+width: 614
+move-right: 400
+move-down: 200
+border-width: 1
+padding-vertical: 35
+padding-horizontal: 32
+boolean mouse-in: false
+border-color: $fpm.color.main.border-strong 
+id: col-id
+shadow-offset-x: 3
+shadow-offset-y: 4
+shadow-size: 1
+shadow-blur: 4
+border-top: 3
+border-radius: 8
+border-color: $fpm.color.main.warning.text
+shadow-color: $fpm.color.main.warning.text
+padding-horizontal: 42
+id: model-contete
+
+--- ftd.row:
+width:fill
+padding-bottom: 90
+
+--- ftd.text: $title
+text-align: center
+role: $fpm.type.heading-medium
+color: $fpm.color.main.text-strong
+width: fill
+
+
+--- container: model-contete
+
+--- ftd.column:
+width: fill
+id: col-id
+padding-bottom: 12
+
+--- ftd.text: $sub-heading-main
+if: $sub-heading-main is not null
+text-align: center
+width: fill
+role: $fpm.type.copy-relaxed
+color: $fpm.color.main.text
+padding-bottom: 32
+
+--- github-button:
+sign-in: $cta-text
+link: $url
+
+
+
+
+
+
+
+-- ftd.row github-button:
+boolean is-authenticated: false
+optional string sign-in: 
+optional string github-cta:
+optional string width:
+ftd.image-src icon-github: $assets.files.assets.images.icon-github.svg
+string link: https://github.com/apps/continuous-documentation
+padding-horizontal: $fpm.space.space-4
+padding-vertical: $fpm.space.space-3
+color: $fpm.color.main.background.step-1
+background-color: $fpm.color.main.cta-primary.base
+border-radius: 4
+/$on-click$: $verify = true
+width: $width
+spacing: 4
+cursor: pointer
+link: $link
+align: center
+
+
+--- ftd.text: $sign-in
+role: $font.button
+white-space: nowrap
+align: center
+text-align: center
+padding-top: 2
+color: $fpm.color.main.background.step-1
+
+--- ftd.image:
+src: $icon-github

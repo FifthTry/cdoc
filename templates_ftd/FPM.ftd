@@ -6,3 +6,8 @@ zip: github.com/priyanka9634/firsttry-ftd/archive/refs/heads/main.zip
 -- fpm.auto-import: templates-ftd/assets
 
 -- fpm.dependency: fifthtry.github.io/inter
+-- fpm.font: Octicon
+display: swap
+style: normal
+weight: normal
+woff: -/fifthtry.github.io/octicon/static/octicons.woff

@@ -598,11 +598,12 @@ class PRView(View):
 
 
 class AppIndexPage(TemplateView):
-    # if not settings.USING_FTD:
-    #     template_name = "index.html"
-    # else:
-    #     template_name = "/"
-    template_name = "index.html"
+    if not settings.USING_FTD:
+        template_name = "index.html"
+    else:
+        template_name = "/"
+
+    # template_name = "index.html"
 
     def get_okind_ekind(view, request, *args, **kwargs):
         if request.method == "GET":
@@ -643,28 +644,48 @@ class AppIndexPage(TemplateView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
 
-        # def serialize(data):
-        #     from django.core import serializers
-        #     if settings.USING_FTD:
-        #         from django.core import serializers
-        #         try:
-        #             return serializers.serialize('json', data)
-        #         except:
-        #             return None
-        #     else:
-        #         return data
-        #
-        #
-        # def ftd_context(context):
-        #     import django
-        #     for key, value in context.items():
-        #         print("ftd_context",type(value), isinstance(value, django.db.models.query.QuerySet))
-        #         value = serialize(value)
-        #         if value:
-        #             context[key] = value
-        #     context["is_authenticated"] = self.request.user.is_authenticated
-        #     return context
-        #
+        def ftd_context(context):
+            new_context = {
+                "github-login-url": context.get("github_login_url"),
+                "is-authenticated": self.request.user.is_authenticated,
+                "all-repo-map": [],
+                "unmapped_repos_display": [],
+                "available_repos_for_mapping": []
+            }
+
+            for repo_map in (context.get("all_repo_map") or []):
+                code_repo = {
+                    "get-url": repo_map.code_repo.get_url(),
+                    "repo-full-name": repo_map.code_repo.repo_full_name
+                } if repo_map.code_repo else None
+
+                documentation_repo = {
+                    "get-url": repo_map.documentation_repo.get_url(),
+                    "repo-full-name": repo_map.documentation_repo.repo_full_name
+                } if repo_map.documentation_repo else None
+
+                new_context["all-repo-map"].append({
+                   "code-repo": code_repo,
+                    "documentation-repo": documentation_repo
+                })
+
+            for repo in (context.get("unmapped_repos_display") or []):
+                new_context["unmapped_repos_display"].append({
+                    "get-url": repo.get_url(),
+                    "repo-full-name": repo.repo_full_name,
+                    "id": repo.id,
+                })
+
+            for repo in (context.get("available_repos_for_mapping") or []):
+                new_context["available_repos_for_mapping"].append({
+                    "get-url": repo.get_url(),
+                    "repo-full-name": repo.repo_full_name,
+                    "id": repo.id,
+                })
+            new_context["view"] = context["view"]
+
+            return new_context
+
 
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
@@ -714,10 +735,10 @@ class AppIndexPage(TemplateView):
             context["github_login_url"] = req.url
 
 
-        # if settings.USING_FTD:
-        #     context = ftd_context(context)
+        if settings.USING_FTD:
+            context = ftd_context(context)
 
-        print("context::::", context)
+        # print("context::::", context)
 
         return context
 

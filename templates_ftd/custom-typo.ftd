@@ -9,7 +9,7 @@
 -- ftd.font-size copyies-lg:
 line-height: 20
 size: 16
-tracking: 0.5
+letter-spacing: 0
 
 -- ftd.type copyies: $fpm.font-display
 desktop: $copyies-lg
@@ -21,7 +21,7 @@ weight: 700
 -- ftd.font-size footer-txt:
 line-height: 16
 size: 14
-tracking: 0.5
+letter-spacing: 0
 
 -- ftd.type footer-font: $fpm.font-display
 desktop: $footer-txt
@@ -32,7 +32,7 @@ weight: 400
 -- ftd.font-size copy-lg:
 line-height: 24
 size: 20
-tracking: 0.5
+letter-spacing: 0
 
 -- ftd.type copy: $fpm.font-display
 desktop: $copy-lg
@@ -43,12 +43,12 @@ weight: 400
 -- ftd.font-size  copy-tight-desktop:
 line-height: 20
 size: 16
-tracking: 0.5
+letter-spacing: 0
 
 -- ftd.font-size section-t:
 line-height: 44
 size: 32
-tracking: 0.5
+letter-spacing: 0
 
 -- ftd.type section-title: $fpm.font-display
 desktop: $section-t
@@ -65,7 +65,7 @@ weight: 400
 -- ftd.font-size heading-medium-desktop:
 line-height: 44
 size: 34
-tracking: 0.5
+letter-spacing: 0
 
 -- ftd.type heading-medium: $fpm.font-display
 desktop: $heading-medium-desktop
@@ -76,7 +76,7 @@ weight: 400
 -- ftd.font-size copy-relaxed-desktop:
 line-height: 24
 size: 16
-tracking: 0.5
+letter-spacing: 0
 
 -- ftd.type copy-relaxed: $fpm.font-display
 desktop: $copy-relaxed-desktop
@@ -96,7 +96,7 @@ dark: #966220
 -- ftd.font-size button-txt:
 line-height: 16
 size: 16
-tracking: 0.5
+letter-spacing: 0
 
 -- ftd.type button: $fpm.font-display
 desktop: $button-txt
@@ -119,11 +119,11 @@ dark: rgba(150,98,32,1)
 
 
 -- ftd.color cta_hover:
-light: rgba(79, 178, 223, 0.5)
-dark: rgba(79, 178, 223, 0.5)
+light: rgba(79, 178, 223, 0)
+dark: rgba(79, 178, 223, 0)
 
 
 
 -- ftd.color backkk:
-light: rgba(0, 0, 0, 0.9)
-dark: rgba(0, 0, 0, 0.9)
+light: rgba(0, 0, 0, 0.8)
+dark: rgba(0, 0, 0, 0.8)

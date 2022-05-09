@@ -3,114 +3,142 @@
 -- import: fifthtry.github.io/inter/assets as font-assets
 -- import: templates-ftd/custom-typo as font
 -- fpm.font-display: $font-assets.fonts.Inter
-
+-- import: templates-ftd/pull as pull
 -- import: templates-ftd/popup as popup
+-- import: templates-ftd/login as login
+
+
+-- integer selected: 1
+
+-- integer changes: $selected
+
+-- string abc: kkkk
+
+
+-- fpm.toc-item list sub-sections:
+$processor$: toc
+
+- Home: 
+  - Home Index: /index/
+  - Docs: /index/
+  - Articles: /index/
+  - Home Pictures: /index/
+
+-- boolean close: false
+-- ftd.font-size octicon-fs:
+line-height: 16
+size: 16
+letter-spacing: 0
+
+-- ftd.type octicon:
+font: $assets.fonts.Octicon
+desktop: $octicon-fs
+mobile: $octicon-fs
+xl: $octicon-fs
+weight: 700
+
+
+-- boolean is-authenticated: false
+$processor$: get-data
+
+
+-- optional string github-login-url:
+$processor$: get-data
+
+
+-- record available-repos-for-mapping-data:
+integer id:
+string repo-full-name:
+string get-url:
+
+
+-- available-repos-for-mapping-data list available-repos-for-mapping:
+$processor$: get-data
+
+[
+  {
+    "get-url": "https://github.com/Arpita-Jaiswal/fpm-sample/pulls/",
+    "repo-full-name": "Arpita-Jaiswal/fpm-sample",
+    "id": 3
+  },
+  {
+    "get-url": "https://github.com/Arpita-Jaiswal/fpm-version-app/pulls/",
+    "repo-full-name": "Arpita-Jaiswal/fpm-version-app",
+    "id": 4
+  },
+  {
+    "get-url": "https://github.com/Arpita-Jaiswal/ftd-play/pulls/",
+    "repo-full-name": "Arpita-Jaiswal/ftd-play",
+    "id": 5
+  },
+  {
+    "get-url": "https://github.com/Arpita-Jaiswal/ftd.dev/pulls/",
+    "repo-full-name": "Arpita-Jaiswal/ftd.dev",
+    "id": 6
+  },
+  {
+    "get-url": "https://github.com/Arpita-Jaiswal/hindi-dictionary/pulls/",
+    "repo-full-name": "Arpita-Jaiswal/hindi-dictionary",
+    "id": 7
+  },
+  {
+    "get-url": "https://github.com/Arpita-Jaiswal/vivekanand/pulls/",
+    "repo-full-name": "Arpita-Jaiswal/vivekanand",
+    "id": 8
+  },
+  {
+    "get-url": "https://github.com/Arpita-Jaiswal/vivekanand-gu/pulls/",
+    "repo-full-name": "Arpita-Jaiswal/vivekanand-gu",
+    "id": 9
+  },
+  {
+    "get-url": "https://github.com/Arpita-Jaiswal/vivekanand-hi/pulls/",
+    "repo-full-name": "Arpita-Jaiswal/vivekanand-hi",
+    "id": 10
+  }
+]
 
 
 
--- record tc:
-caption title:
-integer index:
-ftd.image-src icon-theme-mode: $assets.files.assets.images.icon-moon.png
+-- record code-repo-data:
+optional string repo-full-name:
+optional string get-url:
 
 
--- tc list list-tc:
+-- record documentation-repo-data:
+optional string repo-full-name:
+optional string get-url:
 
--- list-tc: Commit to the process
-index: 1
-icon-theme-mode: $assets.files.assets.images.icon-moon.png
+-- record all-repo-map:
+code-repo-data code-repo:
+documentation-repo-data documentation-repo:
 
+-- all-repo-map list kkk:
+$processor$: get-data
 
--- list-tc: Own the changes
-index:2
-icon-theme-mode: $assets.files.assets.images.icon-moon.png
-
-
-
--- record section-data:
-caption title:
-string value:
-string button-name: jkkk
-string icon-1-text:
-string icon-2-text:
-ftd.image-src icon-2-mode: 
-ftd.image-src icon-3-mode:
-tc list tc-var:
-integer index:
-
--- section-data list section-list:
-
--- section-list: #123
-value: hello
-icon-2-mode: $assets.files.assets.images.icon-moon.png
-icon-3-mode: $assets.files.assets.images.icon-moon.png
-button-name: connect
-icon-1-text: Add a Code PR to complete this pair
-icon-2-text: Doc PR name
-tc-var: $list-tc
-index: 1
-
--- section-list: #124
-value: hello again
-icon-2-mode: $assets.files.assets.images.icon-moon.png
-icon-3-mode: $assets.files.assets.images.icon-moon.png
-button-name: connect
-icon-1-text: #203 Code PR name
-icon-2-text: Add a Documentation PR to complete this pair
-tc-var: $list-tc
-index: 2
-
--- section-list: #124
-value: hello again
-icon-2-mode: $assets.files.assets.images.icon-moon.png
-icon-3-mode: $assets.files.assets.images.icon-moon.png
-icon-1-text: #203 Code PR name
-icon-2-text: #404 Doc PR name
-button-name: connect
-tc-var: $list-tc
-index: 3
-
--- section-list: #124
-value: hello again
-icon-2-mode: $assets.files.assets.images.icon-moon.png
-icon-3-mode: $assets.files.assets.images.icon-moon.png
-icon-1-text:Doc PR name
-icon-2-text:Add a Code PR to complete this pair
-button-name: connect
-tc-var: $list-tc
-index: 4
-
--- section-list: #124
-value: hello again
-icon-2-mode: $assets.files.assets.images.icon-moon.png
-icon-3-mode: $assets.files.assets.images.icon-moon.png
-icon-1-text: #203 Code PR name
-icon-2-text: #404 Doc PR name
-button-name: approve
-tc-var: $list-tc
-index: 5
+[
+  {
+    "code-repo": {
+      "get-url": "https://github.com/Arpita-Jaiswal/django-on-heroku/pulls/",
+      "repo-full-name": "Arpita-Jaiswal/django-on-heroku"
+    },
+    "documentation-repo": {
+      "get-url": "https://github.com/Arpita-Jaiswal/blog/pulls/",
+      "repo-full-name": "Arpita-Jaiswal/blog"
+    }
+  }
+]
 
 
 
--- section-list: #124
-value: hello again
-icon-2-mode: $assets.files.assets.images.icon-moon.png
-icon-3-mode: $assets.files.assets.images.icon-moon.png
-icon-1-text: #203 Code PR name
-icon-2-text: #404 Doc PR name
-button-name: approve
-tc-var: $list-tc
-index: 6
 
--- section-list: #124
-value: hello again
-icon-2-mode: $assets.files.assets.images.icon-moon.png
-icon-3-mode: $assets.files.assets.images.icon-moon.png
-icon-1-text: #203 Code PR name
-icon-2-text: #404 Doc PR name
-button-name: approve
-tc-var: $list-tc
-index: 7
+
+
+
+
+
+
+
 
 
 
@@ -122,213 +150,73 @@ index: 7
 
 
 
-
 -- ftd.column homepage:
 optional ftd.color bg-color: $fpm.color.main.background.base
 background-color: $bg-color
 width: fill
-id: kk
 
+--- pull.header:
+background: $fpm.color.glass.background.step-2
 
 --- container: ftd.main
 
---- header:
-background:$fpm.color.glass.background.step-2
+--- login.login-content: Login to Github
+sub-heading-main: Click below to login with github
+cta-text: sign up with
+url: $github-login-url
+if: not $is-authenticated
 
-
-
+--- container: ftd.main
 
 --- ftd.column:
 width: fill
-padding-horizontal:155
+padding-horizontal:280
 padding-vertical: 36
 id:main-section
+align: center
+spacing: 36
+id: section-conatiner
 
---- navbar:
-title: abd
-
---- ftd.row:
-padding-top:32
-width:fill
-
---- ftd.row:
-width: fill
---- search-btn:
+--- popup.logo-with-text:
+logo: $assets.files.assets.images.pull-request.png
+logo-text: Connections
+ 
+--- pull.search-btn:
 title: search
 
---- ftd.row:
-padding-horizontal:64
-
---- container: main-section
+--- ftd.text: Mapping
+padding-bottom: $fpm.space.space-3
+role: $fpm.type.heading-small
+color: $fpm.color.main.text-strong 
 
 --- ftd.column:
-margin-top:17
 width:fill
-margin-bottom:84
 border-width: 1
 border-radius: 8
 border-color: $fpm.color.main.border-strong 
 
---- sectiodn:
-icon-2-mode: $section-items.icon-2-mode
-icon-3-mode: $section-items.icon-3-mode
-icon-1-text:$section-items.icon-1-text
-icon-2-text:$section-items.icon-2-text
-index: $section-items.index
-button-name: $section-items.button-name
-list-item: $section-items.tc-var
-$loop$: $section-list as $section-items
+--- mapping-loop:
+documentation-repo: $obj.documentation-repo
+code-repo: $obj.code-repo
+$loop$:$kkk as $obj
 
+--- container: section-conatiner
 
-
-
-
-
-
-
--- ftd.column header:
-optional ftd.image-src site-logo: $assets.files.assets.images.fifthtry-logo.png
-optional ftd.image-src icon-theme-mode: $assets.files.assets.images.icon-moon.png
-optional ftd.image-src icon-github: $assets.files.assets.images.icon-github.png
-string site-url: /
-width:fill
-ftd.color background: $fpm.color.main.background.base 
-background-color: $background
-id:header-item
-padding-horizontal:32
-
-
---- ftd.row:
-width:fill
-id:main-row
-
-
---- ftd.row: 
-width:fill
-padding-vertical:24
-
-
---- ftd.image: 
-src:$site-logo
-
-
-
---- container: main-row
-
---- ftd.row:
-id:right-side-header
-padding-vertical:28
-spacing:32
-
-
---- ftd.image: 
-src:$icon-theme-mode
-
-
-
-
---- ftd.image: 
-src:$icon-github
-
-
-
-
-
-
--- ftd.column navbar:
-caption title:
-optional ftd.image-src orgname-logo: $assets.files.assets.images.orgname.png
-string site-url: /
-optional ftd.image-src code-repo-logo:$assets.files.assets.images.repo-code.png
-optional ftd.image-src pull-logo:$assets.files.assets.images.pull-request.png
-optional ftd.image-src site-logo:
-width:fill
-
-
---- ftd.row:
-width:fill
-
---- ftd.row:
-width:fill
-id:nav-right
-
-
---- ftd.image: 
-src:$orgname-logo
-margin-top:5
-margin-right:13
-
-
---- ftd.text: Orgname
-color: $font.cta_primary_base
-role: $fpm.type.title-large
-
-
---- ftd.column:
-
---- ftd.row:
-spacing: 10
-
---- ftd.image: 
-src:$code-repo-logo
-margin-top:8
-
-
---- ftd.row:
-
---- ftd.column:
-spacing:7
-
---- logo-text: code-repo
-
-
-
---- logo-text: doc-repo
-
-
-
---- container: nav-right
-
-
---- ftd.image: 
-src:$pull-logo
-margin-top:12
-padding-left:10
-
-
---- ftd.text: Pull Request
+--- ftd.text: Available repos
+padding-bottom: $fpm.space.space-3
+role: $fpm.type.heading-small
 color: $fpm.color.main.text-strong
-role: $fpm.type.title-large
-padding:5
 
-
--- ftd.text logo-text:
-caption title:
-text: $title
-ftd.color text-color: $fpm.color.glass.text-strong
-color: $text-color
-
-
-
-
-
-
-
-
--- ftd.input search-btn:search
-caption title:
-cursor: pointer
+--- ftd.column:
 width:fill
-color: $fpm.color.main.error.base
-border-radius: 8
-padding-vertical: 14
-padding-horizontal: 28
 border-width: 1
-align:left
-placeholder: $title
-background-color: $fpm.color.main.background.base
-color: $fpm.color.main.error.base
-border-color: $fpm.color.main.error.base 
+border-radius: 8
+border-color: $fpm.color.main.border-strong 
+
+--- available-loop:
+index: $obj.id
+children: $obj.repo-full-name
+$loop$: $available-repos-for-mapping as $obj
 
 
 
@@ -337,390 +225,252 @@ border-color: $fpm.color.main.error.base
 
 
 
-
-
-
-
-
-
-
-
-
-
--- ftd.column sectiodn:
-string button-name:
-string icon-1-text:
-ftd.image-src icon-2-mode: 
-ftd.image-src icon-3-mode: 
-string icon-2-text:
-integer index:
-tc list list-item:
+-- ftd.row mapping-loop:
+optional ftd.image-src button-name:
+optional ftd.image-src doc-logo: 
+optional ftd.image-src code-logo: 
 width: fill
 border-bottom: 1
 border-color:  $fpm.color.main.text
 padding-horizontal:30
 padding-vertical: 20
-
---- ftd.row:
-width:fill
-id:jj
-
----ftd.row:
-width: fill
-
---- leftside:
- button-name: $button-name
- icon-1-text: $icon-1-text
- icon-2-text: $icon-2-text
- list-title-copy: $list-item
- index: $index
-
-
---- container:jj
-
---- ftd.row:
-
-
---- rightside:
- button-name: $button-name
- index: $index
-
-
--- ftd.column leftside:
-optional ftd.image-src moon-logo: $assets.files.assets.images.repo-code.png
-optional ftd.image-src rectangle-logo: $assets.files.assets.images.rectangle.png
-optional ftd.image-src open-close-logo: $assets.files.assets.images.icon9.png
-optional ftd.image-src upper-rect-logo: $assets.files.assets.images.lower-rectangle.png
-optional ftd.image-src lower-rect-logo: $assets.files.assets.images.lower-rect.png
-optional ftd.image-src vector-logo: $assets.files.assets.images.Vector.png
-optional string button-name:
-string icon-1-text:
-string icon-2-text:
-tc list list-title-copy:
-width: fill
-padding-vertical: 20
-integer index:
-
-
-
---- ftd.row:
-if: $index == 3
-anchor:parent
-top:35
-left:-2
-
---- ftd.image: 
-src: $vector-logo
---- container:ftd.main
---- ftd.row:
-if: $index == 4
-anchor:parent
-top:35
-left:-2
-
---- ftd.image: 
-src: $vector-logo
---- container:ftd.main
---- ftd.row:
-if: $index == 5
-anchor:parent
-top:35
-left:-2
-
---- ftd.image: 
-src: $vector-logo
-
---- container:ftd.main
---- ftd.row:
-width:fill
-align: center
-id:jkkk
-spacing:10
-
---- ftd.row:
-align: center
-spacing:5
-
-
---- ftd.column:
-align: center
-
---- ftd.image: 
-src: $upper-rect-logo
-
-
---- container: jkkk
-
---- ftd.column:
-align: center
-
---- ftd.image: 
-src: $open-close-logo
-
---- container: jkkk
-
-
-
-
---- ftd.text: $icon-1-text
-role: $font.copy-tight
-color:  $fpm.color.main.text
-color if $index == 1: $fpm.color.main.error.text
-color if $index == 2: $fpm.color.main.warning.base
-
---- container: ftd.main
-
---- ftd.row:
-width:fill
-align: center
-spacing: 10
-id:jkkk
-
---- ftd.row:
-align: center
-spacing: 10
-id:jkkkl
-
---- ftd.column:
-align: center
-
---- ftd.image: 
-src: $lower-rect-logo
-
---- container: jkkkl
-
---- ftd.column:
-align: center
-
---- ftd.image: 
-src: $rectangle-logo
-
---- container: jkkkl
-
-
---- ftd.text: $icon-2-text
-role: $font.copy-tight
-color: $fpm.color.main.text-strong
-color if $index == 1: $fpm.color.main.warning.base
-color if $index == 2: $fpm.color.main.warning.base
-
-
-
-
-
-
-
-
-
--- ftd.column rightside:
-optional ftd.image-src site-logo: $assets.files.assets.images.repo-code.png
-optional ftd.image-src back-logo: $assets.files.assets.images.back-logo.png
-optional ftd.image-src cross-logo: $assets.files.assets.images.Union.png
-optional ftd.color bg-color: $fpm.color.glass.background.base
-optional string button-name:
-boolean mouse-in: false
-integer index:
-
-
-
-
---- ftd.row:
-if: $index == 1
-
---- overview:
-index: $index
-model-title:Attach Documentation
-text-align: left
-width:916
-border-wi:0
-outlines: $font.cta_primary_base
-button-name: $button-name
-
---- popup.model-body:
-sub-heading-main:  A healthy code always carry good Documentation
-sub-heading-secondary: Attach one for:
-code-logo: $assets.files.assets.images.rectangle.png
-code-text: #222  Code PR Name
-footer-text: My PR doesnt need a connection
-
-
---- container: ftd.main
-
-
---- ftd.row:
-if: $index == 2
-
---- overview:
-index: $index
-text-align: left
-model-title:Attach Code PR
-border-wi:8
-width:916
-outlines: $font.cta_primary_base
-button-name: $button-name
-
---- popup.model-body:
-sub-heading-main:  A healthy code always carry good Documentation
-sub-heading-secondary:Attach one for:
-code-logo: $assets.files.assets.images.rectangle.png
-code-text: #222  Code PR Name
-
-
-
---- container: ftd.main
---- ftd.row:
-if: $index == 3
-width:fill
-
---- verified-text:
-status: Approved
-
-Approved by @{white:sharmashobit}20 min ago
-
-
---- container: ftd.main
-
---- ftd.row:
-if: $index == 4
-
---- overview:
-open-1: false
-text-align: center
-model-title: Are you sure?
-index: $index
-width:614
-outlines: $font.shadow-box
-button-name: $button-name
-
---- popup.model-content:
-sub-heading-main: A healthy code always carry good Documentation
-cta-text: search
-logo-text: #222  Code PR Name
-moon-logo: $assets.files.assets.images.rectangle.png
-
-does not need any associated documentation.
-
-This action should be used sparingly. It may be reviewed by your Manager,and will affect your organizations’ dev statistics
-
-
-
---- container: ftd.main
---- ftd.row:
-if: $index == 5
-width:fill
-
-
---- verified-text:
-status: Approved
-
-Approved by @{white:sharmashobit}20 min ago
-
-
---- container: ftd.main
-
---- ftd.row:
-if: $index == 6
-
---- overview:
-open-1: false
-text-align: center
-model-title: Approve Changes
-index: $index
-outlines: $font.shadow-box
-width:614
-button-name: $button-name
-
---- popup.model-content:
-sub-heading-main: A healthy code always carry good Documentation
-logo-text: #222  Code PR Name
-moon-logo: $assets.files.assets.images.icon-github.png
-does not need any associated documentation
-
-
-This action should be used sparingly. It may be reviewed by your Manager,and will affect your organizations’ dev statistics
-
-
-
---- container: ftd.main
-
---- ftd.row:
-if: $index == 7
-
---- overview:
-open-1: false
-text-align: center
-model-title: Are you sure
-index: $index
-outlines: $font.shadow-box
-width:614
-button-name: $button-name
-
---- popup.model-content:
-cta-text: search
-logo-text: #222  Code PR Name
-moon-logo: $assets.files.assets.images.icon-github.png
-moon-logos-text:#203 Code PR name
-moon-logo: $assets.files.assets.images.rectangle.png
-repo-code-logo: $assets.files.assets.images.repo-code.png
-footer-text:Note: Please ask the Dev/Documentor to come in sync if this is not the case
-
-does not need any associated documentation.
-
-This action should be used sparingly. It may be reviewed by your Manager,and will affect your organizations’ dev statistics
-
-
-
-
--- ftd.text white: yo
-color: $fpm.color.main.text-strong
-role: $font.copy-tight
-
--- ftd.column verified-text:
-optional string status:
-body body:
+code-repo-data code-repo:
+code-repo-data documentation-repo:
 
 --- ftd.column:
 width: fill
-align: right
+id: left-side
 
 --- ftd.row:
-align: right
+spacing: 4
+padding-top: 4
 
---- ftd.text:$status
-color:  $fpm.color.main.text
-text-align: right
-role: $font.copy
 
---- container: ftd.main
+--- ftd.image: 
+padding-top: 8
+src: $assets.files.assets.images.lower-rectangle.png
 
---- ftd.row:
-width:fill
 
---- ftd.text: 
-text: $body
-white-space: nowrap
-role: $font.copy
+
+--- ftd.image: 
+padding-top: 4
+src: $assets.files.assets.images.icon9.png
+
+
+
+--- ftd.text: $code-repo.repo-full-name
+link: $code-repo.get-url
 color: $fpm.color.main.text
+role: $fpm.type.label-small
+
+--- container: left-side
+
+
+--- ftd.row:
+spacing: 4
+padding-top: 4
+
+--- ftd.image: 
+padding-top: 8
+src: $assets.files.assets.images.lower-rect.png
+
+
+
+--- ftd.image: 
+padding-top: 4
+src: $assets.files.assets.images.rectangle-white.png
+
+--- ftd.text: $documentation-repo.repo-full-name
+link: $documentation-repo.get-url
+color: $fpm.color.main.text
+role: $fpm.type.label-small
+
+--- container: ftd.main
+
+--- ftd.column:
+
+--- ftd.text :&#707;
+role: $octicon
+border-radius: 8
+padding-horizontal: $fpm.space.space-4
+padding-vertical: $fpm.space.space-2
+background-color: $fpm.color.main.cta-primary.base
+
+
+
+-- ftd.row available-loop:
+optional ftd.image-src button-name: 
+optional ftd.image-src doc-logo: $assets.files.assets.images.orgname.png
+width: fill
+border-bottom: 1
+border-color:  $fpm.color.main.text
+padding-horizontal:30
+padding-vertical: 20
+string children:
+integer index:
+
+
+--- ftd.row:
+width:fill
+margin-top: 8
+spacing: 4
+
+--- ftd.image: 
+src: $doc-logo
+
+
+--- ftd.text: $children
+link: $children
+color: $fpm.color.main.text
+role: $fpm.type.label-small
+
+--- container: ftd.main
+
+--- ftd.row:
+
+--- overview: connect
+heading-name: $children
+
+--- both-buttonn: 
+repo-name: $children
+title-right: code-repo
+title-left: documentation-repo
+about-repo-left: Code Repository:
+about-repo-right: Documentation Repository:
+heading-name-right: Attach Documentation repository
+heading-name-left: Attach Code repository
+
+
+
+
+-- ftd.row both-buttonn:
+width: fill
+caption title-right:
+caption title-left:
+string about-repo-right:
+string about-repo-left:
+caption heading-name-right:
+caption heading-name-left:
+string repo-name:
+spacing: 8
+
+--- code-repo: $title-right
+about-repo: $about-repo-right
+repo-name: $repo-name
+heading-name: $heading-name-left
+
+
+--- container: ftd.main
+
+--- code-repo: $title-left
+about-repo: $about-repo-left
+repo-name: $repo-name
+heading-name: $heading-name-right
 
 
 
 -- ftd.column overview:
-optional string button-name:
+caption title:
+optional string heading-name:
 boolean open-1: false 
-integer index:
-string width:
-string text-align:
 optional integer border-wi: 0
-ftd.color outlines: 
-string model-title:
+optional ftd.image-src cross-logo: $assets.files.assets.images.Union.png
+open: true
+append-at: col-id
+
+--- ftd.text : $title
+role: $font.button
+background-color: $fpm.color.main.cta-primary.base
+color: $fpm.color.main.background.base
+background-color if $MOUSE-IN: $font.cta_hover
+color if $MOUSE-IN: $fpm.color.main.error.base 
+border-radius: 8
+padding-vertical: 12
+padding-horizontal: 16
+border-width: 1
+border-color: $fpm.color.main.border-strong 
+$on-click$: $open-1 = true
+
+--- ftd.column :
+z-index: 100
+anchor: window
+top: 0
+left: 0
+width: percent 100
+height: percent 100
+background-color: $font.backkk
+id: kjlk
+if: $open-1
+
+
+--- ftd.column:
+background-color: $fpm.color.main.background.base
+width: 614
+move-right: 500
+move-down: 200
+border-width: 1
+padding-top: $fpm.space.space-3
+padding-bottom: $fpm.space.space-8
+padding-horizontal: $fpm.space.space-8
+boolean mouse-in: false
+border-color: $fpm.color.main.border-strong 
+id: col-id
+shadow-offset-x: 3
+shadow-offset-y: 4
+shadow-size: 1
+shadow-blur: 4
+border-top: 1
+border-radius: 8
+border-color: $fpm.color.main.cta-primary.base
+shadow-color: $fpm.color.main.cta-primary.base
+id: model-contete
+
+
+--- ftd.row:
+width: fill
+
+
+--- ftd.text: $heading-name
+role: $fpm.type.heading-medium
+color: $fpm.color.main.text-strong
+width: fill
+
+--- ftd.image:
+src: $cross-logo
+$on-click$: $open-1 = false
+
+--- container: model-contete
+
+--- ftd.text: This repo is a:
+role: $fpm.type.copy-relaxed
+color: $fpm.color.main.text
+width: fill
+
+
+--- container: model-contete
+
+--- ftd.row:
+width: fill
+id: col-id
+open: true
+
+
+
+-- ftd.column code-repo:
+caption button-name:
+string about-repo:
+string heading-name:
+string repo-name:
+boolean open-1: false 
+optional integer border-wi: 0
+string heading-name:
 optional ftd.image-src cross-logo: $assets.files.assets.images.Union.png
 open: true
 append-at: col-id
 
 
 --- ftd.text : $button-name
-text: $button-name
-role: $fpm.type.label-large
+role: $fpm.type.label-big
 ftd.color button-bg: $fpm.color.main.background.base
 ftd.color button-color: $fpm.color.main.error.base
 background-color: $font.cta_primary_base
@@ -751,11 +501,9 @@ if: $open-1
 
 --- ftd.column:
 background-color: $fpm.color.main.background.base
-width: $width
-move-right:275
-move-down: 100
+width: 650
 border-width: 1
-padding-vertical: 35
+padding-vertical: 12
 padding-horizontal: 24
 boolean mouse-in: false
 border-color: $fpm.color.main.border-strong 
@@ -766,31 +514,118 @@ shadow-size: 1
 shadow-blur: 4
 border-top: $border-wi
 border-radius: 8
-border-color: $outlines
-shadow-color: $outlines
-id: model-contete
+shadow-color: $fpm.color.main.cta-primary.base
+spacing:  24
 
 --- ftd.row:
 width:fill
 
---- ftd.row:
-width: fill
-padding-bottom: 24
 
---- ftd.text: $model-title
-text-align: $text-align
-role: $font.heading-medium
+--- ftd.text: $heading-name
+role: $fpm.type.heading-medium
 color: $fpm.color.main.text-strong
 width: fill
 
 --- ftd.image:
-src: $cross-logo
+src: $assets.files.assets.images.Union.png
 /$on-click-outside$: $open-1 = true
 $on-click$: $open-1 = false
 
---- container: model-contete
+--- ftd.text:
+text: $abc
+--- container: col-id
+
+
+--- ftd.text: $repo-name
+role: $fpm.type.copy-relaxed
+color: $fpm.color.main.text
+width: fill
+
+--- container: col-id
+
+
+--- ftd.row:
+width: fill
+
+
+--- ftd.text: $about-repo
+role: $fpm.type.copy-relaxed
+color: $fpm.color.main.text
+width: fill
+
+--- search-btn: search
+available-repos-for-mapping: $available-repos-for-mapping
+
+
+
+--- container: col-id
+
+--- ftd.row:
+align: center
+margin-top: $fpm.space.space-4
+margin-bottom: $fpm.space.space-4
+
+
+--- popup.button: attach
+button-bg: $fpm.color.main.cta-primary.base
+
+
+-- ftd.row search-btn:
+available-repos-for-mapping-data list available-repos-for-mapping:
+caption title:
+boolean open: false
+$on-click$: toggle $open
+open: true
+append-at: kk
+
+--- ftd.input: $abc
+cursor: pointer
+width:fill
+height: 34
+color: $fpm.color.main.text
+border-radius: 8
+padding-vertical: 14
+padding-horizontal: 28
+border-width: 1 
+placeholder:$abc
+background-color: $fpm.color.main.background.base
+border-color: $fpm.color.main.text
+
+--- ftd.text: ﹀
+if: $available-repos-for-mapping is not empty
+color: $fpm.color.main.text
+position: center
+move-right: -20
 
 --- ftd.column:
 width: fill
-id: col-id
+anchor: parent
+z-index: 4
+top: 20
+background-color: $fpm.color.main.text-strong
+left: 0
+
+--- show-children:
+if: $open
+if: $available-repos-for-mapping is not empty
+index: $obj.id
+children: $obj.repo-full-name
+$loop$: $available-repos-for-mapping as $obj
+
+
+
+
+-- ftd.row show-children:
+width: fill
+id: kk
+integer index:
+background-color if $MOUSE-IN:$fpm.color.main.cta-primary.base
+string children:
+
+--- ftd.text: $children
+$on-click$: $abc = $children
+role: $fpm.type.copy-tight
+color: $fpm.color.main.text-strong
+white-space: nowrap
+width: fill
 
