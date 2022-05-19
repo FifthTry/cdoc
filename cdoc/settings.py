@@ -53,6 +53,11 @@ INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "django_extensions",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.github",
+    "allauth.socialaccount.providers.gitlab",
     "app.apps.AppConfig",
     "analytics",
     "django_rq",
@@ -70,6 +75,12 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "cdoc.urls"
+
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
 
 TEMPLATES = [
     {
@@ -247,6 +258,12 @@ else:
         "NAME": BASE_DIR / "db.sqlite3",
     }
 
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+SITE_ID = 1
+
+
 try:
     from .local_settings import *  # noqa
 except ModuleNotFoundError:
@@ -262,6 +279,12 @@ except ModuleNotFoundError:
             "CDOC_GITHUB_MARKETPLACE_SIGNATURE_SECRET"
         ],
         "app_signature_secret": os.environ["CDOC_GITHUB_APP_SIGNATURE_SECRET"],
+    }
+
+    GITLAB_CREDS = {
+        "application_id": os.environ["CDOC_GITLAB_APPLICATION_ID"],
+        "secret": os.environ["CDOC_GITLAB_SECRET"],
+        "SCOPE": ["api"],
     }
 
     if "CDOC_SENTRY_DSN" in os.environ:

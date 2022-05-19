@@ -14,3 +14,5 @@ sentry-sdk
 rq
 django-rq
 ftd-django==0.1.1
+python-gitlab
+django-allauth

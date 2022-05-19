@@ -31,6 +31,7 @@ urlpatterns = [
         "accounts/logout/",
         auth_views.LogoutView.as_view(next_page="/"),
     ),
+    path("accounts/", include("allauth.urls")),
     # path(
     #     "<str:account_name>/repos/",
     #     app_views.ListInstallationRepos.as_view(),

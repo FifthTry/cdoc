@@ -173,7 +173,6 @@ class GithubAppUser(models.Model):
 
     def __str__(self) -> str:
         return f"{self.github_user.account_name}[{self.installation.installation_id}]"
-        return super().__str__()
 
 
 class GithubInstallationToken(Token):
