@@ -1,3 +1,28 @@
+:root {
+  --background-gradient: linear-gradient(30deg, #f39c12 30%, #f1c40f);
+  --gray: #34495e;
+  --base: #131a13;
+  --step-1: #182517;
+  --step-2: #233221;
+}
+select {
+  /* Reset Select */
+  appearance: none;
+  outline: 0;
+  border: 0;
+  box-shadow: none;
+  /* Personalize */
+  flex: 1;
+  padding: 0 1em;
+  color: #fff;
+  background-color: var(--base);
+  background-image: none;
+  cursor: pointer;
+}
+/* Remove IE arrow */
+select::-ms-expand {
+  display: none;
+}
 *{
     padding: 0;
     margin: 0;
@@ -625,7 +650,9 @@ header > div.menu .menu-item:last-child{
     padding-bottom: 6px;
 
 }
-
+.mr20{
+    margin-right: 20px;
+}
 .visible{
     display: block;
 }
@@ -651,12 +678,31 @@ header > div.menu .menu-item:last-child{
     margin: 0 5px;
     line-height: 36px;
 }
+
 .combo_black{
-    border: 1px solid #966220;
-    background-color: transparent;
-    color: #FFFFFF;
-    padding: 8px 10px;
-    border-radius: 6px;
+    position: relative;
+    display: flex;
+    width: 18em;
+    height: 3em;
+    border-radius: .25em;
+    overflow: hidden;
+    z-index: 100;
+}
+
+.combo_black::after {
+    content: '\25BC';
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 1em;
+    background-color: var(--step-1);
+    transition: .25s all ease;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.combo_black:hover::after {
+  color: #f39c12;
 }
 
 .tabled-row{
