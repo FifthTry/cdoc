@@ -48,6 +48,7 @@ urlpatterns = [
     path(
         "initiate-github-login/",
         app_views.InitializeGithubLogin.as_view(),
+        name="initiate_github_login",
     ),
     path(
         "",

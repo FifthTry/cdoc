@@ -6,6 +6,7 @@ from distutils.command.clean import clean
 from typing import Any, Dict
 from urllib.parse import parse_qs
 from django.db.models import Q
+from django.urls import reverse
 import django_rq
 import github
 import requests
@@ -42,12 +43,12 @@ class AuthCallback(View):
             if request.GET.get("setup_action") == "update":
                 return (
                     analytics_events.OKind.INSTALLATION,
-                    analytics_events.EKind.UPDATED,
+                    analytics_events.EKind.UPDATE,
                 )
             else:
                 return (
                     analytics_events.OKind.INSTALLATION,
-                    analytics_events.EKind.CREATED,
+                    analytics_events.EKind.CREATE,
                 )
         return (analytics_events.OKind.USER, analytics_events.EKind.LOGIN)
 
@@ -190,8 +191,8 @@ class AuthCallback(View):
                             installation=installation_instance,
                         )
         else:
-            logger.error(resp.text)
-            return Http404("Something went wrong")
+            logger.error(f"Unable to get token from the code: {resp.text}")
+            return HttpResponseRedirect(reverse("initiate_github_login"))
         redirect_url = None
 
         if "state" in request.GET:
