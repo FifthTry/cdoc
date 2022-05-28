@@ -63,6 +63,18 @@ INSTALLED_APPS = [
     "django_rq",
 ]
 
+SOCIALACCOUNT_PROVIDERS = {
+    "gitlab": {
+        "SCOPE": [
+            "api",
+        ],
+    },
+    # "github": {"SCOPE": []},
+}
+
+LOGIN_REDIRECT_URL = "/"
+ACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_STORE_TOKENS = True
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",

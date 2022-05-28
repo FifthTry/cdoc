@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load socialaccount %}
 {% block content %}
 {% if request.user.is_authenticated %}
 
@@ -15,7 +16,7 @@
             <!--search:start-->
             <div class="search">
                 <form method="GET">
-                    <input type="text" placeholder="search" name="q" value="{{q}}"/>
+                    <input type="text" placeholder="search" name="q" value="{{q}}" />
                 </form>
             </div>
             <!-- <div class="new_connections">
@@ -27,19 +28,21 @@
         <div class="doc-history mb25">
             {% if all_repo_map %}
             {% for repo_map in all_repo_map %}
-                <div class="doc-history-row clickable-row" style="cursor: pointer;">
-                    <div class="row-left">
-                        <div class="cell-group">
-                            <a href="{{repo_map.code_repo.get_url}}" class="cell-item item-top main-text"><span class="iconify"
-                                    data-icon="octicon:code-16"></span>{{repo_map.code_repo.repo_full_name}}</a>
-                            <a href="{{repo_map.documentation_repo.get_url}}" class="cell-item main-text"><span class="iconify"
-                                    data-icon="octicon:note-16"></span>{{repo_map.documentation_repo.repo_full_name}}</a>
-                        </div>
-                    </div>
-                    <div class="row-right">
-                        <a href="/{{repo_map.code_repo.repo_full_name}}/pulls" class="cta cta-primary">&gt;</a>
+            <div class="doc-history-row clickable-row" style="cursor: pointer;">
+                <div class="row-left">
+                    <div class="cell-group">
+                        <a href="{{repo_map.code_repo.get_url}}" class="cell-item item-top main-text"><span
+                                class="iconify"
+                                data-icon="octicon:code-16"></span>{{repo_map.code_repo.repo_full_name}}</a>
+                        <a href="{{repo_map.documentation_repo.get_url}}" class="cell-item main-text"><span
+                                class="iconify"
+                                data-icon="octicon:note-16"></span>{{repo_map.documentation_repo.repo_full_name}}</a>
                     </div>
                 </div>
+                <div class="row-right">
+                    <a href="/{{repo_map.code_repo.repo_full_name}}/pulls" class="cta cta-primary">&gt;</a>
+                </div>
+            </div>
             {% endfor %}
             {% endif %}
         </div>
@@ -47,15 +50,16 @@
         <div class="doc-history">
             {% if unmapped_repos_display %}
             {% for repo in unmapped_repos_display %}
-                <div class="doc-history-row">
-                    <div class="row-left horizontal-links">
-                            <a href="{{repo.get_url}}" class="cell-item item-top main-text"><span class="iconify"
-                                    data-icon="octicon:repo-16"></span>{{repo.repo_full_name}}</a>
-                    </div>
-                    <div class="row-right">
-                        <a href="javascript: void(0);" class="cta cta-primary open-connect-pr-modal" data-repo-id="{{repo.id}}" data-repo-full-name="{{repo.repo_full_name}}">Connect</a>
-                    </div>
+            <div class="doc-history-row">
+                <div class="row-left horizontal-links">
+                    <a href="{{repo.get_url}}" class="cell-item item-top main-text"><span class="iconify"
+                            data-icon="octicon:repo-16"></span>{{repo.repo_full_name}}</a>
                 </div>
+                <div class="row-right">
+                    <a href="javascript: void(0);" class="cta cta-primary open-connect-pr-modal"
+                        data-repo-id="{{repo.id}}" data-repo-full-name="{{repo.repo_full_name}}">Connect</a>
+                </div>
+            </div>
             {% endfor %}
             {% endif %}
         </div>
@@ -77,7 +81,7 @@
                     </div>
 
                     <div class="body-row modal-msg mt27 main-text">
-                        <button class="cta cta-primary" id="code-repo-btn" >Code Repo</button>
+                        <button class="cta cta-primary" id="code-repo-btn">Code Repo</button>
                         <button class="cta cta-primary" id="doc-repo-btn">Documentation Repo</button>
                     </div>
                 </div>
@@ -85,7 +89,7 @@
         </div>
     </div>
 </div>
-                        
+
 
 <div class="modal regular" id="attach-documentation-modal">
     <div class="modal-parent">
@@ -98,7 +102,7 @@
 
                 <div class="modal-body pt12">
                     <div class="body-row main-text for-repo-text">
-                        
+
                     </div>
 
                     <div class="body-row modal-msg mt27 main-text">
@@ -123,9 +127,9 @@
                                 </div>
                                 <div class="row-right">
                                     <select name="documentation_repo_id" class="combo_black">
-                                    {% for repo in available_repos_for_mapping %}
-                                    <option value="{{repo.id}}">{{repo.repo_full_name}}</option>
-                                    {% endfor %}
+                                        {% for repo in available_repos_for_mapping %}
+                                        <option value="{{repo.id}}">{{repo.repo_full_name}}</option>
+                                        {% endfor %}
                                     </select>
                                 </div>
                             </div>
@@ -139,11 +143,11 @@
                                 </div>
                             </div>
                             <!--tabled-row-->
-                            
+
                         </form>
-                        
+
                     </div>
-                    
+
                 </div>
             </div>
         </div>
@@ -155,17 +159,27 @@
         <div class="modal-container">
             <div class="modal-dialog pb0">
                 <div class="modal-title pb22 mt31 main-text-strong">
-                    Login to Github
+                    Login via
                 </div>
 
                 <div class="modal-body mt70 pt0 pb45 pb22 mhz40">
                     <div class="body-row main-text">
                         Click below to login with your Github account:
                     </div>
-                    <div class="body-row mt31 github-filled cta-row">
-                          <button type="submit" class="cta cta-primary github_login_url">Sign In With Github <span class="iconify"
-                        data-icon="ant-design:github-filled"></span></span></button>
-                    </div>
+                    <form class="body-row mt31 github-filled cta-row" method="POST"
+                        action="{% provider_login_url 'github' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="cta cta-primary github_login_url">Sign In With Github <span
+                                class="iconify" data-icon="ant-design:github-filled"></span></span></button>
+                    </form>
+
+                    <form class="body-row mt31 github-filled cta-row" method="POST"
+                        action="{% provider_login_url 'gitlab' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="cta cta-primary github_login_url">Sign In With Gitlab <span
+                                class="iconify" data-icon="ant-design:gitlab-filled"></span></span></button>
+                    </form>
+
                 </div>
             </div>
         </div>
@@ -184,7 +198,7 @@
 
     function objectifyForm(formArray) {
         var data = {};
-        $(formArray).each(function(index, obj){
+        $(formArray).each(function (index, obj) {
             data[obj.name] = obj.value;
         });
         return data;
@@ -192,47 +206,49 @@
     // $("#open-new-repo-connection-modal").click(function(){
     //     $("#attach-documentation-modal").addClass("opened");
     // });
-    $(".open-connect-pr-modal").click(function() {
+    $(".open-connect-pr-modal").click(function () {
         $("#code-or-doc-repo-modal span.repo_title").text($(this).attr("data-repo-full-name"));
-        $("#code-or-doc-repo-modal #code-repo-btn").attr("data-code-repo-full-name", $(this).attr("data-repo-full-name"));
+        $("#code-or-doc-repo-modal #code-repo-btn").attr("data-code-repo-full-name", $(this).attr(
+            "data-repo-full-name"));
         $("#code-or-doc-repo-modal #code-repo-btn").attr("data-code-repo-id", $(this).attr("data-repo-id"));
 
 
-        $("#code-or-doc-repo-modal #doc-repo-btn").attr("data-doc-repo-full-name", $(this).attr("data-repo-full-name"));
+        $("#code-or-doc-repo-modal #doc-repo-btn").attr("data-doc-repo-full-name", $(this).attr(
+            "data-repo-full-name"));
         $("#code-or-doc-repo-modal #doc-repo-btn").attr("data-doc-repo-id", $(this).attr("data-repo-id"));
         $("#code-or-doc-repo-modal").addClass("opened");
     })
-    $("#code-or-doc-repo-modal #code-repo-btn").click(function() {
-        
+    $("#code-or-doc-repo-modal #code-repo-btn").click(function () {
+
         // Set code repo val and reset doc repo val
         $('select[name="code_repo_id"]').val($(this).attr("data-code-repo-id"));
-        $('select[name="documentation_repo_id"]').prop('selectedIndex',0);
+        $('select[name="documentation_repo_id"]').prop('selectedIndex', 0);
         $("#attach-documentation-modal div.modal-title span").first().text("Attach Documentation repository");
-        $("#attach-documentation-modal .for-repo-text").text("For "+ $(this).attr("data-code-repo-full-name"));
+        $("#attach-documentation-modal .for-repo-text").text("For " + $(this).attr("data-code-repo-full-name"));
         // Show hide appropriate fields
         $("#attach-documentation-modal .code-repo-field").hide();
         $("#attach-documentation-modal .doc-repo-field").show();
-        
+
         // Open the modal
         $("#attach-documentation-modal").addClass("opened");
-        
+
         // Close previous modal
         $("#code-or-doc-repo-modal").removeClass("opened");
     });
-    $("#code-or-doc-repo-modal #doc-repo-btn").click(function() {
+    $("#code-or-doc-repo-modal #doc-repo-btn").click(function () {
 
 
         // Set code repo val and reset doc repo val
         $('select[name="documentation_repo_id"]').val($(this).attr("data-doc-repo-id"));
-        $('select[name="code_repo_id"]').prop('selectedIndex',0);
+        $('select[name="code_repo_id"]').prop('selectedIndex', 0);
         $("#attach-documentation-modal div.modal-title span").first().text("Attach Code repository");
         // Show hide appropriate fields
         $("#attach-documentation-modal .doc-repo-field").hide();
         $("#attach-documentation-modal .code-repo-field").show();
-        $("#attach-documentation-modal .for-repo-text").text("For "+ $(this).attr("data-doc-repo-full-name"));
+        $("#attach-documentation-modal .for-repo-text").text("For " + $(this).attr("data-doc-repo-full-name"));
         // Open the modal
         $("#attach-documentation-modal").addClass("opened");
-        
+
         // Close previous modal
         $("#code-or-doc-repo-modal").removeClass("opened");
 
@@ -243,6 +259,7 @@
         // $("#attach-documentation-modal .doc-repo-field").hide();
         // $("#attach-documentation-modal").addClass("opened");
     });
+
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -267,11 +284,11 @@
             "mode": 'same-origin' // Do not send CSRF token to another domain.
         }
     });
-    
 
-    $("#attach-repos-form").submit(function() {
+
+    $("#attach-repos-form").submit(function () {
         data = objectifyForm($(this).serializeArray());
-        if (data["documentation_repo_id"] == data["code_repo_id"]){
+        if (data["documentation_repo_id"] == data["code_repo_id"]) {
             alert("Documentation and Code Repository cannot be same");
             return false;
         }
@@ -281,21 +298,21 @@
             method: $(this).attr("method"),
             data: JSON.stringify(data),
             dataType: 'json',
-            success: function(data) {
+            success: function (data) {
                 location.reload();
             }
         })
         return false;
     });
-    $(".clickable-row").click(function(){
+    $(".clickable-row").click(function () {
         window.location.href = $(this).find("a.cta").attr("href")
     });
 </script>
 {% else %}
 <script type="text/javascript">
-    $(".github_login_url").click(function(){
+    $(".github_login_url").click(function () {
         window.location.href = `{{github_login_url}}`;
-	});
+    });
     $
 </script>
 

@@ -1,6 +1,10 @@
 from . import models as app_models
 import lib
 import github
+from django.utils import timezone
+from requests_oauthlib import OAuth2Session
+from allauth.socialaccount import models as social_models
+import datetime
 
 
 class GithubDataManager:
@@ -29,7 +33,7 @@ class GithubDataManager:
             )
 
     # a function called sync_open_prs which takes input the GithubRepository and syncs its open pull requests
-    def sync_open_prs(self, repo: app_models.GithubRepository):
+    def sync_open_prs(self, repo: app_models.Repository):
         all_repo_ids = []
         for pr in self.github_instance.get_repo(repo.repo_full_name).get_pulls("open"):
             extra_data = {
@@ -54,3 +58,42 @@ class GithubDataManager:
             )
             all_repo_ids.append(instance.id)
         return all_repo_ids
+
+
+def get_active_token(social_account):
+    last_token = social_account.socialtoken_set.last()
+    if last_token.expires_at > timezone.now():
+        return last_token
+    social_app_instance = social_models.SocialApp.objects.get(
+        provider=social_account.provider
+    )
+    extra = {
+        "client_id": social_app_instance.client_id,
+        "client_secret": social_app_instance.secret,
+    }
+    client = OAuth2Session(
+        social_app_instance.client_id,
+        token={
+            "access_token": last_token.token,
+            "refresh_token": last_token.token_secret,
+            "token_type": "Bearer",
+            "expires_in": "-30",  # initially 3600, need to be updated by you
+        },
+    )
+    refresh_url = (
+        "https://gitlab.com/oauth/token"
+        if social_account.provider == "gitlab"
+        else "https://github.com/login/oauth/access_token"
+    )
+    response = client.refresh_token(refresh_url, **extra)
+    (token, _) = social_models.SocialToken.objects.update_or_create(
+        app=last_token.app,
+        account=last_token.account,
+        defaults={
+            "token": response["access_token"],
+            "token_secret": response["refresh_token"],
+            "expires_at": timezone.now()
+            + datetime.timedelta(seconds=response["expires_in"]),
+        },
+    )
+    return token

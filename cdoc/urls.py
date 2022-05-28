@@ -23,7 +23,10 @@ from django.views.generic import TemplateView
 
 import glob
 
+import gitlab
+
 from app import views as app_views
+from app import gitlab_views as gitlab_views
 
 urlpatterns = [
     path("django-rq/", include("django_rq.urls")),
@@ -31,6 +34,10 @@ urlpatterns = [
         "accounts/logout/",
         auth_views.LogoutView.as_view(next_page="/"),
     ),
+    # path(
+    #     "accounts/gitlab/login/callback/",
+    #     gitlab_views.AuthCallback.as_view(),
+    # ),
     path("accounts/", include("allauth.urls")),
     # path(
     #     "<str:account_name>/repos/",
@@ -73,7 +80,7 @@ def s(p, **data):
     d = json.load(open(p))
 
     p = p.replace("samples/", "").replace(".json", "")
-    print(p, d)
+    # print(p, d)
 
     return (
         path("samples/" + ("" if p == "index" else p + "/"), make_v(d["template"], d)),

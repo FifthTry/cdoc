@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 @job
 def sync_repositories_for_installation(
-    installation_instance: app_models.GithubAppInstallation,
+    installation_instance: app_models.AppInstallation,
 ):
     logger.info(f"GithubAppInstallation signal received for {installation_instance}")
     github_manager = app_lib.GithubDataManager(
@@ -159,8 +159,3 @@ def monitored_pr_post_save(instance_id: int):
     logger.info("Updating github check with data", extra={"payload": data})
     check_run_instance = check_run.edit(**data)
     logger.info("Updated the check run", extra={"response": check_run_instance})
-
-
-@job
-def test_job(a, b):
-    assert False, a + b
