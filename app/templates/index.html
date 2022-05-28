@@ -81,7 +81,7 @@
                     </div>
 
                     <div class="body-row modal-msg mt27 main-text">
-                        <button class="cta cta-primary" id="code-repo-btn">Code Repo</button>
+                        <button class="cta cta-primary mr20" id="code-repo-btn" >Code Repo</button>
                         <button class="cta cta-primary" id="doc-repo-btn">Documentation Repo</button>
                     </div>
                 </div>
@@ -114,11 +114,13 @@
                                     Code Repository:
                                 </div>
                                 <div class="row-right">
-                                    <select name="code_repo_id" class="combo_black">
-                                        {% for repo in available_repos_for_mapping %}
-                                        <option value="{{repo.id}}">{{repo.repo_full_name}}</option>
-                                        {% endfor %}
-                                    </select>
+                                    <div class="combo_black">
+                                        <select name="code_repo_id">
+                                            {% for repo in available_repos_for_mapping %}
+                                            <option value="{{repo.id}}">{{repo.repo_full_name}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                             <div class="tabled-row doc-repo-field">
@@ -126,11 +128,13 @@
                                     Documentation Repository:
                                 </div>
                                 <div class="row-right">
-                                    <select name="documentation_repo_id" class="combo_black">
+                                    <div class="combo_black">
+                                        <select name="documentation_repo_id">
                                         {% for repo in available_repos_for_mapping %}
                                         <option value="{{repo.id}}">{{repo.repo_full_name}}</option>
                                         {% endfor %}
-                                    </select>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                             <div class="tabled-row">
