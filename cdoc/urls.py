@@ -15,7 +15,7 @@ Including another URLconf
 """
 import ftd_django
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.shortcuts import render
 from django.contrib.auth import views as auth_views
@@ -28,36 +28,30 @@ import gitlab
 from app import views as app_views
 from app import gitlab_views as gitlab_views
 
+provider_url_patterns = [
+    path(
+        "<path:repo_full_name>/pull/<int:pr_number>/",
+        app_views.PRView.as_view(),
+    ),
+    path(
+        "<path:repo_full_name>/pulls/",
+        app_views.AllPRView.as_view(),
+    ),
+]
+
 urlpatterns = [
     path("django-rq/", include("django_rq.urls")),
     path(
         "accounts/logout/",
         auth_views.LogoutView.as_view(next_page="/"),
     ),
-    # path(
-    #     "accounts/gitlab/login/callback/",
-    #     gitlab_views.AuthCallback.as_view(),
-    # ),
     path("accounts/", include("allauth.urls")),
-    # path(
-    #     "<str:account_name>/repos/",
-    #     app_views.ListInstallationRepos.as_view(),
-    # ),
-    path(
-        "<str:provider>/<path:repo_full_name>/pull/<int:pr_number>/",
-        app_views.PRView.as_view(),
-    ),
-    path(
-        "<str:provider>/<path:repo_full_name>/pulls/",
-        app_views.AllPRView.as_view(),
+    re_path(
+        r"^(?P<provider>github|gitlab)/",
+        include(provider_url_patterns),
     ),
     path("app/", include("app.urls")),
     path("admin/", admin.site.urls),
-    # path(
-    #     "initiate-github-login/",
-    #     app_views.InitializeGithubLogin.as_view(),
-    #     name="initiate_github_login",
-    # ),
     path(
         "",
         app_views.AppIndexPage.as_view(),

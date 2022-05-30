@@ -10,6 +10,7 @@ gitlab_urlpatterns = [
         gitlab_views.WebhookCallback.as_view(),
         name="gitlab_webhook_callback",
     ),
+    path("pipeline-check/", gitlab_views.GitlabPipelineRequest.as_view()),
 ]
 urlpatterns = [
     path("callback/", github_views.AuthCallback.as_view()),

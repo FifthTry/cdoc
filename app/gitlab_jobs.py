@@ -22,7 +22,7 @@ def sync_repositories_for_installation(social_account: social_models.SocialAccou
             app=social_models.SocialApp.objects.get(provider="gitlab"),
             defaults={
                 "repo_name": project.name.replace(" ", ""),
-                "repo_full_name": project.name_with_namespace.replace(" ", ""),
+                "repo_full_name": project.path_with_namespace,
             },
         )
         project_perms = project._attrs["permissions"]
@@ -94,7 +94,9 @@ def sync_prs_for_repository(
                 code_pull_request=pr_instance,
             )
     # Setup a webhook for this project\
-    webhook_url = f"https://{settings.DEPLOYMENT_HOST_NAME}/app/gitlab/webhook-callback/"
+    webhook_url = (
+        f"https://{settings.DEPLOYMENT_HOST_NAME}/app/gitlab/webhook-callback/"
+    )
     existing_hooks = project_instance.hooks.list()
     for hook in existing_hooks:
         if hook.url == webhook_url:

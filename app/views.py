@@ -26,6 +26,7 @@ from django.views.generic import FormView, TemplateView
 from requests.models import PreparedRequest
 from analytics.decorators import log_http_event
 from analytics import events as analytics_events
+from app import gitlab_jobs
 import lib
 
 from . import forms as app_forms
@@ -60,22 +61,9 @@ class AllPRView(TemplateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         matches = self.request.resolver_match.kwargs
-        # assert False, matches
-        # context["all_installations"] = app_models.GithubAppInstallation.objects.filter(
-        #     id__in=app_models.GithubAppUser.objects.filter(
-        #         github_user=self.request.user.github_user,
-        #     ).values_list("installation_id", flat=True),
-        #     state=app_models.GithubAppInstallation.InstallationState.INSTALLED,
-        # )
         context["repo_mapping"] = app_models.MonitoredRepositoryMap.objects.get(
             code_repo__repo_full_name__iexact=matches["repo_full_name"],
         )
-        # assert False, context
-        # current_installation = context["all_installations"].get(
-        #     account_name=matches["account_name"]
-        # )
-
-        # context["current_installation"] = current_installation
         context["open_prs"] = app_models.MonitoredPullRequest.objects.filter(
             code_pull_request__repository=context["repo_mapping"].code_repo,
             code_pull_request__pr_state__in=["open", "opened"],
@@ -102,7 +90,6 @@ class PRView(View):
     success_url = "."
 
     def get_instance(self):
-        # {'account_name': 'fifthtry', 'repo_name': 'cdoc', 'pr_number': 1}
         matches = self.request.resolver_match.kwargs
         repo = app_models.GithubRepository.objects.get(
             repo_full_name__iexact=f"{matches['account_name']}/{matches['repo_name']}",
@@ -128,14 +115,19 @@ class PRView(View):
     @log_http_event(oid=1, okind_ekind=get_okind_ekind)
     def post(self, request, *args, **kwargs):
         payload = json.loads(request.body)
-        instance = self.get_instance()
-        old_status = instance.pull_request_status
-        get_object_or_404(
-            app_models.GithubAppUser,
-            github_user=request.user.github_user,
-            installation=instance.integration,
+        matches = self.request.resolver_match.kwargs
+        print(payload)
+        print(matches)
+        repo = app_models.Repository.objects.get(
+            repo_full_name=matches["repo_full_name"], app__provider=matches["provider"]
         )
+        pr = app_models.PullRequest.objects.get(
+            repository=repo, pr_number=matches["pr_number"]
+        )
+        instance = pr.monitored_code
+        old_status = instance.pull_request_status
         action = payload["action"]
+        # assert False, ""
         success = True
         if (
             action == "connect_documentation_pr"
@@ -174,41 +166,41 @@ class PRView(View):
                 )
         django_rq.enqueue(app_jobs.monitored_pr_post_save, instance.id)
         instance.refresh_from_db()
-        new_status = instance.pull_request_status
-        if old_status != new_status:
-            comment_msg = None  # Allowed: None, Body of the comment
-            if (
-                old_status
-                == app_models.MonitoredPullRequest.PullRequestStatus.NOT_CONNECTED
-                and new_status
-                == app_models.MonitoredPullRequest.PullRequestStatus.APPROVAL_PENDING
-            ):
-                # Documentation PR is connected
-                # Send a comment to the code PR that PR has been attached
-                comment_msg = f"The [documentation pull request]({instance.documentation_pull_request.get_url()}) has been attached sucessfully."
-            elif (
-                new_status
-                == app_models.MonitoredPullRequest.PullRequestStatus.MANUAL_APPROVAL
-            ):
-                # Send a comment to the code PR that PR has been approved
-                comment_msg = (
-                    "This pull request does not require any documentation changes."
-                )
-            elif (
-                new_status == app_models.MonitoredPullRequest.PullRequestStatus.APPROVED
-            ):
-                # Send a comment to the code PR that PR has been approved
-                comment_msg = f"Approved! Code is up to date with the [documentation]({instance.documentation_pull_request.get_url()})"
+        # new_status = instance.pull_request_status
+        # if old_status != new_status:
+        #     comment_msg = None  # Allowed: None, Body of the comment
+        #     if (
+        #         old_status
+        #         == app_models.MonitoredPullRequest.PullRequestStatus.NOT_CONNECTED
+        #         and new_status
+        #         == app_models.MonitoredPullRequest.PullRequestStatus.APPROVAL_PENDING
+        #     ):
+        #         # Documentation PR is connected
+        #         # Send a comment to the code PR that PR has been attached
+        #         comment_msg = f"The [documentation pull request]({instance.documentation_pull_request.get_url()}) has been attached sucessfully."
+        #     elif (
+        #         new_status
+        #         == app_models.MonitoredPullRequest.PullRequestStatus.MANUAL_APPROVAL
+        #     ):
+        #         # Send a comment to the code PR that PR has been approved
+        #         comment_msg = (
+        #             "This pull request does not require any documentation changes."
+        #         )
+        #     elif (
+        #         new_status == app_models.MonitoredPullRequest.PullRequestStatus.APPROVED
+        #     ):
+        #         # Send a comment to the code PR that PR has been approved
+        #         comment_msg = f"Approved! Code is up to date with the [documentation]({instance.documentation_pull_request.get_url()})"
 
-            if comment_msg is not None:
-                github_instance = github.Github(
-                    request.user.github_user.get_active_access_token()
-                )
-                repo = github_instance.get_repo(
-                    instance.code_pull_request.repository.repo_id
-                )
-                pr = repo.get_pull(instance.code_pull_request.pr_number)
-                pr.create_issue_comment(comment_msg)
+        #     if comment_msg is not None:
+        #         github_instance = github.Github(
+        #             request.user.github_user.get_active_access_token()
+        #         )
+        #         repo = github_instance.get_repo(
+        #             instance.code_pull_request.repository.repo_id
+        #         )
+        #         pr = repo.get_pull(instance.code_pull_request.pr_number)
+        #         pr.create_issue_comment(comment_msg)
         return JsonResponse({"status": success})
 
 
@@ -234,6 +226,18 @@ class AppIndexPage(TemplateView):
                 "integration_type": app_models.MonitoredRepositoryMap.IntegrationType.FULL,
             },
         )
+        sync_job = {
+            "gitlab": gitlab_jobs.sync_prs_for_repository,
+            "github": app_jobs.sync_prs_for_repository,
+        }
+        django_rq.enqueue(
+            sync_job[instance.code_repo.app.provider], instance.code_repo.repo_id
+        )
+        django_rq.enqueue(
+            sync_job[instance.documentation_repo.app.provider],
+            instance.documentation_repo.repo_id,
+        )
+
         # TODO: Sync Open PRs for the repositories
         # TODO: Setup the webhook for the mapped repositories
         # django_rq.enqueue(app_jobs.sync_prs_for_repository, payload["code_repo_id"])
