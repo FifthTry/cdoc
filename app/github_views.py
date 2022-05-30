@@ -138,14 +138,16 @@ class AuthCallback(View):
                         uid=user_instance.id,
                         extra_data={},
                     )
-                    allauth_social_models.SocialToken.objects.create(
-                        token=access_token,
-                        token_secret=refresh_token,
+                    allauth_social_models.SocialToken.objects.update_or_create(
                         account=social_account,
-                        expires_at=access_token_expires_at,
                         app=allauth_social_models.SocialApp.objects.get(
                             provider="github"
                         ),
+                        defaults={
+                            "token": access_token,
+                            "token_secret": refresh_token,
+                            "expires_at": access_token_expires_at,
+                        },
                     )
                     login(request, auth_user_instance)
                 if "installation_id" in request.GET:

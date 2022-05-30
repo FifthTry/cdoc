@@ -5,11 +5,11 @@ from . import github_views
 from . import gitlab_views
 
 gitlab_urlpatterns = [
-    # path(
-    #     "auth-callback/",
-    #     gitlab_views.AuthCallback.as_view(),
-    #     name="gitlab_auth_callback",
-    # ),
+    path(
+        "webhook-callback/",
+        gitlab_views.WebhookCallback.as_view(),
+        name="gitlab_webhook_callback",
+    ),
 ]
 urlpatterns = [
     path("callback/", github_views.AuthCallback.as_view()),

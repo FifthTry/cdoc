@@ -45,41 +45,41 @@ class AllPRView(TemplateView):
         okind_ekind=(analytics_events.OKind.REPOSITORY, analytics_events.EKind.GET),
     )
     def get(self, request, *args: Any, **kwargs: Any):
-        github_user = request.user.github_user
+        # github_user = request.user.github_user
 
-        if github_user is None:
-            return Http404("User not found")
+        # if github_user is None:
+        #     return Http404("User not found")
         context = self.get_context_data(**kwargs)
-        get_object_or_404(
-            app_models.GithubAppUser,
-            github_user=github_user,
-            installation=context["repo_mapping"].integration,
-        )
+        # get_object_or_404(
+        #     app_models.GithubAppUser,
+        #     github_user=github_user,
+        #     installation=context["repo_mapping"].integration,
+        # )
         return self.render_to_response(context)
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         matches = self.request.resolver_match.kwargs
-        context["all_installations"] = app_models.GithubAppInstallation.objects.filter(
-            id__in=app_models.GithubAppUser.objects.filter(
-                github_user=self.request.user.github_user,
-            ).values_list("installation_id", flat=True),
-            state=app_models.GithubAppInstallation.InstallationState.INSTALLED,
+        # assert False, matches
+        # context["all_installations"] = app_models.GithubAppInstallation.objects.filter(
+        #     id__in=app_models.GithubAppUser.objects.filter(
+        #         github_user=self.request.user.github_user,
+        #     ).values_list("installation_id", flat=True),
+        #     state=app_models.GithubAppInstallation.InstallationState.INSTALLED,
+        # )
+        context["repo_mapping"] = app_models.MonitoredRepositoryMap.objects.get(
+            code_repo__repo_full_name__iexact=matches["repo_full_name"],
         )
-        context["repo_mapping"] = app_models.GithubRepoMap.objects.get(
-            code_repo__repo_full_name__iexact="{}/{}".format(
-                matches["account_name"], matches["repo_name"]
-            ),
-            integration__in=context["all_installations"],
-        )
-        current_installation = context["all_installations"].get(
-            account_name=matches["account_name"]
-        )
+        # assert False, context
+        # current_installation = context["all_installations"].get(
+        #     account_name=matches["account_name"]
+        # )
 
-        context["current_installation"] = current_installation
+        # context["current_installation"] = current_installation
         context["open_prs"] = app_models.MonitoredPullRequest.objects.filter(
             code_pull_request__repository=context["repo_mapping"].code_repo,
-            code_pull_request__pr_state="open",
+            code_pull_request__pr_state__in=["open", "opened"],
+            # open for Github, Opened for gitlab
         )
         search_query = self.request.GET.get("q")
         if search_query:
@@ -88,12 +88,9 @@ class AllPRView(TemplateView):
                 | Q(documentation_pull_request__pr_title__icontains=search_query)
             )
             context["q"] = search_query
-        #     context["all_repo_map"] = context["all_repo_map"].filter(
-        #         Q(code_repo__repo_full_name__icontains=search_query)
-        #         | Q(documentation_repo__repo_full_name__icontains=search_query)
-        #     )
-        context["all_documentation_prs"] = app_models.GithubPullRequest.objects.filter(
-            repository=context["repo_mapping"].documentation_repo, pr_state="open"
+        context["all_documentation_prs"] = app_models.PullRequest.objects.filter(
+            repository=context["repo_mapping"].documentation_repo,
+            pr_state__in=["open", "opened"],
         )
         return context
 
@@ -230,25 +227,19 @@ class AppIndexPage(TemplateView):
     # @log_http_event(oid=1, okind_ekind=get_okind_ekind)
     def post(self, request, *args, **kwargs):
         payload = json.loads(request.body)
-        payload["all_installations"] = app_models.GithubAppInstallation.objects.filter(
-            id__in=app_models.GithubAppUser.objects.filter(
-                github_user=self.request.user.github_user
-            ).values_list("installation_id", flat=True),
-            state=app_models.GithubAppInstallation.InstallationState.INSTALLED,
-        )
-        code_repo = app_models.GithubRepository.objects.get(id=payload["code_repo_id"])
-        (instance, _) = app_models.GithubRepoMap.objects.update_or_create(
-            integration=code_repo.owner,
-            code_repo=code_repo,
+        (instance, _) = app_models.MonitoredRepositoryMap.objects.update_or_create(
+            code_repo_id=payload["code_repo_id"],
             documentation_repo_id=payload["documentation_repo_id"],
             defaults={
-                "integration_type": app_models.GithubRepoMap.IntegrationType.FULL,
+                "integration_type": app_models.MonitoredRepositoryMap.IntegrationType.FULL,
             },
         )
-        django_rq.enqueue(app_jobs.sync_prs_for_repository, payload["code_repo_id"])
-        django_rq.enqueue(
-            app_jobs.sync_prs_for_repository, payload["documentation_repo_id"]
-        )
+        # TODO: Sync Open PRs for the repositories
+        # TODO: Setup the webhook for the mapped repositories
+        # django_rq.enqueue(app_jobs.sync_prs_for_repository, payload["code_repo_id"])
+        # django_rq.enqueue(
+        #     app_jobs.sync_prs_for_repository, payload["documentation_repo_id"]
+        # )
         return JsonResponse({"success": True})
 
     # @log_http_event(oid=1, okind_ekind=get_okind_ekind)
@@ -258,84 +249,34 @@ class AppIndexPage(TemplateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
-            # all_installations = app_models.AppInstallation.objects.filter(
-            #     id__in=app_models.AppUser.objects.filter(
-            #         user=self.request.user
-            #     ).values_list("installation_id", flat=True),
-            #     state=app_models.AppInstallation.InstallationState.INSTALLED,
-            # )
-            # context["all_installations"] = all_installations
-            context["all_repo_map"] = app_models.GithubRepoMap.objects.filter(
-                code_repo__userrepoaccess__user=self.request.user,
-                documentation_repo__userrepoaccess__user=self.request.user,
+            context["all_repo_map"] = app_models.MonitoredRepositoryMap.objects.filter(
+                code_repo__userrepoaccess__social_account__user=self.request.user,
+                code_repo__userrepoaccess__access__gte=app_models.UserRepoAccess.AccessLevel.MINIMAL,
+                documentation_repo__userrepoaccess__social_account__user=self.request.user,
+                documentation_repo__userrepoaccess__access__gte=app_models.UserRepoAccess.AccessLevel.MINIMAL,
             )
             context[
                 "available_repos_for_mapping"
             ] = app_models.Repository.objects.filter(
-                userrepoaccess__user=self.request.user,
+                userrepoaccess__social_account__user=self.request.user,
+                userrepoaccess__access__gte=app_models.UserRepoAccess.AccessLevel.MINIMAL,
                 code_repos__isnull=True,
                 documentation_repos__isnull=True,
             )
             context["unmapped_repos_display"] = context["available_repos_for_mapping"]
             search_query = self.request.GET.get("q")
             if search_query:
-                #     context["all_repo_map"] = context["all_repo_map"].filter(
-                #         Q(code_repo__repo_full_name__icontains=search_query)
-                #         | Q(documentation_repo__repo_full_name__icontains=search_query)
-                #     )
+                context["all_repo_map"] = context["all_repo_map"].filter(
+                    Q(code_repo__repo_full_name__icontains=search_query)
+                    | Q(documentation_repo__repo_full_name__icontains=search_query)
+                )
                 context["unmapped_repos_display"] = context[
                     "unmapped_repos_display"
                 ].filter(repo_full_name__icontains=search_query)
                 context["q"] = search_query
-            # context["all_repo_map"] = context["all_repo_map"][:10]
+            context["all_repo_map"] = context["all_repo_map"][:10]
             context["unmapped_repos_display"] = context["unmapped_repos_display"][:10]
-        else:
-            pass
-            # login_state_instance = app_models.GithubLoginState()
-            # if self.request.GET.get("next"):
-            #     login_state_instance.redirect_url = self.request.GET.get("next")
-            # login_state_instance.save()
-            url = "https://github.com/login/oauth/authorize"
-            params = {
-                "client_id": settings.GITHUB_CREDS["client_id"],
-                "allow_signup": False,
-                # "state": login_state_instance.state.__str__(),
-            }
-            req = PreparedRequest()
-            req.prepare_url(url, params)
-            context["github_login_url"] = req.url
-
         return context
-
-
-class InitializeGithubLogin(View):
-    @log_http_event(
-        oid=1,
-        okind_ekind=(
-            analytics_events.OKind.USER,
-            analytics_events.EKind.GITHUB_HANDOVER,
-        ),
-    )
-    def get(self, request, *args, **kwargs):
-        if self.request.user.is_authenticated:
-            if request.GET.get("next"):
-                return HttpResponseRedirect(request.GET.get("next"))
-            return HttpResponseRedirect("/")
-        else:
-            # login_state_instance = app_models.GithubLoginState()
-            # if self.request.GET.get("next"):
-            #     login_state_instance.redirect_url = self.request.GET.get("next")
-            # login_state_instance.save()
-            url = "https://github.com/login/oauth/authorize"
-            params = {
-                "client_id": settings.GITHUB_CREDS["client_id"],
-                "allow_signup": False,
-                # "state": login_state_instance.state.__str__(),
-            }
-            req = PreparedRequest()
-            req.prepare_url(url, params)
-            assert False, req.url
-            return HttpResponseRedirect(req.url)
 
 
 class IndexView(TemplateView):

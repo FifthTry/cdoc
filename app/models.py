@@ -65,17 +65,32 @@ class Repository(models.Model):
     def __str__(self) -> str:
         return self.repo_full_name
 
+    def pulls_page_url(self):
+        return f"/{self.app.provider}/{self.repo_full_name}/pulls/"
+
 
 class UserRepoAccess(models.Model):
+    class AccessLevel(models.TextChoices):
+        OWNER = 50, "Owner"
+        MAINTAINER = 40, "Maintainer"
+        DEVELOPER = 30, "Developer"
+        REPORTER = 20, "Reporter"
+        GUEST = 10, "Guest"
+        MINIMAL = 5, "Minimal"
+        NO_ACCESS = 0, "No Access"
+
     repository = models.ForeignKey(Repository, on_delete=models.CASCADE)
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    social_account = models.ForeignKey(
+        social_models.SocialAccount, on_delete=models.CASCADE
+    )
+    access = models.IntegerField(choices=AccessLevel.choices)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("repository", "user")
+        unique_together = ("repository", "social_account")
 
 
-class GithubRepoMap(models.Model):
+class MonitoredRepositoryMap(models.Model):
     class IntegrationType(models.TextChoices):
         """
         FULL integration restricts the PRs to process only after the related PR is merged
@@ -85,7 +100,7 @@ class GithubRepoMap(models.Model):
         FULL = "FULL", "Full"
         PARTIAL = "PARTIAL", "Partial"
 
-    integration = models.ForeignKey(AppInstallation, on_delete=models.PROTECT)
+    # integration = models.ForeignKey(AppInstallation, on_delete=models.PROTECT)
     code_repo = models.ForeignKey(
         Repository, on_delete=models.PROTECT, related_name="code_repos"
     )
@@ -96,7 +111,7 @@ class GithubRepoMap(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("integration", "code_repo", "documentation_repo")
+        unique_together = ("code_repo", "documentation_repo")
 
 
 class PullRequest(models.Model):
@@ -160,7 +175,7 @@ class MonitoredPullRequest(models.Model):
         choices=PullRequestStatus.choices,
         default=PullRequestStatus.NOT_CONNECTED,
     )
-    integration = models.ForeignKey(AppInstallation, on_delete=models.CASCADE)
+    # integration = models.ForeignKey(AppInstallation, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ("code_pull_request", "documentation_pull_request")

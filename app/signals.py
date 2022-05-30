@@ -44,15 +44,20 @@ def new_installation(social_account):
         for installation in github_instance.get_user().get_installations():
             if installation.app_id == settings.GITHUB_CREDS["app_id"]:
                 raw_data = installation.raw_data
-                app_installation = app_models.AppInstallation.objects.get(
-                    social_app=social_models.SocialApp.objects.get(
-                        provider=social_account.provider
-                    ),
-                    installation_id=installation.id,
-                )
-                app_models.AppUser.objects.update_or_create(
-                    installation=app_installation, user=social_account.user
-                )
+                try:
+                    app_installation = app_models.AppInstallation.objects.get(
+                        social_app=social_models.SocialApp.objects.get(
+                            provider=social_account.provider
+                        ),
+                        installation_id=installation.id,
+                    )
+                    app_models.AppUser.objects.update_or_create(
+                        installation=app_installation, user=social_account.user
+                    )
+                except app_models.AppInstallation.DoesNotExist:
+                    # App installation not done. Skip mapping
+                    # Error: The App installation not found. Configuration error
+                    pass
                 # TODO: Schedule github repo sync
                 # django_rq.enqueue(github_jobs., app_installation)
 
@@ -73,6 +78,5 @@ def _user_signed_up(request, user, *args, **kwargs):
 
 
 @receiver(social_account_added)
-def _social_account_added(request, socialaccount, *args, **kwargs):
-    new_installation(socialaccount)
-    # sync_repos(socialaccount)
+def _social_account_added(request, sociallogin, *args, **kwargs):
+    new_installation(sociallogin.account)

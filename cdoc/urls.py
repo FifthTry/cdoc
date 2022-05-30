@@ -44,20 +44,20 @@ urlpatterns = [
     #     app_views.ListInstallationRepos.as_view(),
     # ),
     path(
-        "<str:account_name>/<str:repo_name>/pull/<int:pr_number>/",
+        "<str:provider>/<path:repo_full_name>/pull/<int:pr_number>/",
         app_views.PRView.as_view(),
     ),
     path(
-        "<str:account_name>/<str:repo_name>/pulls/",
+        "<str:provider>/<path:repo_full_name>/pulls/",
         app_views.AllPRView.as_view(),
     ),
     path("app/", include("app.urls")),
     path("admin/", admin.site.urls),
-    path(
-        "initiate-github-login/",
-        app_views.InitializeGithubLogin.as_view(),
-        name="initiate_github_login",
-    ),
+    # path(
+    #     "initiate-github-login/",
+    #     app_views.InitializeGithubLogin.as_view(),
+    #     name="initiate_github_login",
+    # ),
     path(
         "",
         app_views.AppIndexPage.as_view(),

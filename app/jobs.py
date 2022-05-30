@@ -28,7 +28,7 @@ def sync_repositories_for_installation(
 @job
 def sync_prs_for_repository(repository_id: int):
     logger.info(f"Sync PR job received for repository_id: {repository_id}")
-    instance = app_models.GithubRepository.objects.get(id=repository_id)
+    instance = app_models.Repository.objects.get(id=repository_id)
     installation_instance = instance.owner
     github_data_manager = app_lib.GithubDataManager(
         installation_id=installation_instance.installation_id,
