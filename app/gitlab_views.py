@@ -1,5 +1,6 @@
 import datetime
 import gitlab
+from django.utils import timezone
 from app import lib as app_lib
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.urls import reverse
@@ -20,6 +21,7 @@ class WebhookCallback(View):
         event_header = headers["X-Gitlab-Event"]
         request_body = json.loads(request.body.decode("utf-8"))
         # gitlab_instance = gitlab.Gitlab(oauth_token=app_lib.get_active_token())
+        print(json.dumps(request_body))
         if (
             event_header == "Merge Request Hook"
             and request_body["object_kind"] == "merge_request"
@@ -30,7 +32,13 @@ class WebhookCallback(View):
                 repo_full_name=project_name, app__provider="gitlab"
             )
             merge_request_id = request_body["object_attributes"]["iid"]
-            app_models.PullRequest.objects.update_or_create(
+            old_instance = app_models.PullRequest.objects.filter(
+                pr_number=merge_request_id,
+                pr_id=request_body["object_attributes"]["id"],
+                repository=repo,
+            ).first()
+
+            (pr_instance, _) = app_models.PullRequest.objects.update_or_create(
                 pr_number=merge_request_id,
                 pr_id=request_body["object_attributes"]["id"],
                 repository=repo,
@@ -41,16 +49,25 @@ class WebhookCallback(View):
                     "pr_title": object_attrs["title"],
                     "pr_body": object_attrs["description"],
                     "pr_state": object_attrs["state"],
-                    "pr_created_at": datetime.datetime.strptime(
+                    "pr_created_at": timezone.datetime.strptime(
                         object_attrs["created_at"], "%Y-%m-%d %H:%M:%S %Z"
                     ),
-                    "pr_updated_at": datetime.datetime.strptime(
+                    "pr_updated_at": timezone.datetime.strptime(
                         object_attrs["updated_at"], "%Y-%m-%d %H:%M:%S %Z"
                     ),
                 },
             )
-        # print(request_body)
-        # print(headers)
+            (
+                monitored_pr_instance,
+                _,
+            ) = app_models.MonitoredPullRequest.objects.update_or_create(
+                code_pull_request=pr_instance,
+            )
+            if old_instance.pr_head_commit_sha != pr_instance.pr_head_commit_sha:
+                monitored_pr_instance.pull_request_status = (
+                    app_models.MonitoredPullRequest.PullRequestStatus.STALE_APPROVAL
+                )
+            monitored_pr_instance.save()
         return JsonResponse({})
 
 

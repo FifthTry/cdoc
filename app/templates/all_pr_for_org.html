@@ -169,7 +169,7 @@
                                     <input type="hidden" name="action" value="approve_pr" />
                                     <div class="body-row userinput main-text">
                                         <input type="text" name="github_username" class="github-username-confirmation"
-                                            placeholder="Type your Github username to confirm">
+                                            placeholder="Type your Github username to confirm" autocomplete="no">
                                     </div>
                                     <div class="body-row cta-row">
                                         <button disabled type="submit" class="cta cta-disabled">Confirm</button>
@@ -221,7 +221,8 @@
                                     <input type="hidden" name="action" value="manual_pr_approval" />
                                     <div class="body-row userinput main-text">
                                         <input type="text" class="github-username-confirmation"
-                                            placeholder="Type your Github username to confirm" name="github_username">
+                                            placeholder="Type your Github username to confirm" name="github_username"
+                                            autocomplete="no">
                                     </div>
                                     <input type="hidden" name="code_pull_request" />
 

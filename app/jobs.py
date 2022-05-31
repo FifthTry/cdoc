@@ -159,3 +159,19 @@ def monitored_pr_post_save(instance_id: int):
     logger.info("Updating github check with data", extra={"payload": data})
     check_run_instance = check_run.edit(**data)
     logger.info("Updated the check run", extra={"response": check_run_instance})
+
+
+@job
+def merge_request_comment(
+    monitored_pr_instance: app_models.MonitoredPullRequest,
+    user_instance: app_models.UserRepoAccess,
+    comment_message: str,
+):
+    github_instance = github.Github(
+        app_lib.get_active_token(user_instance.social_account).token
+    )
+    repo = github_instance.get_repo(
+        monitored_pr_instance.code_pull_request.repository.repo_id
+    )
+    pr = repo.get_pull(monitored_pr_instance.code_pull_request.pr_number)
+    pr.create_issue_comment(comment_message)

@@ -185,14 +185,6 @@ class MonitoredPullRequest(models.Model):
 
     def save(self, *args, **kwargs):
         if (
-            self.documentation_pull_request is not None
-            and self.pull_request_status
-            == MonitoredPullRequest.PullRequestStatus.NOT_CONNECTED
-        ):
-            self.pull_request_status = (
-                MonitoredPullRequest.PullRequestStatus.APPROVAL_PENDING
-            )
-        elif (
             self.documentation_pull_request is None
             and self.pull_request_status
             != MonitoredPullRequest.PullRequestStatus.MANUAL_APPROVAL
@@ -200,6 +192,14 @@ class MonitoredPullRequest(models.Model):
         ):
             self.pull_request_status = (
                 MonitoredPullRequest.PullRequestStatus.NOT_CONNECTED
+            )
+        if (
+            self.documentation_pull_request is not None
+            and self.pull_request_status
+            == MonitoredPullRequest.PullRequestStatus.NOT_CONNECTED
+        ):
+            self.pull_request_status = (
+                MonitoredPullRequest.PullRequestStatus.APPROVAL_PENDING
             )
         return super().save(*args, **kwargs)
 

@@ -1,3 +1,4 @@
+from typing import Optional
 from re import L
 from django_rq import job
 import gitlab
@@ -134,7 +135,7 @@ def monitored_pr_post_save(
 def merge_request_comment(
     monitored_pr_instance: app_models.MonitoredPullRequest,
     user_instance: app_models.UserRepoAccess,
-    comment_message: str,
+    comment_message: Optional[str],
 ):
     gitlab_instance = gitlab.Gitlab(
         oauth_token=app_lib.get_active_token(user_instance.social_account).token
@@ -143,5 +144,6 @@ def merge_request_comment(
         monitored_pr_instance.code_pull_request.repository.repo_id
     )
     mr = project.mergerequests.get(monitored_pr_instance.code_pull_request.pr_number)
-    mr.discussions.create({"body": comment_message})
+    if comment_message is not None:
+        mr.discussions.create({"body": comment_message})
     mr.pipelines.create()

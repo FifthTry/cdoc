@@ -187,14 +187,14 @@ class PRView(View):
             "gitlab": gitlab_jobs.monitored_pr_post_save,
             # "github": app_jobs.monitored_pr_post_save,
         }
-        # instance.refresh_from_db()
+        instance.refresh_from_db()
         # django_rq.enqueue(
         #     post_save_provider_action_map[matches["provider"]],
         #     args=(instance, highest_access_for_user, old_status),
         # )
         new_status = instance.pull_request_status
+        comment_msg = None  # Allowed: None, Body of the comment
         if old_status != new_status:
-            comment_msg = None  # Allowed: None, Body of the comment
             if (
                 old_status
                 == app_models.MonitoredPullRequest.PullRequestStatus.NOT_CONNECTED
@@ -216,23 +216,15 @@ class PRView(View):
                 # Send a comment to the code PR that PR has been approved
                 comment_msg = f"Approved! Code is up to date with the [documentation]({instance.documentation_pull_request.get_url()})"
 
-            if comment_msg is not None:
-                provider_comment_action_map = {
-                    "gitlab": gitlab_jobs.merge_request_comment,
-                    # "github": app_jobs.merge_request_comment,
-                }
-                django_rq.enqueue(
-                    provider_comment_action_map[matches["provider"]],
-                    args=(instance, highest_access_for_user, comment_msg),
-                )
-        #         github_instance = github.Github(
-        #             request.user.github_user.get_active_access_token()
-        #         )
-        #         repo = github_instance.get_repo(
-        #             instance.code_pull_request.repository.repo_id
-        #         )
-        #         pr = repo.get_pull(instance.code_pull_request.pr_number)
-        #         pr.create_issue_comment(comment_msg)
+        provider_comment_action_map = {
+            "gitlab": gitlab_jobs.merge_request_comment,
+            "github": app_jobs.merge_request_comment,
+        }
+        django_rq.enqueue(
+            provider_comment_action_map[matches["provider"]],
+            args=(instance, highest_access_for_user, comment_msg),
+        )
+        
         return JsonResponse({"status": success})
 
 
