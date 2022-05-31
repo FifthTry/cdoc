@@ -79,7 +79,7 @@
                         <div class="cell-group">
                             <a href="javascript:void(0);" class="iconify unlink-pr-btn"
                                 data-monitored-pr-id="{{monitored_pr.id}}"
-                                data-post-url="/{{repo_mapping.code_repo.repo_full_name}}/pull/{{monitored_pr.code_pull_request.pr_number}}/"><span
+                                data-post-url="/{{repo_mapping.code_repo.app.provider}}/{{repo_mapping.code_repo.repo_full_name}}/pull/{{monitored_pr.code_pull_request.pr_number}}/"><span
                                     class="iconify main-cta-secondary-base" data-icon="octicon:link-16"></span></a>
                             <a href="{{monitored_pr.code_pull_request.get_url}}"
                                 class="cell-item item-top main-text"><span class="iconify"
@@ -103,7 +103,7 @@
                         <div class="cell-group">
                             <a href="javascript:void(0);" class="iconify unlink-pr-btn"
                                 data-monitored-pr-id="{{monitored_pr.id}}"
-                                data-post-url="/{{repo_mapping.code_repo.repo_full_name}}/pull/{{monitored_pr.code_pull_request.pr_number}}/"><span
+                                data-post-url="/{{repo_mapping.code_repo.app.provider}}/{{repo_mapping.code_repo.repo_full_name}}/pull/{{monitored_pr.code_pull_request.pr_number}}/"><span
                                     class="iconify main-cta-secondary-base" data-icon="octicon:link-16"></span></a>
                             <a href="{{monitored_pr.code_pull_request.get_url}}"
                                 class="cell-item item-top main-text"><span class="iconify"
@@ -533,9 +533,12 @@
             $("#open-manual-code-approval").attr("data-code-pr-id", $(this).attr("data-code-pr-id"));
             $("#open-manual-code-approval").attr("data-code-pr-title", $(this).attr("data-code-pr-title"));
             $("#attach-documentation-modal .connect-documentation-pr-form").attr("action",
-                "/{{repo_mapping.code_repo.repo_full_name}}/pull/" + $(this).attr("data-code-pr-id") + "/");
-            $("#attach-documentation-modal .connect-documentation-pr-form input[name='code_pull_request']").attr("action",
-                "/{{repo_mapping.code_repo.repo_full_name}}/pull/" + $(this).attr("data-code-pr-id") + "/");
+                "/{{repo_mapping.code_repo.app.provider}}/{{repo_mapping.code_repo.repo_full_name}}/pull/" +
+                $(this).attr("data-code-pr-id") + "/");
+            $("#attach-documentation-modal .connect-documentation-pr-form input[name='code_pull_request']")
+                .attr("action",
+                    "/{{repo_mapping.code_repo.app.provider}}/{{repo_mapping.code_repo.repo_full_name}}/pull/" +
+                    $(this).attr("data-code-pr-id") + "/");
             $("#attach-documentation-modal").addClass("opened");
         });
         $(".back-to-attach-documentation").click(function () {
@@ -550,7 +553,9 @@
         $(".open-approval-modal").click(function () {
             $("#approval-modal .code_pr_title").html($(this).attr("data-code-pr-title"));
             $("#approval-modal .documentation_pr_title").html($(this).attr("data-documentation-pr-title"));
-            $("#approve-pr-form").attr("action", "/{{repo_mapping.code_repo.repo_full_name}}/pull/" + $(this)
+            $("#approve-pr-form").attr("action",
+                "/{{repo_mapping.code_repo.app.provider}}/{{repo_mapping.code_repo.repo_full_name}}/pull/" +
+                $(this)
                 .attr("data-code-pr-id") + "/");
             $("#approval-modal").addClass('opened');
         })
