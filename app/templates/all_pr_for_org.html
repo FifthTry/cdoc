@@ -563,7 +563,7 @@
         $(".github-username-confirmation-box .github-username-confirmation").on("keyup change", function () {
             current_val = $(this).val();
             success_btn = $(this).parents(".github-username-confirmation-box").find("button")
-            if (current_val != "{{request.user.github_user.account_name|escapejs}}") {
+            if (current_val != "{{repo_user_name|escapejs}}") {
                 success_btn.removeClass("cta-warning").addClass("cta-disabled").attr("disabled", true);
             } else {
                 success_btn.removeClass("cta-disabled").addClass("cta-warning").removeAttr("disabled");

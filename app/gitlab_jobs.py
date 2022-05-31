@@ -1,3 +1,4 @@
+from re import L
 from django_rq import job
 import gitlab
 from app import models as app_models
@@ -110,3 +111,37 @@ def sync_prs_for_repository(
                 "push_events": False,
             }
         )
+
+
+@job
+def monitored_pr_post_save(
+    monitored_pr_instance: app_models.MonitoredPullRequest,
+    user_instance: app_models.UserRepoAccess,
+    old_status: str,
+):
+    if monitored_pr_instance.pull_request_status == old_status:
+        pass
+    gitlab_instance = gitlab.Gitlab(
+        oauth_token=app_lib.get_active_token(user_instance.social_account).token
+    )
+    project = gitlab_instance.projects.get(
+        monitored_pr_instance.code_pull_request.repository.repo_id
+    )
+    mr = project.mergerequests.get(monitored_pr_instance.code_pull_request.pr_number)
+
+
+@job
+def merge_request_comment(
+    monitored_pr_instance: app_models.MonitoredPullRequest,
+    user_instance: app_models.UserRepoAccess,
+    comment_message: str,
+):
+    gitlab_instance = gitlab.Gitlab(
+        oauth_token=app_lib.get_active_token(user_instance.social_account).token
+    )
+    project = gitlab_instance.projects.get(
+        monitored_pr_instance.code_pull_request.repository.repo_id
+    )
+    mr = project.mergerequests.get(monitored_pr_instance.code_pull_request.pr_number)
+    mr.discussions.create({"body": comment_message})
+    mr.pipelines.create()
