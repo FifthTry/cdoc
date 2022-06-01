@@ -12,6 +12,10 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import time
+from allauth.socialaccount import models as social_models
+from app import gitlab_jobs
+import django_rq
+from app import jobs as app_jobs
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -57,17 +61,41 @@ class WebhookCallback(View):
                     ),
                 },
             )
-            (
-                monitored_pr_instance,
-                _,
-            ) = app_models.MonitoredPullRequest.objects.update_or_create(
-                code_pull_request=pr_instance,
-            )
-            if old_instance.pr_head_commit_sha != pr_instance.pr_head_commit_sha:
-                monitored_pr_instance.pull_request_status = (
-                    app_models.MonitoredPullRequest.PullRequestStatus.STALE_APPROVAL
+            monitored_prs = []
+            try:
+                monitored_pr_instance = pr_instance.monitored_code
+                if old_instance.pr_head_commit_sha != pr_instance.pr_head_commit_sha:
+                    monitored_pr_instance.pull_request_status = (
+                        app_models.MonitoredPullRequest.PullRequestStatus.STALE_APPROVAL
+                    )
+                monitored_pr_instance.save()
+                monitored_prs.append(monitored_pr_instance)
+            except:
+                pass
+            for doc_pr_instance in pr_instance.monitored_documentation.all():
+                # doc_pr_instance = pr_instance.monitored_code
+                if old_instance.pr_head_commit_sha != pr_instance.pr_head_commit_sha:
+                    doc_pr_instance.pull_request_status = (
+                        app_models.MonitoredPullRequest.PullRequestStatus.STALE_CODE
+                    )
+                doc_pr_instance.save()
+                monitored_prs.append(doc_pr_instance)
+            for pr in monitored_prs:
+                repo_users = (
+                    pr.code_pull_request.repository.userrepoaccess_set.order_by(
+                        "-access"
+                    )
                 )
-            monitored_pr_instance.save()
+                if repo_users.exists():
+                    highest_access = repo_users.first()
+                    provider_comment_action_map = {
+                        "gitlab": gitlab_jobs.merge_request_comment,
+                        "github": app_jobs.merge_request_comment,
+                    }
+                    django_rq.enqueue(
+                        provider_comment_action_map[pr.repository.app.provider],
+                        args=(pr, highest_access, None),
+                    )
         return JsonResponse({})
 
 

@@ -247,7 +247,7 @@ class WebhookCallback(View):
         ]
         if EVENT_TYPE in interesting_events:
             get_installation_instance = (
-                lambda data: app_models.GithubAppInstallation.objects.get(
+                lambda data: app_models.AppInstallation.objects.get(
                     installation_id=data["installation"]["id"]
                 )
             )
