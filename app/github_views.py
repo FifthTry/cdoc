@@ -91,9 +91,10 @@ class AuthCallback(View):
         # in the UI.
         # The user's account using the `code` recieved in the step above
         # logger.info(request.get_host())
+        social_app = allauth_social_models.SocialApp.objects.get(provider="github")
         payload = {
-            "client_id": settings.GITHUB_CREDS["client_id"],
-            "client_secret": settings.GITHUB_CREDS["client_secret"],
+            "client_id": social_app.client_id,
+            "client_secret": social_app.secret,
             "code": code,
             "redirect_uri": f"https://{request.get_host()}/app/callback/",
             "state": uuid.uuid4().__str__(),
@@ -122,6 +123,7 @@ class AuthCallback(View):
                 user_instance = github_instance.get_user()
                 with transaction.atomic():
                     # access_group = auth_models.Group.objects.get(name="github_user")
+                    # TODO: Ideally a new user should be created/verified by email. Can lead to issues
                     (auth_user_instance, _) = get_user_model().objects.get_or_create(
                         username=user_instance.login,
                         defaults={
@@ -140,16 +142,18 @@ class AuthCallback(View):
                     )
                     allauth_social_models.SocialToken.objects.update_or_create(
                         account=social_account,
-                        app=allauth_social_models.SocialApp.objects.get(
-                            provider="github"
-                        ),
+                        app=social_app,
                         defaults={
                             "token": access_token,
                             "token_secret": refresh_token,
                             "expires_at": access_token_expires_at,
                         },
                     )
-                    login(request, auth_user_instance)
+                    login(
+                        request,
+                        auth_user_instance,
+                        backend="allauth.account.auth_backends.AuthenticationBackend",
+                    )
                 if "installation_id" in request.GET:
                     installation_id: int = request.GET["installation_id"]
                     setup_action: str = request.GET["setup_action"]
@@ -171,39 +175,38 @@ class AuthCallback(View):
                         (
                             installation_instance,
                             is_new,
-                        ) = app_models.GithubAppInstallation.objects.update_or_create(
+                        ) = app_models.AppInstallation.objects.update_or_create(
                             installation_id=installation_id,
                             account_id=account_id,
+                            social_app=social_app,
                             defaults={
                                 "account_name": account_name,
-                                "state": app_models.GithubAppInstallation.InstallationState.INSTALLED,
+                                "state": app_models.AppInstallation.InstallationState.INSTALLED,
                                 "account_type": account_type,
                                 "avatar_url": avatar_url,
-                                "creator": github_user,
+                                "creator": auth_user_instance,
                             },
                         )
                         # installation_instance.save()
-                        installation_instance.update_token()
+                        # installation_instance.update_token()
                         # if is_new:
-                        django_rq.enqueue(
-                            app_jobs.sync_repositories_for_installation,
-                            installation_instance,
-                        )
-                        app_models.GithubAppUser.objects.update_or_create(
-                            github_user=github_user,
+                        # django_rq.enqueue(
+                        #     app_jobs.sync_repositories_for_installation,
+                        #     installation_instance,
+                        # )
+                        app_models.AppUser.objects.update_or_create(
+                            user=auth_user_instance,
                             installation=installation_instance,
                         )
                 # logger.info([x for x in user_instance.get_installations()])
                 for installation in user_instance.get_installations():
                     if installation.app_id == settings.GITHUB_CREDS["app_id"]:
-                        installation_instance = (
-                            app_models.GithubAppInstallation.objects.get(
-                                account_id=installation.target_id,
-                                installation_id=installation.id,
-                            )
+                        installation_instance = app_models.AppInstallation.objects.get(
+                            account_id=installation.target_id,
+                            installation_id=installation.id,
                         )
-                        app_models.GithubAppUser.objects.update_or_create(
-                            github_user=github_user,
+                        app_models.AppUser.objects.update_or_create(
+                            user=auth_user_instance,
                             installation=installation_instance,
                         )
         else:
@@ -248,7 +251,8 @@ class WebhookCallback(View):
         if EVENT_TYPE in interesting_events:
             get_installation_instance = (
                 lambda data: app_models.AppInstallation.objects.get(
-                    installation_id=data["installation"]["id"]
+                    installation_id=data["installation"]["id"],
+                    social_app__provider="github",
                 )
             )
             installation_instance = get_installation_instance(payload)
@@ -256,35 +260,32 @@ class WebhookCallback(View):
                 should_save = False
                 if payload["action"] == "deleted":
                     installation_instance.state = (
-                        app_models.GithubAppInstallation.InstallationState.UNINSTALLED
+                        app_models.AppInstallation.InstallationState.UNINSTALLED
                     )
                     should_save = True
                 elif payload["action"] == "suspend":
                     installation_instance.state = (
-                        app_models.GithubAppInstallation.InstallationState.SUSPENDED
+                        app_models.AppInstallation.InstallationState.SUSPENDED
                     )
                     should_save = True
                 elif payload["action"] == "unsuspend":
                     installation_instance.state = (
-                        app_models.GithubAppInstallation.InstallationState.INSTALLED
+                        app_models.AppInstallation.InstallationState.INSTALLED
                     )
                     should_save = True
                 if should_save:
                     installation_instance.save()
             elif EVENT_TYPE == "pull_request":
                 pull_request_data = payload["pull_request"]
-                (github_repo, _) = app_models.GithubRepository.objects.update_or_create(
+                (github_repo, _) = app_models.Repository.objects.update_or_create(
                     repo_id=payload["repository"]["id"],
-                    owner=installation_instance,
+                    app=allauth_social_models.SocialApp.objects.get(provider="github"),
                     defaults={
                         "repo_full_name": payload["repository"]["full_name"],
                         "repo_name": payload["repository"]["name"],
                     },
                 )
-                (
-                    pr_instance,
-                    _,
-                ) = app_models.GithubPullRequest.objects.update_or_create(
+                (pr_instance, _,) = app_models.PullRequest.objects.update_or_create(
                     pr_id=pull_request_data["id"],
                     pr_number=pull_request_data["number"],
                     repository=github_repo,
@@ -312,10 +313,7 @@ class WebhookCallback(View):
                 if payload.get("action") == "requested":
 
                     repository_data = payload.get("repository", {})
-                    (
-                        github_repo,
-                        _,
-                    ) = app_models.GithubRepository.objects.update_or_create(
+                    (github_repo, _,) = app_models.Repository.objects.update_or_create(
                         repo_id=repository_data["id"],
                         owner=installation_instance,
                         defaults={
@@ -359,9 +357,3 @@ class WebhookCallback(View):
                                 )
                                 django_rq.enqueue(app_jobs.on_pr_update, pr_instance.id)
         return JsonResponse({"status": True})
-
-
-@method_decorator(csrf_exempt, name="dispatch")
-class OauthCallback(View):
-    def get(self, request):
-        assert False, request

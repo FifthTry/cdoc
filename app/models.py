@@ -136,9 +136,10 @@ class PullRequest(models.Model):
         return f"{self.repository.repo_full_name}/{self.pr_number} @ {self.pr_head_commit_sha[:7]}"
 
     def get_url(self):
-        return (
-            f"https://github.com/{self.repository.repo_full_name}/pull/{self.pr_number}"
-        )
+        if self.repository.app.provider == "gitlab":
+            return f"https://gitlab.com/{self.repository.repo_full_name}/-/merge_requests/{self.pr_number}"
+        else:
+            return f"https://github.com/{self.repository.repo_full_name}/pull/{self.pr_number}"
 
 
 class MonitoredPullRequest(models.Model):

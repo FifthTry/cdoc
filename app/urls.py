@@ -15,7 +15,7 @@ gitlab_urlpatterns = [
 urlpatterns = [
     path("callback/", github_views.AuthCallback.as_view()),
     path("webhook-callback/", github_views.WebhookCallback.as_view()),
-    path("oauth-callback/", github_views.OauthCallback.as_view()),
+    # path("oauth-callback/", github_views.OauthCallback.as_view()),
     path("marketplace-callback/", github_views.MarketplaceCallbackView.as_view()),
     path("gitlab/", include(gitlab_urlpatterns)),
 ]
