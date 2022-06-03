@@ -187,18 +187,28 @@ class AuthCallback(View):
                                 "creator": auth_user_instance,
                             },
                         )
-                        # installation_instance.save()
+                        (
+                            app_token,
+                            _,
+                        ) = app_models.GithubAppToken.objects.update_or_create(
+                            app=installation_instance,
+                            defaults={
+                                "token": access_token,
+                                "secret": refresh_token,
+                                "expires_at": access_token_expires_at,
+                            },
+                        )
+                        installation_instance.save()
                         # installation_instance.update_token()
                         # if is_new:
-                        # django_rq.enqueue(
-                        #     app_jobs.sync_repositories_for_installation,
-                        #     installation_instance,
-                        # )
+                        django_rq.enqueue(
+                            app_jobs.sync_repositories_for_installation,
+                            installation_instance,
+                        )
                         app_models.AppUser.objects.update_or_create(
                             user=auth_user_instance,
                             installation=installation_instance,
                         )
-                # logger.info([x for x in user_instance.get_installations()])
                 for installation in user_instance.get_installations():
                     if installation.app_id == settings.GITHUB_CREDS["app_id"]:
                         installation_instance = app_models.AppInstallation.objects.get(

@@ -11,7 +11,7 @@ class GithubDataManager:
     def __init__(self, installation_id: int, user_token: str):
         self.installation_id = installation_id
         self.github_token = user_token
-        self.installation_instance = app_models.GithubAppInstallation.objects.get(
+        self.installation_instance = app_models.AppInstallation.objects.get(
             installation_id=self.installation_id
         )
 
@@ -21,15 +21,16 @@ class GithubDataManager:
         self.github_manager_instance = lib.GithubInstallationManager(
             self.installation_id, self.github_token
         )
+        self.social_app = social_models.SocialApp.objects.get(provider="github")
 
     def sync_repositories(self):
         repo_generator = self.github_manager_instance.get_repositories()
         for repo in repo_generator:
-            app_models.GithubRepository.objects.get_or_create(
+            app_models.Repository.objects.get_or_create(
                 repo_id=repo["id"],
                 repo_name=repo["name"],
                 repo_full_name=repo["full_name"],
-                owner=self.installation_instance,
+                app=self.social_app,
             )
 
     # a function called sync_open_prs which takes input the GithubRepository and syncs its open pull requests

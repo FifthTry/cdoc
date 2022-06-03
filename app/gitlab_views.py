@@ -61,6 +61,10 @@ class WebhookCallback(View):
                     ),
                 },
             )
+            if repo.code_repos.exists():
+                app_models.MonitoredPullRequest.objects.update_or_create(
+                    code_pull_request=pr_instance
+                )
             monitored_prs = []
             try:
                 monitored_pr_instance = pr_instance.monitored_code
@@ -93,7 +97,9 @@ class WebhookCallback(View):
                         "github": app_jobs.merge_request_comment,
                     }
                     django_rq.enqueue(
-                        provider_comment_action_map[pr.repository.app.provider],
+                        provider_comment_action_map[
+                            pr.code_pull_request.repository.app.provider
+                        ],
                         args=(pr, highest_access, None),
                     )
         return JsonResponse({})

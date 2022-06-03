@@ -2,6 +2,7 @@ import datetime
 from email.policy import default
 import enum
 import logging
+from typing import Optional
 import uuid
 from urllib.parse import parse_qs
 import github
@@ -41,6 +42,20 @@ class AppInstallation(models.Model):
 
     def __str__(self) -> str:
         return f"{self.account_name}[{self.installation_id}] Owner: {self.creator.username}"
+
+    def get_app_token(self):
+        if self.social_app.provider == "github":
+            return self.app_token.token
+        return None
+
+
+class GithubAppToken(models.Model):
+    app = models.OneToOneField(
+        AppInstallation, on_delete=models.CASCADE, related_name="app_token"
+    )
+    token = models.CharField(max_length=200)
+    expires_at = models.DateTimeField()
+    secret = models.CharField(max_length=200)
 
 
 class AppUser(models.Model):

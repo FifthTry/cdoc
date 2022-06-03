@@ -18,9 +18,11 @@ def sync_repositories_for_installation(
     installation_instance: app_models.AppInstallation,
 ):
     logger.info(f"GithubAppInstallation signal received for {installation_instance}")
+    creator = installation_instance.appuser_set.first().user
+    social_account = creator.socialaccount_set.get(provider="github")
     github_manager = app_lib.GithubDataManager(
         installation_instance.installation_id,
-        installation_instance.creator.get_active_access_token(),
+        app_lib.get_active_token(social_account).token,
     )
     github_manager.sync_repositories()
 
