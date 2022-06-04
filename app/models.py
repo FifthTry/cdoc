@@ -83,6 +83,9 @@ class Repository(models.Model):
     def pulls_page_url(self):
         return f"/{self.app.provider}/{self.repo_full_name}/pulls/"
 
+    def get_url(self):
+        return f"https://{self.app.provider}.com/{self.repo_full_name}/"
+
 
 class UserRepoAccess(models.Model):
     class AccessLevel(models.TextChoices):
@@ -274,9 +277,19 @@ class PullRequestCheck(models.Model):
 
         if not self.pk:
             # PK doesn't exist, new instance being saved to the DB. Create a new check
-            token = (
-                self.ref_pull_request.code_pull_request.repository.owner.creator.access_token
+            from app import lib as app_lib  # noqa
+
+            highest_access_account = (
+                self.ref_pull_request.code_pull_request.repository.userrepoaccess_set.order_by(
+                    "-access"
+                )
+                .first()
+                .social_account
             )
+            token = app_lib.get_active_token(highest_access_account).token
+            # token = (
+            #     self.ref_pull_request.code_pull_request.repository.owner.creator.access_token
+            # )
             github_app_instance = github.Github(token)
             github_repo = github_app_instance.get_repo(
                 self.ref_pull_request.code_pull_request.repository.repo_id

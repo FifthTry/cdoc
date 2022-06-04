@@ -224,7 +224,7 @@ class PRView(View):
             provider_comment_action_map[matches["provider"]],
             args=(instance, highest_access_for_user, comment_msg),
         )
-        
+
         return JsonResponse({"status": success})
 
 

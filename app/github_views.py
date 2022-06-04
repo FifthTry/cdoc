@@ -124,6 +124,7 @@ class AuthCallback(View):
                 with transaction.atomic():
                     # access_group = auth_models.Group.objects.get(name="github_user")
                     # TODO: Ideally a new user should be created/verified by email. Can lead to issues
+                    # assert False, user_instance.login
                     (auth_user_instance, _) = get_user_model().objects.get_or_create(
                         username=user_instance.login,
                         defaults={
@@ -138,7 +139,9 @@ class AuthCallback(View):
                         user=auth_user_instance,
                         provider="github",
                         uid=user_instance.id,
-                        extra_data={},
+                        defaults={
+                            "extra_data": user_instance.raw_data,
+                        },
                     )
                     allauth_social_models.SocialToken.objects.update_or_create(
                         account=social_account,
@@ -187,23 +190,14 @@ class AuthCallback(View):
                                 "creator": auth_user_instance,
                             },
                         )
-                        (
-                            app_token,
-                            _,
-                        ) = app_models.GithubAppToken.objects.update_or_create(
-                            app=installation_instance,
-                            defaults={
-                                "token": access_token,
-                                "secret": refresh_token,
-                                "expires_at": access_token_expires_at,
-                            },
-                        )
+                        # (
                         installation_instance.save()
                         # installation_instance.update_token()
                         # if is_new:
                         django_rq.enqueue(
                             app_jobs.sync_repositories_for_installation,
                             installation_instance,
+                            social_account,
                         )
                         app_models.AppUser.objects.update_or_create(
                             user=auth_user_instance,
@@ -325,7 +319,7 @@ class WebhookCallback(View):
                     repository_data = payload.get("repository", {})
                     (github_repo, _,) = app_models.Repository.objects.update_or_create(
                         repo_id=repository_data["id"],
-                        owner=installation_instance,
+                        # owner=installation_instance,
                         defaults={
                             "repo_name": repository_data["name"],
                             "repo_full_name": repository_data["full_name"],
@@ -359,7 +353,7 @@ class WebhookCallback(View):
                                 (
                                     pr_instance,
                                     is_new,
-                                ) = app_models.GithubPullRequest.objects.update_or_create(
+                                ) = app_models.PullRequest.objects.update_or_create(
                                     pr_id=pr_id,
                                     pr_number=pr_number,
                                     repository=github_repo,
