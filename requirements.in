@@ -13,4 +13,4 @@ whitenoise
 sentry-sdk
 rq
 django-rq
-ftd-django==0.1.1
+ftd-django==0.1.3

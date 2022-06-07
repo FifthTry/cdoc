@@ -22,6 +22,7 @@ def sync_repositories_for_installation(
         installation_instance.installation_id,
         installation_instance.creator.get_active_access_token(),
     )
+    print("sync_repositories_for_installation:::", github_manager)
     github_manager.sync_repositories()
 
 

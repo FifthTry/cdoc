@@ -20,7 +20,9 @@ class GithubDataManager:
 
     def sync_repositories(self):
         repo_generator = self.github_manager_instance.get_repositories()
+        print("sync_repositories::::", repo_generator)
         for repo in repo_generator:
+            print("repo:::", repo)
             app_models.GithubRepository.objects.get_or_create(
                 repo_id=repo["id"],
                 repo_name=repo["name"],

@@ -1,0 +1,12 @@
+-- import: fpm
+
+-- fpm.package: templates-ftd
+
+-- fpm.auto-import: templates-ftd/assets
+
+-- fpm.dependency: fifthtry.github.io/inter
+-- fpm.font: Octicon
+display: swap
+style: normal
+weight: normal
+woff: -/fifthtry.github.io/octicon/static/octicons.woff

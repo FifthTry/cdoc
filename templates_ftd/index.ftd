@@ -1,0 +1,578 @@
+-- import: fpm
+-- import: templates-ftd/assets
+-- import: fifthtry.github.io/inter/assets as font-assets
+-- import: templates-ftd/custom-typo as font
+-- fpm.font-display: $font-assets.fonts.Inter
+-- import: templates-ftd/pull as pull
+-- import: templates-ftd/popup as popup
+-- import: templates-ftd/login as login
+
+
+-- integer selected: 1
+
+-- integer changes: $selected
+
+-- string abc: kkkk
+
+
+-- fpm.toc-item list sub-sections:
+$processor$: toc
+
+- Home:
+  - Home Index: /index/
+  - Docs: /index/
+  - Articles: /index/
+  - Home Pictures: /index/
+
+-- boolean close: false
+-- ftd.font-size octicon-fs:
+line-height: 16
+size: 16
+letter-spacing: 0
+
+-- ftd.type octicon:
+font: $assets.fonts.Octicon
+desktop: $octicon-fs
+mobile: $octicon-fs
+xl: $octicon-fs
+weight: 700
+
+
+-- boolean is-authenticated: false
+$processor$: get-data
+
+
+-- optional string github-login-url:
+$processor$: get-data
+
+null
+
+-- record available-repos-for-mapping-data:
+integer id:
+string repo-full-name:
+string get-url:
+
+
+-- available-repos-for-mapping-data list available-repos-for-mapping:
+$processor$: get-data
+
+[]
+
+
+-- record code-repo-data:
+optional string repo-full-name:
+optional string get-url:
+
+
+-- record documentation-repo-data:
+optional string repo-full-name:
+optional string get-url:
+
+-- record all-repo-map-data:
+code-repo-data code-repo:
+documentation-repo-data documentation-repo:
+
+-- all-repo-map-data list all-repo-map:
+$processor$: get-data
+
+[]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- homepage:
+
+
+
+-- ftd.column homepage:
+optional ftd.color bg-color: $fpm.color.main.background.base
+background-color: $bg-color
+width: fill
+
+--- pull.header:
+background: $fpm.color.glass.background.step-2
+
+--- container: ftd.main
+
+--- login.login-content: Login to Github
+sub-heading-main: Click below to login with github
+cta-text: sign up with
+url: $github-login-url
+if: not $is-authenticated
+
+--- container: ftd.main
+
+--- ftd.column:
+width: fill
+padding-horizontal:280
+padding-vertical: 36
+id:main-section
+align: center
+spacing: 36
+id: section-conatiner
+
+--- popup.logo-with-text:
+logo: $assets.files.assets.images.pull-request.png
+logo-text: Connections
+
+--- pull.search-btn:
+title: search
+
+--- ftd.text: Mapping
+padding-bottom: $fpm.space.space-3
+role: $fpm.type.heading-small
+color: $fpm.color.main.text-strong
+
+--- ftd.column:
+width:fill
+border-width: 1
+border-radius: 8
+border-color: $fpm.color.main.border-strong
+
+--- mapping-loop:
+documentation-repo: $obj.documentation-repo
+code-repo: $obj.code-repo
+$loop$: $all-repo-map as $obj
+
+--- container: section-conatiner
+
+--- ftd.text: Available repos
+padding-bottom: $fpm.space.space-3
+role: $fpm.type.heading-small
+color: $fpm.color.main.text-strong
+
+--- ftd.column:
+width:fill
+border-width: 1
+border-radius: 8
+border-color: $fpm.color.main.border-strong
+
+--- available-loop:
+index: $obj.id
+children: $obj.repo-full-name
+$loop$: $available-repos-for-mapping as $obj
+
+
+
+
+
+
+
+
+-- ftd.row mapping-loop:
+optional ftd.image-src button-name:
+optional ftd.image-src doc-logo:
+optional ftd.image-src code-logo:
+width: fill
+border-bottom: 1
+border-color:  $fpm.color.main.text
+padding-horizontal:30
+padding-vertical: 20
+code-repo-data code-repo:
+code-repo-data documentation-repo:
+
+--- ftd.column:
+width: fill
+id: left-side
+
+--- ftd.row:
+spacing: 4
+padding-top: 4
+
+
+--- ftd.image:
+padding-top: 8
+src: $assets.files.assets.images.lower-rectangle.png
+
+
+
+--- ftd.image:
+padding-top: 4
+src: $assets.files.assets.images.icon9.png
+
+
+
+--- ftd.text: $code-repo.repo-full-name
+link: $code-repo.get-url
+color: $fpm.color.main.text
+role: $fpm.type.label-small
+
+--- container: left-side
+
+
+--- ftd.row:
+spacing: 4
+padding-top: 4
+
+--- ftd.image:
+padding-top: 8
+src: $assets.files.assets.images.lower-rect.png
+
+
+
+--- ftd.image:
+padding-top: 4
+src: $assets.files.assets.images.rectangle-white.png
+
+--- ftd.text: $documentation-repo.repo-full-name
+link: $documentation-repo.get-url
+color: $fpm.color.main.text
+role: $fpm.type.label-small
+
+--- container: ftd.main
+
+--- ftd.column:
+
+--- ftd.text :&#707;
+role: $octicon
+border-radius: 8
+padding-horizontal: $fpm.space.space-4
+padding-vertical: $fpm.space.space-2
+background-color: $fpm.color.main.cta-primary.base
+
+
+
+
+
+
+-- ftd.row available-loop:
+optional ftd.image-src button-name:
+optional ftd.image-src doc-logo: $assets.files.assets.images.orgname.png
+width: fill
+border-bottom: 1
+border-color: $fpm.color.main.text
+padding-horizontal:30
+padding-vertical: 20
+string children:
+integer index:
+
+--- ftd.row:
+width:fill
+margin-top: 8
+spacing: 4
+
+--- ftd.image:
+src: $doc-logo
+
+--- ftd.text: $children
+link: $children
+color: $fpm.color.main.text
+role: $fpm.type.label-small
+
+--- container: ftd.main
+
+--- ftd.row:
+
+--- overview: Connect
+heading-name: $children
+
+--- both-button:
+repo-name: $children
+title-right: code-repo
+title-left: documentation-repo
+about-repo-left: Code Repository:
+about-repo-right: Documentation Repository:
+heading-name-right: Attach Documentation repository
+heading-name-left: Attach Code repository
+
+
+
+
+-- ftd.row both-button:
+width: fill
+caption title-right:
+caption title-left:
+string about-repo-right:
+string about-repo-left:
+caption heading-name-right:
+caption heading-name-left:
+string repo-name:
+spacing: 8
+
+--- code-repo: $title-right
+about-repo: $about-repo-right
+repo-name: $repo-name
+heading-name: $heading-name-left
+
+--- container: ftd.main
+
+--- code-repo: $title-left
+about-repo: $about-repo-left
+repo-name: $repo-name
+heading-name: $heading-name-right
+
+
+
+
+
+
+
+
+
+
+-- ftd.column overview:
+caption title:
+optional string heading-name:
+boolean open-1: false
+optional integer border-wi: 0
+optional ftd.image-src cross-logo: $assets.files.assets.images.Union.png
+open: true
+append-at: col-id
+
+--- ftd.text: $title
+role: $font.button
+background-color: $fpm.color.main.cta-primary.base
+color: $fpm.color.main.background.base
+background-color if $MOUSE-IN: $font.cta_hover
+color if $MOUSE-IN: $fpm.color.main.error.base
+border-radius: 8
+padding-vertical: 12
+padding-horizontal: 16
+border-width: 1
+border-color: $fpm.color.main.border-strong
+$on-click$: $open-1 = true
+
+--- ftd.column:
+z-index: 100
+anchor: window
+top: 0
+left: 0
+width: percent 100
+height: percent 100
+background-color: $font.backkk
+id: kjlk
+if: $open-1
+
+
+--- ftd.column:
+background-color: $fpm.color.main.background.base
+width: 614
+move-right: 500
+move-down: 200
+border-width: 1
+padding-top: $fpm.space.space-3
+padding-bottom: $fpm.space.space-8
+padding-horizontal: $fpm.space.space-8
+boolean mouse-in: false
+border-color: $fpm.color.main.border-strong
+id: col-id
+shadow-offset-x: 3
+shadow-offset-y: 4
+shadow-size: 1
+shadow-blur: 4
+border-top: 1
+border-radius: 8
+border-color: $fpm.color.main.cta-primary.base
+shadow-color: $fpm.color.main.cta-primary.base
+id: model-content
+
+--- ftd.row:
+width: fill
+
+--- ftd.text: $heading-name
+role: $fpm.type.heading-medium
+color: $fpm.color.main.text-strong
+width: fill
+
+--- ftd.image:
+src: $cross-logo
+$on-click$: $open-1 = false
+
+--- container: model-content
+
+--- ftd.text: This repo is a:
+role: $fpm.type.copy-relaxed
+color: $fpm.color.main.text
+width: fill
+
+
+--- container: model-content
+
+--- ftd.row:
+width: fill
+id: col-id
+open: true
+
+
+
+-- ftd.column code-repo:
+caption button-name:
+string about-repo:
+string heading-name:
+string repo-name:
+boolean open-1: false
+optional integer border-wi: 0
+optional ftd.image-src cross-logo: $assets.files.assets.images.Union.png
+open: true
+append-at: col-id
+
+--- ftd.text: $button-name
+role: $fpm.type.label-big
+ftd.color button-bg: $fpm.color.main.background.base
+ftd.color button-color: $fpm.color.main.error.base
+background-color: $font.cta_primary_base
+color: $fpm.color.main.background.base
+background-color if $MOUSE-IN: $font.cta_hover
+color if $MOUSE-IN: $fpm.color.main.error.base
+border-radius: 8
+padding-vertical: 8
+padding-horizontal: 16
+border-width: 1
+border-color: $fpm.color.main.border-strong
+margin-top:20
+$on-click$: $open-1 = true
+$on-click$: $abc = $repo-name
+
+--- ftd.column:
+z-index: 100
+anchor: window
+top: 0
+left: 0
+width: percent 100
+height: percent 100
+background-color: $font.backkk
+id: kjlk
+if: $open-1
+
+--- ftd.column:
+background-color: $fpm.color.main.background.base
+width: 650
+border-width: 1
+padding-vertical: 12
+padding-horizontal: 24
+boolean mouse-in: false
+border-color: $fpm.color.main.border-strong 
+id: col-id
+shadow-offset-x: 3
+shadow-offset-y: 4
+shadow-size: 1
+shadow-blur: 4
+border-top: $border-wi
+border-radius: 8
+shadow-color: $fpm.color.main.cta-primary.base
+spacing:  24
+
+--- ftd.row:
+width:fill
+
+--- ftd.text: $heading-name
+role: $fpm.type.heading-medium
+color: $fpm.color.main.text-strong
+width: fill
+
+--- ftd.image:
+src: $assets.files.assets.images.Union.png
+/$on-click-outside$: $open-1 = true
+$on-click$: $open-1 = false
+
+--- container: col-id
+
+--- ftd.text: $repo-name
+role: $fpm.type.copy-relaxed
+color: $fpm.color.main.text
+width: fill
+
+--- container: col-id
+
+--- ftd.row:
+width: fill
+
+--- ftd.text: $about-repo
+role: $fpm.type.copy-relaxed
+color: $fpm.color.main.text
+width: fill
+
+--- search-btn: search
+available-repos-for-mapping: $available-repos-for-mapping
+
+--- container: col-id
+
+--- ftd.row:
+align: center
+margin-top: $fpm.space.space-4
+margin-bottom: $fpm.space.space-4
+
+--- popup.button: Attach
+button-bg: $fpm.color.main.cta-primary.base
+
+
+
+
+
+
+
+
+
+-- ftd.row search-btn:
+available-repos-for-mapping-data list available-repos-for-mapping:
+caption title:
+boolean open: false
+$on-click$: toggle $open
+open: true
+append-at: kk
+
+--- ftd.input: $abc
+cursor: pointer
+width:fill
+height: 34
+color: $fpm.color.main.text
+border-radius: 8
+padding-vertical: 14
+padding-horizontal: 28
+border-width: 1 
+placeholder: $abc
+background-color: $fpm.color.main.background.base
+border-color: $fpm.color.main.text
+
+--- ftd.text: ﹀
+if: $available-repos-for-mapping is not empty
+color: $fpm.color.main.text
+position: center
+move-right: -20
+
+--- ftd.column:
+width: fill
+anchor: parent
+z-index: 4
+top: 20
+background-color: $fpm.color.main.text-strong
+left: 0
+
+--- show-children:
+if: $open
+if: $available-repos-for-mapping is not empty
+index: $obj.id
+children: $obj.repo-full-name
+$loop$: $available-repos-for-mapping as $obj
+
+
+
+
+-- ftd.row show-children:
+width: fill
+id: kk
+integer index:
+background-color if $MOUSE-IN:$fpm.color.main.cta-primary.base
+string children:
+
+--- ftd.text: $children
+$on-click$: $abc = $children
+role: $fpm.type.copy-tight
+color: $fpm.color.main.text-strong
+white-space: nowrap
+width: fill
+

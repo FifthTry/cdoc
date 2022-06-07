@@ -56,7 +56,11 @@ urlpatterns = [
     ),
     path("ftd/", app_views.IndexView.as_view()),
 ]
-#  + ftd_django.static()
+
+
+
+if settings.USING_FTD:
+    urlpatterns += ftd_django.static()
 
 
 def make_v(template, context):
