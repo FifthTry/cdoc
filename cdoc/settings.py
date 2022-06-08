@@ -53,11 +53,28 @@ INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "django_extensions",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.github",
+    "allauth.socialaccount.providers.gitlab",
     "app.apps.AppConfig",
     "analytics",
     "django_rq",
 ]
 
+SOCIALACCOUNT_PROVIDERS = {
+    "gitlab": {
+        "SCOPE": [
+            "api",
+        ],
+    },
+    # "github": {"SCOPE": []},
+}
+
+LOGIN_REDIRECT_URL = "/"
+ACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_STORE_TOKENS = True
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -70,6 +87,12 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "cdoc.urls"
+
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
 
 TEMPLATES = [
     {
@@ -246,6 +269,12 @@ else:
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
     }
+
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+SITE_ID = 1
+
 
 try:
     from .local_settings import *  # noqa
