@@ -293,12 +293,6 @@ except ModuleNotFoundError:
         "app_signature_secret": os.environ["CDOC_GITHUB_APP_SIGNATURE_SECRET"],
     }
 
-    GITLAB_CREDS = {
-        "application_id": os.environ["CDOC_GITLAB_APPLICATION_ID"],
-        "secret": os.environ["CDOC_GITLAB_SECRET"],
-        "SCOPE": ["api"],
-    }
-
     if "CDOC_SENTRY_DSN" in os.environ:
         import sentry_sdk  # noqa
         from sentry_sdk.integrations.django import DjangoIntegration  # noqa
